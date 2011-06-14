@@ -13,7 +13,7 @@ snaproot  = "/mnt/retro/trunk"
 def record_by_ticket(ticket, conn) :
 	if ticket <= 0:
 		return None
-	
+
 	c = conn.cursor()
 	c.execute("select name from R where ticket=?", (ticket,))
 	name = c.fetchone()[0]
@@ -21,7 +21,7 @@ def record_by_ticket(ticket, conn) :
 	obdata = c.fetchone()[0]
 	assert c.fetchone() is None
 	c.close()
-	
+
 	return pickle.loads(obdata)
 
 def copyfile(src, dst):
@@ -48,11 +48,11 @@ def find_snapshot(ticket, inode, conn):
 
 		# search history
 		t = t - 1
-		
+
 		# apply current system calls
 		r = record_by_ticket(t, conn)
-		
-		# filtering 
+
+		# filtering
 		if r.name == "open" and r.ret.inode == inode:
 			if r.args["flags"] & os.O_TRUNC:
 				logging.info("@%d <- empty %s@%d" % (ticket, inode, r.ticket))

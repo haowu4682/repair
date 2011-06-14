@@ -56,14 +56,22 @@ struct bufstate {
 	pthread_t thread;
 };
 
+// XXX
+// These values come from ../trace/syscall.h.
+static const size_t
+  PID_INDEX_DATA_LEN = 4,
+  PATHID_INDEX_DATA_LEN = 20,
+  SOCK_INDEX_DATA_LEN = 8,
+  INODE_INDEX_DATA_LEN = 4;
+  
+
 static void init(struct bufstate *);
 static void *worker(void *);
 static void filecopy(int infd, zfile_t outfd);
 static void indexcopy(int infd, DB *dbp, size_t nbytes);
-#define inodecopy(in, out)  indexcopy((in), (out), 4 )
-#define pidcopy(in, out)    indexcopy((in), (out), 4 )
-#define pathidcopy(in, out) indexcopy((in), (out), 20)
-#define sockcopy(in, out)   indexcopy((in), (out), 8 )
+#define pidcopy(in, out)    indexcopy((in), (out), PID_INDEX_DATA_LEN )
+#define pathidcopy(in, out) indexcopy((in), (out), PATHID_INDEX_DATA_LEN)
+#define sockcopy(in, out)   indexcopy((in), (out), SOCK_INDEX_DATA_LEN )
 static void pathidtablecopy(int infd, DB *dbp);
 
 static void usage();
@@ -90,10 +98,19 @@ static struct timeval end_tv;
 
 static void disable() { toggle(khook_dir, "enabled", 0); }
 
+static void inodecopy(int infd, DB *out) {
+	indexcopy(infd, out, INODE_INDEX_DATA_LEN);
+}
+
 int main(int argc, char **argv)
 {
 	/* -p is default */
-	int process_flag = 1;
+    /* haowu: flip the flag to 0 to see what happened */
+	int process_flag = 0;
+  /* ipopov: this can be flipped to 0 in order to trace the entire
+   * system, I think:
+	int process_flag = 0;
+   */
 	for (;;) {
 		struct option longopts[] = {
 			{"output-directory",  required_argument, 0, 'o'},
@@ -176,36 +193,46 @@ int main(int argc, char **argv)
 			errx(1, "unknown option");
 	}
 
+    printf("before getting app\n");
 	get_app_dir("khook", khook_dir);
 	get_app_dir("retro", retro_dir);
+    printf("end getting app\n");
 
 	atexit(disable);
 	toggle(khook_dir, "enabled", 0);
+    printf("khook enabled\n");
 
 	size_t ncpus = sysconf(_SC_NPROCESSORS_ONLN);
+    printf("ncpus = %zu\n", ncpus);
 	struct bufstate bss[ncpus];
 	memset(bss, 0, ncpus * sizeof(bss[0]));
 	for (size_t i = 0; i < ncpus; ++i) {
 		bss[i].id = i;
+        printf("init %zu started\n", i);
 		init(&bss[i]);
+        printf("init %zu finished\n", i);
 		if (pthread_create(&bss[i].thread, 0, worker, &bss[i]) < 0)
 			err(1, "pthread_create %zu", i);
 	}
 
+    printf("before turnon stopwatch\n");
 	// turn on stop watch
 	if (profile && gettimeofday(&beg_tv, NULL)) {
 		err(1, "failed to set profiler");
 	}
 
+    printf("before reset channel\n");
 	// reset channel
 	toggle(retro_dir, "reset", 1);
 	toggle(retro_dir, "trace", 0);
 
 	// start
+    printf("before starting\n");
 	toggle(khook_dir, "process", process_flag);
 	toggle(khook_dir, "ctl", getpid());
 	toggle(khook_dir, "enabled", 1);
 
+    printf("before waiting\n");
 	if (process_flag) {
 		if (fork() == 0) {
 			if (uid)
@@ -242,6 +269,7 @@ int main(int argc, char **argv)
 	else
 		wait_for_signal();
 
+    printf("before stopping\n");
 	// stop
 	toggle(khook_dir, "enabled", 0);
 
@@ -493,18 +521,24 @@ static void filecopy(int infd, zfile_t outfd)
 	}
 }
 
+__attribute__ ((__unused__))
+static void bytes_as_hex(char *from, char *to, int len) {
+  while (len-- > 0) {
+    snprintf(to, 3, "%02x", (*from));
+		to += 2;
+    from++;
+  }
+}
+
 static void indexcopy(int infd, DB *dbp, size_t nbytes)
 {
 	for (;;) {
-#pragma pack(push)
-#pragma pack(1)
 		struct {
 			size_t offset;
 			uint16_t nr;
 			uint32_t sid;
 			char data[nbytes];
-		} rec[1024];
-#pragma pack(pop)
+		} __attribute__((__packed__)) rec[1024];
 		ssize_t len = read(infd, &rec[0], sizeof(rec));
 		int nrec, i;
 		if (len == 0)
@@ -521,22 +555,21 @@ static void indexcopy(int infd, DB *dbp, size_t nbytes)
 			key.size = nbytes;
 			data.data = &rec[i].offset;
 			data.size = sizeof(rec[i]) - nbytes;
+
 			dbp->put(dbp, NULL, &key, &data, DB_NODUPDATA);
 		}
 	}
 }
 
+
 static void pathidtablecopy(int infd, DB *dbp) {
 	for (;;) {
-#pragma pack(push)
-#pragma pack(1)
 		struct {
 			char pathid[20];
 			char parent_pathid[20];
 			char buf[128];
 			size_t len;
-		} rec[1024];
-#pragma pack(pop)
+		} __attribute__((__packed__)) rec[1024];
 		ssize_t len = read(infd, &rec[0], sizeof(rec));
 		int nrec, i;
 		if (len == 0)
@@ -553,6 +586,7 @@ static void pathidtablecopy(int infd, DB *dbp) {
 			key.size = 20;
 			data.data = &rec[i].parent_pathid;
 			data.size = 20 + rec[i].len;
+
 			dbp->put(dbp, NULL, &key, &data, 0);
 		}
 	}

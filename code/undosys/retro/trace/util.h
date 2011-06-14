@@ -14,6 +14,12 @@ void unmap_writable(void *);
 int count_argv(char __user * __user * argv, int max);
 size_t vartime(char *buf);
 
+/* This function and the next serialize a variable-length
+   (long) integer ABCDEFGHIJ....XYZ as
+   (observe the 1's and 0's)
+   1ABCDEFG ... 1MNOPQRS 0TUVWXYZ
+
+ */
 static inline size_t svarint(long v, char *buf)
 {
 	size_t nbits = 1 + ((v && v != -1)? (64 - __builtin_clzll((v < 0)? ~v: v)): 0);
@@ -29,6 +35,7 @@ static inline size_t svarint(long v, char *buf)
 	return nbytes;
 }
 
+/* See comment above */
 static inline size_t uvarint(unsigned long v, char *buf)
 {
 	size_t nbits = (v)? (64 - __builtin_clzll(v)): 1;

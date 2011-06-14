@@ -9,6 +9,7 @@ paths = [prefix+s for s in suffixes]
 paths.append(sys.argv[2])
 filename = [p for p in paths if os.path.exists(p)][0]
 m = {}
+#print("file name is %s\n" % filename)
 for line in open(filename):
 	[addr, dummy, symbol] = line.split()
 	m[symbol] = addr

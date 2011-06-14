@@ -1,0 +1,13 @@
+fsmgr searches as follows.
+
+suppose trunk is mounted at
+/mnt/retro/trunk/
+then the snap must be mounted at
+/mnt/retro/snap-%date-spec%/
+
+So, for the first run, we mount trunk-snap-1 at /mnt/retro/trunk. For the
+second run, we mount trunk-snap-2 at the same place.
+
+For the repair run, we can start with trunk-snap-2 still mounted. As the first
+execution starts to get replayed, everything will get rolled back to whatever
+is in snap-%date-spec%.

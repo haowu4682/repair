@@ -1,0 +1,23 @@
+#!/bin/bash
+INCLUDE_SPEC=--include=*.py
+EXCLUDE_SPEC=--exclude-from=gr-exclude
+GREP_OPTS="-irIn -C 3"
+PARTIAL_MATCH=
+
+while getopts "p" flag
+do
+  case $flag in
+    p) PARTIAL_MATCH=1;;
+  esac
+done
+
+if [ ! $PARTIAL_MATCH ]
+then
+  GREP_OPTS=$GREP_OPTS" -w"
+fi
+
+if test -t 1; then
+  grep $GREP_OPTS $EXCLUDE_SPEC $INCLUDE_SPEC --color=always $BASH_ARGV . | less -R
+else
+  grep $GREP_OPTS $EXCLUDE_SPEC $INCLUDE_SPEC $1 .
+fi

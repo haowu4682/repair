@@ -1,0 +1,55 @@
+Hi Nickolai,
+
+Aha, thank you very much for that helpful clarification. It had not
+become clear to me that you could split up time intervals like this,
+but it strikes me as an elegant approach to supporting blocking
+operations while squeezing an execution. 
+
+I'm not sure that I'll be able to express them well, but there are
+still a couple of things that make me uneasy about this approach.
+
+1. It would appear to become arbitrarily complex to implement full
+support for blocking system calls and dependencies. Naively, the
+argument is that the more kernel functionality Retro's shepherded
+reexecution implementation becomes aware of (and dependent on) the
+more space there is to get something wrong. Especially when you are
+handling dependencies between processes under shepherded reexecution
+and others under non-shepherded reexecution, and mapping meanings
+across the old graph and the graph being newly generated.
+
+2. One can devise contrived scenarios under which processes expect
+more from some syscall interface than it really guarantees. For
+example, a file F may be used for synchronization between two
+processes: process 1 writes "safe" into F when it determines that
+process 2 may safely enter a critical section; then process 1 sleeps
+for 60 seconds, before waking up and writing "not safe" into F.
+Although posix doesn't guarantee that this interaction would work
+correctly, in practice it would, because the sleep time of F is long
+enough to constitute a syncronization "side channel". If process 1's
+sleep is squeezed during shepherded reexecution and process 2 isn't
+being shepherded, we'd get significantly different behavior from what
+an application writer expected.
+
+Anyway, this is a poor example, as it uses a pretty contrived
+synchronization scheme... but other counterexamples, not within my
+power to envision, may actually be commonplace. The point is that they
+are hard to foresee.
+
+The best I could have proved here is that this problem is hard. :-)
+But I would like to think that these inferences give credence to the
+idea that a better way to implement this would be either with
+increased help from the kernel (shepherding more processes back and
+forth to figure out true dependencies) or by doing things at a level
+other than the leaky syscall interface.
+
+I'll be thinking about these issues more as I wrap up my undergrad
+thesis work in the coming few weeks, and I'll report anything else I
+come up with. You said that that you've gone back and forth on this
+issue several times, which I take to mean that there are interesting
+technical issues here. Do please let me know if I'm missing anything.
+:)
+
+Thank you again!
+
+Sincerely,
+Ivo

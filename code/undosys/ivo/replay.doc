@@ -1,0 +1,123 @@
+Hi Mike,
+
+This is the promised email on the problems I've identified with replay.
+
+You'll remember that Retro relies on "managers" to handle
+checkpointing and rollback of objects and actions of interest. A
+manager implements the interface (rollback(), redo(), connect(), etc.)
+that the repair loop uses. I have only concerned myself with the
+manager at the process level, procmgr.py, because that is the level at
+which we could hope to support merging of executions.
+
+Now, suppose Retro has rolled back a process and is rolling it
+forward.  Retro goes through all of the system calls that have been
+recorded for that process, in order.
+
+There are two ways for this roll-forward to diverge from the original
+execution.
+
+If the inputs to a system call have changed (for example, sys_read()
+reads from an inode that has changed since the syscall was recorded),
+Retro has two options, emulate (fake) the syscall or actually issue it
+to the kernel anew. The former option is much easier, because it can
+be done entirely within the Python reexecution code. Unfortunately,
+this requires more or less full emulation of syscall behavior in the
+repair controller, which, while possible with things like open() and
+read(), becomes quite hard in general. The latter option involves
+rolling back the process actor to its very initial state, and
+starting a new process, under the control of the repair manager
+through ptrace. You step through the ptrace-process's progress,
+syscall by syscall, and observe its arguments and return values.
+
+This brings us to the more troublesome issue. What if a syscall, on
+roll-forward, _returns_ a different value than it did originally? We
+can no longer emulate this, because the program (binary) in question
+likely has logic that branches based on this return value. So, at this
+point, our only choice is to really reexecute under ptrace.
+
+Now, suppose that a program under ptrace-reexecution makes a syscall
+that is different than anything that has previously been recorded. At
+this point, we have diverged from the original execution. I believe
+that, past this point, there is no good way to bring the reexecution
+back into line with what was originally recorded. We have lost our
+reason to believe that the reexecution that we are following has
+anything semantically in common with the original execution. Consider
+the following C program. If the original contents of infile were 1,
+and the contents change during the reexecution of some predecessor of
+main(), there's a range of things that could happen once we do hit
+main().
+
+main() {
+  ...
+  read(infile, &byte, /*nbyte =*/ 1);
+  switch (byte) {
+    case 1:
+    case 2:
+      write(outfile, "foo", 3); break;
+    case 3:
+      write(outfile, "bar", 3); break;
+    case 4:
+      sleep(3600); write(outfile, "baz", 3); break;
+    default:
+      /* execve apache web server */
+  }
+}
+
+If the new contents of infile became 2, we're fine. Everything stays
+the same. One could even argue that if the new contents were 3, we'd
+be fine, with some modification to outfile, which the repair
+controller could handle. But what about 4 and beyond? It's completely
+different behavior.
+
+We have an explosion of complexity here. The first part is easy. We
+cancel all of the old action nodes belonging to this process (the
+paper gets this far). But how do we execute the new actions?  Where in
+time should we place them (Retro reexecutions are serial)? At some
+point, we lose the ability to use physical time timestamps (which is
+what the prototype relies on) to compare events in the original
+execution to events in the reexecution. We could try to coerce all of
+a divergent reexecution's actions to within the time window in which the
+original execution took place... but that doesn't necessarily make
+sense. Nor does it make sense to stick the reexecution at the very end
+of things (which is what the prototype does now), after everything
+non-divergent has been rolled forward.
+
+I hope I've made myself clear, at least enough to give you an
+impression of the problem. I think that this issue is fundamental in
+Retro's design. The system's approach to intrusion recovery is to
+_take out_ subtrees of the action history graph, as it were, and to
+patch up tangential dependences for that subtree. (I'll try to make
+that statement more precise.) I think that it does poorly at
+_propagating_ far-reaching changes down the graph.
+
+I have a hunch that the solution to this would be to give some further
+structure to the action history graph. It's pretty nebulous right now,
+unfortunately, but I've been inspired by my distributed computing
+course to think of the interactions between processes on a single
+computer as a distributed computation of sorts. Points in the graph,
+then, would be higher level objects than individual system calls.
+Perhaps, we can think of some primitives that application developers
+could use to mark points in their computation in such a way as to let
+Retro track actions sensible objects in the action history graph.
+We would require that these things be made explicit, in the hopes that
+the cost would not be very high to give Retro the knowledge to make a
+much better informed graph. It may be possible, then, to snapshot,
+roll back and replay the computation in a somewhat more refined way
+than by tracing syscalls.
+
+As I said, this is kind of in the clouds. The broad idea is to require
+application developers to signpost relevant steps to Retro. To be
+honest, I'm not sure how this would solve the replay problem...
+perhaps one can argue that if developers annotate their snapshots
+well, we can make a much better informed decision about how to handle
+divergences from the original execution.
+
+I took a break from hacking today. Tomorrow I'll get back on making
+that "hello, world" that we have been discussing work. I'll keep
+thinking about what I said above, however, as I think it holds
+promise. If you have some responses on first read-through, I'd love to
+hear them, but I'd say you shouldn't bother if it doesn't make sense,
+as we can discuss in person. I am coming back to Austin either Friday
+night or Saturday morning.
+
+-Ivo

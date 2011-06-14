@@ -6,7 +6,7 @@ def main():
     for o in mgrapi.RegisteredObject.all():
         if not isinstance(o, mgrutil.BufferNode) or o.name[-1] != 'pargs' or 'Evil' not in o.data:
             continue
-        
+
         nd = copy.deepcopy(o.data)
         nd = nd.replace('Evil', '')
         act = min(o.readers.union(o.writers))

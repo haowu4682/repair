@@ -20,26 +20,16 @@ const char* last_pathid(void) {
   return pathid_parent[cpu];
 }
 
-void store_pathid(const char* name, unsigned int nlen, struct inode* inode) {
-#pragma pack(push)
-#pragma pack(1)
-	struct {
-		char pathid[PATHID_LEN];
-		char parent_pathid[PATHID_LEN];
-		char buf[128];
-		size_t len;  // len of data in buf
-	} rec;
-#pragma pack(pop)
-	int cpu = smp_processor_id();
+void store_pathid(const char* name, size_t nlen, struct inode* inode) {
+	struct pathid_record rec;
+    int cpu, size_to_write;
+
+	cpu = smp_processor_id();
 	memcpy(rec.parent_pathid, pathid_parent[cpu], PATHID_LEN);
 	rec.len = varinode(inode, rec.buf);
-	if (rec.len + nlen > sizeof(rec.buf)) {
-		memcpy(rec.buf + rec.len, name, sizeof(rec.buf) - rec.len);
-		rec.len = sizeof(rec.buf);
-	} else {
-		memcpy(rec.buf + rec.len, name, nlen);
-		rec.len += nlen;
-	}
+    size_to_write = min(nlen, sizeof(rec.buf) - rec.len);
+	memcpy(rec.buf + rec.len, name, size_to_write);
+    rec.len += size_to_write;
 
 	if(hmac_sha1(rec.parent_pathid, PATHID_LEN + rec.len, rec.pathid)) {
 		memset(rec.pathid, 0, PATHID_LEN);

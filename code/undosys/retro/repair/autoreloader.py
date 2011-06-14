@@ -17,10 +17,10 @@ if __name__ == '__main__':
             if pid != None:
                 os.system("kill -9 %d" % pid)
                 time.sleep(3)
-                
+
             pid = os.fork()
             if pid == 0:
                 os.execvp(sys.argv[1], sys.argv[1:])
                 exit(1)
-            
+
         time.sleep(1)

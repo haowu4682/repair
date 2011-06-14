@@ -9,4 +9,4 @@ cp -rf $D/simplest /mnt/retro/trunk/tmp
 btrfs subvolume snapshot /mnt/retro/trunk /mnt/retro/snap-`date +%s`
 
 cd /mnt/retro/trunk/tmp/simplest
-$D/../ctl/retroctl -o /tmp -p -- ./simplest.sh
+$D/../ctl/retroctl -o /tmp/retro -p -- ./simplest.sh

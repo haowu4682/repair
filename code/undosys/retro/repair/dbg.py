@@ -1,7 +1,7 @@
-# 
+#
 # dbg module
 #  by Taesoo Kim
-#  
+#
 
 import sys
 import os
@@ -28,6 +28,7 @@ settings = {
     "state"     : True,
     "sock"      : True,
     "remote"    : True,
+    "pathid"    : True,
     }
 
 #
@@ -36,7 +37,7 @@ settings = {
 #    dbg.test("#B<red text#>")
 #    dbg.info("this is info")
 #    dbg.error("this is #R<error#>")
-# 
+#
 
 #
 # <<func>>   : function name
@@ -49,9 +50,9 @@ settings = {
 # #Y<        : yellow
 # #C<        : cyan
 # #>         : end mark
-# 
+#
 
-header = "'[#B<%-18s#>] ' % (<<func>>)"
+header = "'[#B<%s %s %s#>] ' % (<<func>>, <<file>>, str(<<line>>))"
 
 # reference color
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESERVED, DEFAULT = range(10)
@@ -64,13 +65,13 @@ def currentframe() :
 
 def formatting(msg, tag, rv) :
     h = msg
-    
+
     h = h.replace("<<tag>> ", tag)
     h = h.replace("<<func>>", repr(rv[2]))
     h = h.replace("<<line>>", repr(rv[1]))
-    h = h.replace("<<file>>", repr(rv[0]))
+    h = h.replace("<<file>>", repr(os.path.basename(rv[0])))
 
-    return coloring(eval(h))
+    return coloring(eval(h).ljust(40))
 
 def coloring(msg) :
     h = msg
@@ -87,7 +88,7 @@ def dbg(tag, mark, *msglist):
         return
 
     f = currentframe()
-    
+
     # caller's frame
     if f is not None:
         f = f.f_back
@@ -108,6 +109,13 @@ def dbg(tag, mark, *msglist):
                                      coloring(mark),
                                      coloring(msg))))
 
+# Dynamically generate the debug functions. Although exec() is a nasty
+# thing to use, this actually makes some sense here, because we can
+# replace dbg's we're not interested in with passes... This is
+# somewhat more efficient than:
+# def dbg(type, msg):
+#   if settings.get(type):
+#     print message
 for k, v in settings.iteritems() :
     if v :
         exec("def %s(*msg) : dbg('%s',' ',*msg)" % (k, k))
@@ -119,3 +127,22 @@ for k, v in settings.iteritems() :
 def stop():
     import pdb
     pdb.Pdb().set_trace(sys._getframe().f_back)
+
+def interact():
+    from code import interact
+    interact(local=locals())
+
+class util:
+  @staticmethod
+  def trace(func):
+    def wrapper(*args, **kws):
+      sig = ('%s(%s%s)' %
+        (func.__name__,
+         ', '.join([str(x) for x in args]),
+         (', ' + ', '.join(['%s = %s' % (str(name), str(val)) for name, val in kws.iteritems()])
+           if kws else '')))
+      sys.stderr.write('> %s\n' % str(sig))
+      ret = func(*args, **kws)
+      sys.stderr.write('< %s = %s\n' % (str(sig), str(ret)))
+      return ret
+    return wrapper

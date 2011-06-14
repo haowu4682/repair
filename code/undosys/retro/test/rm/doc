@@ -1,0 +1,6 @@
+fsmgr searches as follows.
+
+suppose trunk is mounted at
+/mnt/retro/trunk/
+then the snap must be mounted at
+/mnt/retro/snap-%date-spec%/

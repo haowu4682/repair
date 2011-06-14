@@ -1,4 +1,5 @@
 /*
+ *Copied selectively from linux kernel source:
  * fs/namei.c
  * 
  * copy static and other necessary functions here.
@@ -15,11 +16,17 @@
 #include "nm.h"
 #include "pathid.h"
 
+struct vfsmount *lookup_mnt(struct path *path)
+{
+	static struct vfsmount *(*f)(struct path *) = NM_lookup_mnt;
+	return f(path);
+}
+
 /*
  * This does basic POSIX ACL permission checking
  */
 static int acl_permission_check(struct inode *inode, int mask,
-		int (*check_acl)(struct inode *inode, int mask, unsigned flags))
+		int (*check_acl)(struct inode *inode, int mask, unsigned flag))
 {
 	umode_t			mode = inode->i_mode;
 
@@ -124,6 +131,7 @@ static int exec_permission(struct inode *inode)
 	int ret;
 
 	if (inode->i_op->permission) {
+        // XXX: The interface here has changed
 		ret = inode->i_op->permission(inode, MAY_EXEC, 0);
 		if (!ret)
 			goto ok;
@@ -740,10 +748,4 @@ struct dentry * __d_lookup(struct dentry * parent, struct qstr * name)
 {
 	struct dentry * (*f)(struct dentry *, struct qstr *) = NM___d_lookup;
 	return f(parent, name);
-}
-
-struct vfsmount *lookup_mnt(struct path *path)
-{
-	static struct vfsmount *(*f)(struct path *) = NM_lookup_mnt;
-	return f(path);
 }

@@ -8,3 +8,5 @@
 nm.h
 hook_syscalls.inc
 trace_syscalls.inc
+tags
+*.swp

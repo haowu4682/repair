@@ -1,12 +1,19 @@
 #pragma once
 
 struct sysarg;
+
+/* This function pointer type doubles as an argument type and as a
+ * function users call to _write_ the relevant type to the current
+ * record.
+ */
 typedef void (*argtype_t)(long, const struct sysarg *);
 
 struct sysarg {
 	const char *name;
-	argtype_t ty;
-	int usage;
+  argtype_t ty;
+  int usage; /* specifies whether the sysarg should be written out with
+              * the entry record (usage == 0) or the exit record (usage == 1)
+              */
 	long aux;
 	long ret;
 };

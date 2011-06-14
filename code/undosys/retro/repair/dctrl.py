@@ -44,7 +44,7 @@ class CtrlFSM(ctrl.BasicRepairCtrl):
         if self.curstate:
             dbg.state("[state] %s -> %s" % (self.curstate, name))
         self.curstate = name
-        
+
     def add_state(self, name, trans):
         if name not in self.states:
             self.states[name] = {}
@@ -68,7 +68,7 @@ def cmd_repair(fd, args):
     if len(args) < 1:
         cmd_help(fd)
         return
-    
+
     hint = args[0]
     pick = "pick_attack_execve" if len(args) < 2 else args[1]
     name = attacker.find_attack_node(logd, pick, hint)
@@ -77,9 +77,9 @@ def cmd_repair(fd, args):
     if attack is None:
         dbg.error('missing attack node:', name)
         return
-    
+
     chkpt = max(c for c in attack.checkpoints if c < min(attack.actions))
-    
+
     assert chkpt
     assert len(attack.actions) == 1
 
@@ -95,7 +95,7 @@ def cmd_repair(fd, args):
     The(CtrlFSM).set_state("init")
 
     rtn_cmd(fd, "done")
-    
+
 def cmd_help(fd, args=None):
     rtn = "usage:\n"
     for s, cmds in The(CtrlFSM).states.iteritems():
@@ -104,10 +104,10 @@ def cmd_help(fd, args=None):
             rtn +="    - %-15s : %s\n" % (c, cmds[c].__doc__)
 
     rtn_cmd(fd, rtn)
-    
+
 def cmd_rollback(fd, args):
     """rollback request from other dctrls"""
-    
+
     if args[0] == "socket":
         sip   = args[1]
         sport = args[2]
@@ -120,7 +120,7 @@ def cmd_rollback(fd, args):
             dbg.trace("found %s:%s for %s" % (sip, p, o))
             dbg.trace("r:%s" % str(o.readers))
             dbg.trace("w:%s" % str(o.writers))
-            
+
             # make sock behave like slave
             o.master = False
             chk = min(o.checkpoints)
@@ -130,7 +130,7 @@ def cmd_rollback(fd, args):
 
         # intentionally sleep to yield python thread
         time.sleep(1)
-        
+
         rtn_cmd(fd, "done")
 
 def cmd_redo(fd, args):
@@ -148,7 +148,7 @@ def cmd_ready(fd, args):
 
         # now ready for undoing/redoing
         The(CtrlFSM).set_state("ready")
-        
+
     rtn_cmd(fd, "done")
 
 def cmd_invalid(fd, args):
@@ -175,7 +175,7 @@ gcmds = {"help"     : cmd_help,
 class CmdGate(Protocol):
     def dataReceived(self, data):
         global gcmds
-        
+
         toks = pickle.loads(data)
         cmds = The(CtrlFSM).get_trans()
 
@@ -184,11 +184,11 @@ class CmdGate(Protocol):
         if len(toks) == 0:
             cmd_invalid(self.transport, toks)
             return
-        
+
         f = cmds.get(toks[0], None)
         if f is None:
             f = gcmds.get(toks[0], None)
-            
+
         if f:
             f(self.transport, toks[1:])
         else:
@@ -223,7 +223,7 @@ class Worker(threading.Thread):
             else:
                 # repsonse time
                 time.sleep(0.1)
-                
+
 if __name__ == '__main__':
     if "-d" in sys.argv:
         if len(sys.argv) > 2:

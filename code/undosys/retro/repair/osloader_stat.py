@@ -24,17 +24,17 @@ def get_obj(name):
 def set_obj(cat, name):
 	global storage
 	storage[name] = cat
-	
-# 	
+
+#
 # XXX merge with osloader
 #
 # make retro not to spend memory by auditing the code
-# 
+#
 def load(n):
 	cnt = 0
 	for r in ld.load(None, None):
 		cnt += 1
-		
+
 		argsnode       = None
 		retnode        = None
 		retnode_child  = None
@@ -48,13 +48,13 @@ def load(n):
 			if get_obj(argsname) is None:
 				set_obj("ProcSysCall", argsname + ('pcall',))
 				set_obj("BufferNode" , argsname)
-				
+
 		if r.usage == 1:
 			if not is_clone or (is_clone and r.ret < 0):
 				actor_ret = procname(r.pid)
 				retname = actor_ret + ('sysret', r.sid)
 				set_obj("ProcessActor", actor_ret)
-				
+
 				if get_obj(retname) is None:
 					set_obj("ProcSysRet" , retname + ('pret',))
 					set_obj("BufferNode" , retname)
@@ -65,14 +65,14 @@ def load(n):
 
 				set_obj("ProcessActor", actor_child)
 				set_obj("ProcessActor", actor_parent)
-				
+
 				retname_parent = actor_parent + ('sysret', r.sid)
 				retname_child  = actor_child  + ('sysret', r.sid)
-				
+
 				if get_obj(retname_parent) is None:
 					set_obj("ProcSysRet" , actor_parent + ('pret',))
 					set_obj("BufferNode" , retname_parent)
-					
+
 				if get_obj(retname_child) is None:
 					set_obj("ProcSysRet" , actor_child + ('pret',))
 					set_obj("BufferNode" , retname_child)

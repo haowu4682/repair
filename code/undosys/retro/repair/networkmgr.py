@@ -19,7 +19,7 @@ class NetworkNode(mgrapi.DataNode):
     def lookup(dip, dport):
         name = ('network', dip, dport)
         return mgrapi.RegisteredObject.by_name(name)
-        
+
     @staticmethod
     def get(inode):
         name = ('network', inode.dip, inode.dport)
@@ -38,7 +38,7 @@ class NetworkNode(mgrapi.DataNode):
                 # explicitly load readers & writers
                 for r in self.readers | self.writers:
                     pass
-                
+
                 dbg.remote("@@@ %s->%s:%s" % (self.sport, self.dip, self.dport))
 
                 # create request function
@@ -46,15 +46,15 @@ class NetworkNode(mgrapi.DataNode):
 
                 # XXX get my ip
                 ip = os.popen("hostname -I").read().strip()
-                
+
                 # check server state
                 if req("state") == "init":
                     # load system
                     req("ready", "socket", ip, self.dport, self.sport)
-                    
+
                 # check again for sure
                 assert req("state") == "ready"
 
                 # rollback and propagate
                 req("rollback", "socket", ip, self.sport, self.dport)
-                
+

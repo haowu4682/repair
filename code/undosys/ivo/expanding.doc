@@ -1,0 +1,27 @@
+A problem during replay
+-----------------------
+
+Suppose process A, on reexecution, makes a syscall with arguments that don't
+match up against the arguments of any of the previously recorded syscalls. At
+this point, the reexecution has diverged from the original execution. The
+natural thing to do at this point is to cancel all the subsequent action nodes
+of the original execution. But what do we do with the new process?
+
+In particular, that process will make modifications to data nodes to which
+other processes have data dependencies. Where in the action graph, temporally,
+should the new actions (those of the reexecution) be placed?
+* We can place them all at the very end; then things are very nice. We can just
+  delay all of the non-following reexecution to a time after all of the replay
+  has finished. Then we just ptrace.detach() from them and let them run their
+  course.
+* Alternatively, we can throw them all in _before_ the exit_group() syscall of
+  the process whose re-execution gave rise to this detached branch. Not only
+  would this be harder, but it would give rise to all sorts of "time travel"
+  issues. Basically as soon as we start reexecuting something that is
+  qualitatively different from the original process, there is no reason to keep
+  it spliced in at a certain point of the original graph. But how do we know
+  where it should or shouldn't be?
+
+For now, I'll go with the first option, as it's easier to implement. I think
+either option is a can of worms, by the way. This expansion reexecution
+business may sink the whole enterprise.

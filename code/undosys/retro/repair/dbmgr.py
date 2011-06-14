@@ -1,6 +1,6 @@
 
 ##
-## TODO: remove timezone from timestamps 
+## TODO: remove timezone from timestamps
 ##
 
 import mgrapi, mgrutil, datetime, time, psycopg2, timetravel,\
@@ -89,12 +89,12 @@ class DbPartition(mgrapi.DataNode):
         for x in rows:
             ts = self.dt_to_usec(x[0])
             self.checkpoints.add(DbSnapshot((ts,), self))
-            
+
     partitions = None
     @staticmethod
     def load_parts(db):
         if DbPartition.partitions != None: return
-        
+
         ## read the partition column and partitions from a file (manually
         ## generated for now). file format is JSON:
         ## { 'table_name': { 'column': colname, 'type' : int|str, 'ranges': [i_1, i_2, ..., i_n]}}
@@ -140,7 +140,7 @@ class DbPartition(mgrapi.DataNode):
             dt = '-infinity'
         else:
             dt = str(self.usec_to_dt(cp.tic[0]))
-        
+
         ## delete all versions of rows after this checkpoint
         db_query(self.db, """DELETE FROM %s WHERE start_ts > '%s' AND %s""" % (self.t, dt, self.r.sql_where(self.c)))
 
@@ -171,7 +171,7 @@ class DbFnCall(mgrapi.Action):
     ## eg: pos=2.3 => its the third clause within the 2nd clause
     def get_matches(self, where, tab, col):
         a = self.unwrap_list(where)
-            
+
         ret = []
         for i in xrange(len(a)):
             if not isinstance(a[i], list): continue
@@ -197,8 +197,8 @@ class DbFnCall(mgrapi.Action):
             col = DbPartition.partitions[t]['column']
             val = None
             if tokens[0] == 'insert':
-                ## currently only support simple INSERTs of the form: 
-                ##     (c1, .., cn) VALUES (v1, .., vn) 
+                ## currently only support simple INSERTs of the form:
+                ##     (c1, .., cn) VALUES (v1, .., vn)
                 ## so, search for 'col' among (c1, .., cn)
                 c = tokens.columns.asList()
                 for i in xrange(len(c)):
@@ -218,7 +218,7 @@ class DbFnCall(mgrapi.Action):
                 deps.extend(DbPartition.get(self.db, t, Range(val, val)))
             else:
                 ## add dependency to entire table
-                deps.extend(DbPartition.get(self.db, t, Range(Bottom(), Top()))) 
+                deps.extend(DbPartition.get(self.db, t, Range(Bottom(), Top())))
 
         ## For select add only input dependency; for insert, add output dep;
         ## and for update/delete add both input/output deps
@@ -226,14 +226,14 @@ class DbFnCall(mgrapi.Action):
             self.inputset.update(deps)
         if tokens[0] != 'select':
             self.outputset.update(deps)
-                    
+
     def fn_args(self):
         if self.fn != 'pg_query':
             return self.fn + ' ' + self.argsnode.data
 
         ## for SELECTs, add end_ts='infinity' to the query
         ##
-        ## for INSERT/UPDATE/DELETE, write the current ts to a 
+        ## for INSERT/UPDATE/DELETE, write the current ts to a
         ## file that timetravel trigger uses as the update time
         args = []
         for a in json.loads(urllib.unquote(self.argsnode.data)):
@@ -248,7 +248,7 @@ class DbFnCall(mgrapi.Action):
         return self.fn + ' ' + urllib.quote(json.dumps(args))
     def redo(self):
         a = self.actor
-        
+
         ## if php helper process not running, spawn it
         if a.php_helper is None or a.php_helper.poll() is not None:
             a.php_helper_in  = "/tmp/retro/.db_helper.in.%d"  % a.pid
@@ -298,7 +298,7 @@ class PipeReader(threading.Thread):
             print "PipeReader(%s) is blocked. Waking it up.." % self.pn
             util.file_write(self.pn, "\n")
             self.join()
-        
+
 class PhpActor(mgrapi.ActorNode):
     def __init__(self, name, pid):
 	super(PhpActor, self).__init__(name)
@@ -331,7 +331,7 @@ class PhpActor(mgrapi.ActorNode):
         rd.start()
         while self.run.poll() is None and rd.data is None:
             time.sleep(0.05)
-            
+
         if self.run.poll() is not None:
             ## redo done for this php actor; cancel remaining actions
             for a in [x for x in self.actions if x > action]:
@@ -344,7 +344,7 @@ class PhpActor(mgrapi.ActorNode):
         fn, fid, args = rd.data.strip().split(':')
         print "PhpActor: wait_for_dbcall: got request:", fn, fid, args
 
-        ## if next action is the same as the requested action, update 
+        ## if next action is the same as the requested action, update
         ## its args. else, create a new action
         nextact = min([x for x in self.actions if x > action])
         if isinstance(nextact, DbFnCall) and nextact.fn == fn:
@@ -386,7 +386,7 @@ class PhpExit(mgrapi.Action):
             if a.run is not None: a.run.kill()
             os.unlink(a.php_in)
             os.unlink(a.php_out)
-            
+
             if a.php_helper is not None: a.php_helper.kill()
             os.unlink(a.php_helper_in)
             os.unlink(a.php_helper_out)
@@ -435,8 +435,8 @@ def load(a, b):
             fncall = DbFnCall(db, fn, fid, php, args, ret)
             connect(fncall, (args_ts,1), (args_ts,1))
         elif type != "serverpid":
-            raise Exception("unknown type: " + type) 
-            
+            raise Exception("unknown type: " + type)
+
 def test_rollback():
     db = psycopg2.connect(db_connect_params())
     d = DbPartition.get(db, 'PERSON', Range('alice', 'bob'))

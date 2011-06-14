@@ -1,5 +1,6 @@
 ## For stock installed kernel
 KVER := $(shell uname -r)
+#KVER := 2.6.39
 KDIR := /lib/modules/$(KVER)/build
 
 ## For kernel build tree

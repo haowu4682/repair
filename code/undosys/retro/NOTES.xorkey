@@ -1,0 +1,6 @@
+The BerkeleyDB key used in the inode storage file is
+	key = dev ^ inode
+The highest order bit is also set, i.e.
+  key = key ^ 0x80000000UL,
+if the syscall is "read-only", i.e. if the syscall in question depends
+on, but does not modify, the inode in question.

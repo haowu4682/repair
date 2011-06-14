@@ -114,7 +114,7 @@ long sys_renameat(int olddfd, const char __user * oldname,
 	if (error)
 		goto exit;
 
-	error = path_lookup(to, LOOKUP_PARENT, &newnd);
+	error = do_path_lookup(AT_FDCWD, to, LOOKUP_PARENT, &newnd);
 	if (error)
 		goto exit1;
 
@@ -204,7 +204,7 @@ static
 int exists(const char * path)
 {
 	struct nameidata nd;
-	if (path_lookup(path, 0, &nd)) {
+	if (do_path_lookup(AT_FDCWD, path, 0, &nd)) {
 		return 0;
 	}
 	path_put(&nd.path);

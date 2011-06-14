@@ -128,6 +128,12 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
 	}
 
 	/* pick a unique syscall ID on entry */
+  /*
+   * TODO XXX
+   * There's a pretty subtle bug lurking here. Namely, in the cases in which we
+   * are tracing only sysexits, this function is only called with usage=0, so
+   * *sidp will contain garbage!
+   */
 	if (usage == 0) {
 		static DEFINE_PER_CPU_SHARED_ALIGNED(uint64_t, sid_ctr);
 		uint64_t *ctrp = &__get_cpu_var(sid_ctr);
@@ -168,6 +174,7 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
 	/* index pid for the record */
 	index_pid(pid);
 
+  /* Write arguments */
 	arg = sc->args;
 	for (i = 0; i < sc->nargs; ++i, ++arg) {
 		struct sysarg a = *arg;
@@ -188,12 +195,14 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
 		}
 		if (a.ty == sysarg_buf || a.ty == sysarg_buf_det) {
 			if (a.usage) {
+        // Length of the buffer depends on the kernel.
 				if (ret > 0) {
 					used[6] = 1;
 					a.aux = ret;
 				} else
 					a.aux = 0;
 			} else {
+        // Length of the buffer is passed in by the user.
 				used[i+1] = 1;
 				a.aux = args[i+1];
 			}
@@ -214,6 +223,7 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
 				}
 			}
 		} else if (a.ty == sysarg_sha1) {
+      // Akin to the case of sysarg_buf.
 			if (a.usage) {
 				a.aux = ret;
 			} else {
@@ -235,6 +245,10 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
 
 	if (usage && !used[6])
 		sc->ret(ret, NULL);
+
+  /* ipopov:
+   * At this point, hopefully we're done.
+   */
 
 	preempt_enable();
 

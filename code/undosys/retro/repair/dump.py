@@ -26,7 +26,7 @@ def main(fn):
 	print "=" * 60
 	print f.name
 	print "-" * 60
-	
+
 	cache = (-1, 0)
 	while True:
 		try:
@@ -50,7 +50,7 @@ def main(fn):
 
 				if not r.pid in pids:
 					pids[r.pid] = r
-				
+
 		except EOFError:
 			break
 		except IOError:
@@ -82,7 +82,7 @@ def last():
 		syms = [">", "<"]
 		for (size, count, time, time_cnt), (nr, usage) in results:
 			name = syscalls[nr].name
-			avr_time = (time/time_cnt if time_cnt != 0 else time) 
+			avr_time = (time/time_cnt if time_cnt != 0 else time)
 			sys.stderr.write("%9s %5s %5s %10s %5s %5s %s\n" \
 						 % (size, count, size/count,
 						    avr_time, time_cnt,
@@ -92,7 +92,7 @@ def last():
 		sys.stderr.write("pids:\n")
 		for (pid,r) in pids.iteritems():
 			sys.stderr.write("  %s:%s\n" % (pid, r))
-	
+
 if __name__ == "__main__":
 	d = True
 	for fn in sys.argv[1:]:

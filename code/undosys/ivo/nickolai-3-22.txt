@@ -1,0 +1,105 @@
+Dear Nickolai,
+
+I emailed you a few months ago about Retro and wanted to get in touch
+about it again, now that I've dived into the details of the prototype.
+By the way, I've found it to be a cool system and I've really enjoyed
+working with it.
+
+I have a question about reexecution. It began as a question of
+implementation but I now think that it may point to a fundamental
+design question.
+
+My question concerns what the OS manager does when shepherded
+reexecution is found to diverge from the original execution manifest
+in the action history graph. This paragraph of Section 5.2.3 of your
+OSDI paper discusses the issue.
+
+  One challenge for the OS manager is to deal with processes that
+  issue different system calls during re-execution. The challenge lies
+  in matching up system calls recorded during original execution with
+  system calls actually issued by the process during re-execution. The
+  OS manager employs greedy heuristics to match up the two system call
+  streams. If a new syscall does not match a previously recorded
+  syscall in order, the OS manager creates new system call actions,
+  actors, and objects (as shown in Figure 4). Similarly, if a
+  previously-recorded syscall does not match the re-executed system
+  calls in order, the OS manager replaces the previously-recorded
+  syscall's actions with no-ops. In the worst case, the only matches
+  will be the initial return from fork or exec, and the final syscall
+  invocation that terminates the process, potentially leading to more
+  re-execution, but not a loss of correctness.
+
+Suppose that during shepherded reexecution, some process actor behaves
+qualitatively differently from the way it behaved during the original
+execution. This potentially includes arbitrarily complex interactions
+with other processes (through files, pipes, wait4
+syscalls...). At this point of divergence, we must certainly cancel
+the corresponding process action nodes from the original execution, and the
+paragraph above says as much. However, it is not easy to determine
+where (in time) in the existing action history graph to graft the
+_new_ action nodes.
+
+Two options for how to handle this occur to me.
+
+Option #1 is to schedule the reexecution of this process to take place
+after the repair controller (repair loop) has finished its job. This
+is quite a bit easier than Option #2 for two reasons. The first is
+that we don't have to emulate a complex execution, complete with
+scheduler, under ptrace, as we can ptrace_detach from the processes
+and let the kernel multiplex them (as I noted above, it can indeed get
+quite complex; for example, the process may fork multiple times and
+issue arbitrary blocking wait4's, for example, which Retro must trap
+and emulate, as it were). The second is that it skirts the issue of
+the temporal interleaving of the _new_ syscalls with the syscalls
+recorded in the existing action history graph, explained immediately
+below.
+
+Option #2 is to squeeze all of the new action nodes into the original
+timespan of the old (now canceled) action nodes for the original
+process. At first sight, this seems sound, for it promises to capture
+new "write" dependencies and use them to inform the remainder of the
+repair loop. Option #2 seems impracticable, however. Because Retro
+uses real physical timestamps to order actions, it implicitly tracks
+indirect, filesystem-mediated dependencies between syscalls. And
+because the _new_ process may take an arbitrary amount of time, if we
+squeeze its graph representation in time, we'll certainly get these
+dependencies wrong.
+
+It would appear that the only way to resolve this issue while
+maintaining correctness would be to reexecute (under ptrace, not by
+rolling forward) absolutely everything that may potentially be
+affected. I would intuit that, under a typical workload, this would
+probably reduce the utility of Retro's refinement mechanisms, resulting
+in a snowballing of dependencies and reexecutions.
+
+I couldn't tell from the paper whether you have a solution to this
+problem. (It looked from the paper like the repair and reexecution
+loop causes at most one rollback per object, so I think that the
+system isn't following what's below.) But would the following proposal
+work? It might undermine refinements in their full glory, but it might
+be a way to prune unneeded dependencies while capturing the required
+ones.
+
+For a divergent process under shepherded execution, can we treat it as
+taking place at the very end of the repair loop with respect to read
+dependencies, and treat it as taking place at the instant of the
+original execve with respect to write dependencies? Under this scheme,
+we would reexecute the process in isolation, against the system state
+at its execve; and figure out its read and write dependencies (with
+respect to the points in time just described), then roll it back and
+reexecute it yet again, this time concurrently reexecuting every
+process implicated in a dependency to or from the initial reexecution.
+We repeat the process iteratively with respect to a "reexecution set"
+consisting of all processes known to be co-dependent, rolling back and
+including more processes into the reexecution set, until some
+iteration implicates no more processes; then we're done.
+
+Is my understanding correct? If so, what is the solution to this
+in the Retro design? (Incidentally, the prototype implementation that
+we have access to seems to choose Option #1, but, as I've explained,
+it does not seem to maintain correctness).
+
+Thank you for your thoughts!
+
+Sincerely,
+Ivo Popov

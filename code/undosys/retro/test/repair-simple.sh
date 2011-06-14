@@ -1,4 +1,7 @@
 #! /bin/sh
 
 D=`/bin/pwd`
-$D/repair-os.py /tmp -i /mnt/retro/trunk/tmp/simplest/attacker.sh
+#python -m trace --ignore-dir=/usr/lib/ -t \
+python \
+  $D/../repair/repair-os.py -d /tmp/retro -i \
+    /mnt/retro/trunk/tmp/simplest/attacker.sh

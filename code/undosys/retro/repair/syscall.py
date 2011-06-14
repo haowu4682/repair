@@ -575,7 +575,7 @@ _syscalls = [
                         [ "trunk"       , sysarg_path           ],
                         [ "parent"      , sysarg_path           ],
                         [ "name"        , sysarg_string         ]]],
-        # 
+        #
         # socket related syscalls
         #
         [ NR_socket     , "socket"      , sysarg_fd,            [
@@ -677,3 +677,5 @@ def _sort_syscalls(raw_cs):
         return r
 
 syscalls = _sort_syscalls(_syscalls)
+"""A list of syscall namedtuples. Think of it like a list of types.
+Indexed by syscall number (e.g.  NR_open). Generated once."""

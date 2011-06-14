@@ -15,6 +15,14 @@ login:
 sshd:
 	$(CHROOT) /usr/sbin/sshd -p 2022 -d
 
+mountnochroot:
+	mkdir -p /mnt/retro
+	grep -q \ /mnt/retro\  /proc/mounts || \
+		mount -o loop -t btrfs retro.img /mnt/retro
+umountnochroot:
+	grep -q \ /mnt/retro\  /proc/mounts ; test 1 = $$? || \
+		umount /mnt/retro
+
 mount:
 	mkdir -p /mnt/retro
 	grep -q \ /mnt/retro\  /proc/mounts || \
@@ -41,13 +49,22 @@ umount:
 		umount /mnt/retro
 
 image:
-	test -e retro.img || dd if=/dev/zero of=retro.img bs=1024k count=8192
+	test -e retro.img || dd if=/dev/zero of=retro.img bs=1024k count=300
 	mkfs -t btrfs retro.img
 
 imagereset:
 	mount -o loop -t btrfs retro.img /mnt/retro
 	btrfs subvolume delete $(TRUNK)
 	btrfs subvolume snapshot /mnt/retro/fresh $(TRUNK)
+	umount /mnt/retro
+
+skeleton: image
+	mkdir -p /mnt/retro
+	mount -o loop -t btrfs retro.img /mnt/retro
+	btrfs subvolume create $(TRUNK)
+	mkdir $(TRUNK)/.inodes
+	mkdir $(TRUNK)/.snap
+	btrfs subvolume snapshot $(TRUNK) /mnt/retro/fresh
 	umount /mnt/retro
 
 # don't use btrfsctl; its return value is weird
@@ -78,5 +95,5 @@ unzip:
 	du -sh --apparent-size /tmp/retro-zip
 	fusermount -u /tmp/retro-log
 
-.PHONY : all login mount umount image imagereset debootstrap
+.PHONY : all login mount mountnochroot umount image imagereset debootstrap
 

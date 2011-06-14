@@ -1,0 +1,41 @@
+Plan for merging hack
+---------------------
+
+Mike and I have decided that it would be a nice initial demonstration
+of what we want to do to be able to serialize two independent
+executions of Retro into a single execution. For example, suppose that
+target.txt initially contains 'original line'. Take a snapshot S of
+the filesystem. Then, instate the snapshot and run 1.sh,
+
+echo 'line-1' >> target.txt
+
+and instate the snapshot again and run 2.sh,
+
+echo 'line-2' >> target.txt
+
+Now, we have traced two different executions, both based off of one
+initial snapshot. Their divergent contents of target.txt are 'original
+line\nline-1' and 'original line\nline-2'.
+
+We want to load up these action history graphs up, and output a system
+state which is as if both processes had been executed against the same
+filesystem, one after the other.
+
+We do this by loading both action history graphs, but ordering all of
+the events of the first process before any events of the second
+process. Then we go through the repair loop as usual.
+
+To do this, during the loading phase, we'll throw in another component
+into the action timestamps -- so, instead of (milliseconds,
+generation) we'll have (instantiation, milliseconds, generation),
+where 'instantiation' varies over 1 and 2.
+
+>There's a small issue with this: different snapshots taken by btrfs
+>actually show up as different _devices_ to the system. E.g. target.txt
+>would be (dev: 100, inode: 42) on one snapshot and (dev:101, inode:
+>42) on the other.
+
+Actually, there isn't. The "device" in this case is simply the device
+as seen by linux. In my case, because I'm operating with an image file
+mounted on the loopback interface, I can dial in whatever device name
+and number I wish. /dev/loopX means device 0x18+X.

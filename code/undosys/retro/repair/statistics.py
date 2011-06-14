@@ -8,7 +8,7 @@ storage = {}
 def collect(cat, data):
 	if cat not in storage:
 		storage[cat] = set()
-		
+
 	storage[cat].add(data)
 
 def report_str():
@@ -37,12 +37,12 @@ def calc_statistics():
 
 if __name__ == "__main__":
 	runopts.set_profile(["warn"])
-	
+
 	if len(sys.argv) != 2:
 		print "usage: %s dir" % sys.argv[0]
 		exit(1)
 
-	try:		
+	try:
 		m = __import__("osloader_stat")
 		m.set_logdir(sys.argv[1])
 		m.load(None)
@@ -50,10 +50,10 @@ if __name__ == "__main__":
 		print "Warning: %s" % str(e)
 	except KeyboardInterrupt:
 		pass
-	
+
 	for f in m.ld.sfs:
 		print "%s:%s" % (f, f.tell())
-		
+
 	for (obj,cat) in m.storage.iteritems():
 		i = storage.get(cat, 0)
 		storage[cat] = i + 1

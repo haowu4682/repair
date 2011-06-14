@@ -16,7 +16,7 @@ def pick_attack_nodes():
 	   o.name[-1] != 'htargs' or o.data is None or \
 	   'hint=attack' not in o.data['env'].get('QUERY_STRING', ''):
             continue
-        
+
         attack_req = mgrapi.RegisteredObject.by_name_load(o.name)
         nd = copy.deepcopy(attack_req.data)
         nd['env']['REQUEST_METHOD'] = 'GET'

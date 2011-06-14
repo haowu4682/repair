@@ -1,0 +1,154 @@
+There are two distinct upstream version of Retro. One of them, the
+more recent one, is the one outlined in the OSDI paper by Kim et al.
+The other one is the implementation that was used for benchmarking and
+testing the idea of Retro. In other words, the paper specifies the
+*design* and implementation of the former -- while evaluating and
+describing the performance of the latter.
+
+The old implementation is in the root /// of the git repo. The new
+implementation is under ///retro
+
+The *new* implementation is very incomplete. However, what there is of
+it is much cleaner and more nicely designed than the other code. I
+based my work on the new implementation, and only discovered the
+existence of the old code when I was wrapping up my work.
+
+The old code uses a modified strace for system call tracing. It uses
+C++ code for shepherded reexecution (via the ptrace syscall). This
+code is found in undosys/{graph,strace-4.5.19,replay}.
+
+The new implementation is much cleaner. It is in two parts. The first
+part is a kernel module (retro/trace/) that intercepts system calls
+and writes out records (one per system call, one on kernel entry and
+one on kernel exit) of their arguments and return values. These are
+written out by means of relayfs. Relayfs is a pipe device. Records are
+read out of the relayfs pipe by a userspace program (retroctl, in
+retro/ctl/). As retroctl reads these records, it does two things: it
+writes out all of the syscalls into temporary files; and it writes
+records into several BerkeleyDB database files. These records are, for
+example, of the type (inode number -> offset in the syscalls file
+where can find the system call that touched this inode).
+
+The format of these database entries can be found in the
+retro/trace/syscall.h header file.
+
+The format of the system call arguments and return values is pretty
+complicated, and unfortunately scattered across the codebase. Files
+that have to do with these are retro/trace/sysarg.{h,c} (for writing)
+and retro/repair/sysarg.py (for reading).
+
+Large header files are generated which specify which system calls
+should be traced and the types of their arguments and return values.
+Read the makefile to see exactly how these are generated.
+
+A couple more things. The kernel module is somewhat tightly coupled to
+the implementation-dependent scheme for handling filesystem
+snapshotting. In this implementation, that is handled by btrfs, an
+experimental (but very interesting, and fairly polished) snapshotting
+filesystem for Linux. So, there is also btrfs-specific code in the
+kernel module; for example, it is exercised whenever a file (inode) is
+unlinked.
+
+I believe that the kernel module is in fairly good (complete) shape.
+However, you should be careful with every instance of "XXX" or even
+"TODO" in the comments, especially if it was added by me, ipopov.
+
+Now, to the repair and reexecution module, implemented in Python and
+found in retro/repair/*.py.
+
+This python code builds a graph of actor and data nodes, as well as
+actions between them. Actors and nodes are more or less as specified
+in the OSDI paper. However, the way that they are built up and loaded
+bears some explication.
+
+The "manager API" interface is outlined in mgrapi.py. Every node of
+the map is a RegisteredObject. With the RegisteredObject class comes a
+static map that keeps track of all objects loaded in memory. This map
+retrieves a node by its "name". This is designed this way so that not
+all of the action history graph needs to be loaded at any one time.
+To load, for example, a SyscallAction node, you call
+SyscallAction.by_name(name). It checks whether the given object has
+already been loaded, and, if not, it loads it. (To load it, it reads
+some system call records from the logs, and initializes objects
+corresponding to those syscalls.) Lazy loading is the name of the
+game. (Incidentally, a large part of the complexity of this code comes
+from this lazy loading logic. I'd recommend rewriting this from
+scratch, to simply load everything at the start. However, this is
+infeasible for large, "production" workloads.) This loading is
+implemented in osloader.py and record.py.
+
+The structure of things is as follows, to my recollection.
+
+StatelessActor
+  -- SyscallAction
+
+ProcessActor
+  -- ProcSysCall
+  -- ProcSysRet
+
+SyscallAction
+  -- writes into RetNode
+  -- reads from ArgsNode
+  -- both RetNode and ArgsNode are instances of BufferNode
+  -- also, possibly reads or writes from other data objects
+    -- e.g., files (inodes), sockets, pipes...
+
+ProcSysCall
+  -- writes into ArgsNode (prepares arguments for next syscall)
+
+ProcSysRet
+  -- reads from RetNode ("responds" to old syscall return value)
+
+
+I recommend that you print out (or draw out) the class hierarchy for
+yourself so that you can refer to it.
+
+------
+
+There is an excellent debugging facility, implemented in dbg.py. In
+fact, the best way to learn exactly how the code works may be to run
+the simple test case and to log (debug print) everything -- to see
+exactly how execution flows through the program. This logs not just
+the creation of objects but also every action that affects the repair
+loop (e.g., calls to node.rollback(), action.equiv(), action.redo()).
+
+------
+
+Ptrace
+
+The code to reexecute processes under the control of ptrace is in
+procmgr.py and rerun.py. It uses the python-ptrace library (Google it)
+to step a process syscall by syscall. Unfortunately, that library is
+not well documented. I recommend reading the ptrace man page first and
+then the source code (and pydocs) for python-ptrace.
+
+This code is not great -- but it works in trivial situations. For
+example, if you look at the child creation code, you will see a
+comment to the effect that it is simply lifted from python-ptrace and
+slightly modified, etc. So, I would not trust this implementation
+immensely.
+
+That said, it does mostly work in simple situations. All rerun.py
+does, to an approximation, is run processes under the tracing of the
+Retro kernel module, and then step those processes system call by
+system call, reading the records that the Retro kernel module writes
+out for each system call.
+
+Procmgr.py uses the rerun.py interface to shepherd a process through
+reexecution. It reads out the system calls that the relevant process
+is making, and it tries to match up their arguments and return values
+to what happened in the original execution.
+
+Some test cases
+-------
+
+You can find some test cases I've made (or adapted) in
+retro/test/simplest, retro/test/rm and retro/test/merge.
+
+To run these test cases, you need to have btrfs in your kernel. You
+also need to have prepared a btrfs partition on which executions
+should take place. I personally do this by taking a large empty file,
+formatting it with btrfs and mounting it as a loopback device. The
+Makefiles around the retro/test directory mostly work, but they are
+not perfect, and you will have to play around with things a bit to get
+things just right.

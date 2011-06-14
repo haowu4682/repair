@@ -30,7 +30,7 @@ insmod("retro", True)
 system("%s/test/clean-btrfs.sh /mnt/retro" % ROOT)
 
 # mount
-system("make mount > /dev/null")
+system("make mountnochroot > /dev/null")
 
 # disable retro
 retroctl.disable()

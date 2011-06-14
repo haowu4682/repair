@@ -24,6 +24,45 @@ struct syscall {
 	struct sysarg args[6];
 };
 
+struct syscall_index {
+  size_t offset; // Offset into syscalls file where the record indexed
+                 // by this begins.
+  uint16_t nr;   // Syscall number (e.g. NR_open).
+  uint32_t sid;  // A unique id corresponding to this syscall
+                 // invocation.
+} __attribute__((__packed__));
+
+/* The following _record structs will be made into Berkeley DB records by the
+ * userspace retroctl daemon. The database structure is key -> value, where the
+ * value is the 'struct syscall_index' entry, and the key is the other data in
+ * the _record struct. For example,
+ *  dev_xor_ino -> syscall_index
+ *  pid -> syscall_index
+ *  etc...
+ */
+
+struct inode_index_record {
+  struct syscall_index s;
+  uint32_t dev_xor_ino;
+} __attribute__((__packed__));
+
+struct pid_index_record {
+  struct syscall_index s;
+  uint32_t pid;
+} __attribute__((__packed__));
+
+struct sock_index_record {
+  struct syscall_index s;
+  uint32_t ip;
+  uint32_t port;
+} __attribute__((__packed__));
+
+struct pathid_index_record {
+  struct syscall_index s;
+  char pathid[PATHID_LEN];
+} __attribute__((__packed__));
+
+
 long syscall_enter(pid_t pid, int nr, long args[6], long *retp, uint64_t *idp);
 void syscall_exit (pid_t pid, int nr, long args[6], long  ret , uint64_t  id );
 
@@ -43,18 +82,16 @@ static inline void syscall_log(const void *buf, size_t len)
 	__relay_write(syscall_chan, buf, len);
 }
 
+static inline void populate_syscall_index(int cpu, struct syscall_index *s) {
+	s->offset = syscall_chan_info[cpu].offset;
+	s->nr     = syscall_chan_info[cpu].nr;
+	s->sid    = syscall_chan_info[cpu].sid;
+}
+
 static inline void index_inode(struct inode *inode)
 {
 	dev_t dev;
-#pragma pack(push)
-#pragma pack(1)
-	struct {
-		size_t offset;
-		uint16_t nr;
-		uint32_t sid;
-		uint32_t dev_xor_ino;
-	} rec;
-#pragma pack(pop)
+	struct inode_index_record rec;
 	int cpu = smp_processor_id();
 
 	if (inode->i_sb->s_magic == BTRFS_SUPER_MAGIC &&
@@ -69,9 +106,7 @@ static inline void index_inode(struct inode *inode)
 		dev = inode->i_sb->s_dev;
 	}
 
-	rec.offset = syscall_chan_info[cpu].offset;
-	rec.nr     = syscall_chan_info[cpu].nr;
-	rec.sid    = syscall_chan_info[cpu].sid;
+	populate_syscall_index(cpu, &rec.s);
 	rec.dev_xor_ino = new_encode_dev(dev) ^ inode->i_ino;
 
 	if (syscall_chan_info[cpu].ro)
@@ -82,62 +117,31 @@ static inline void index_inode(struct inode *inode)
 
 static inline void index_pid(pid_t pid)
 {
-#pragma pack(push)
-#pragma pack(1)
-	struct {
-		size_t offset;
-		uint16_t nr;
-		uint32_t sid;
-		uint32_t pid;
-	} rec;
-#pragma pack(pop)
+	struct pid_index_record rec;
 	int cpu = smp_processor_id();
 
 	if (pid < 0)
 		return;
 
-	rec.offset = syscall_chan_info[cpu].offset;
-	rec.nr = syscall_chan_info[cpu].nr;
-	rec.sid = syscall_chan_info[cpu].sid;
+	populate_syscall_index(cpu, &rec.s);
 	rec.pid = pid;
 	__relay_write(pid_chan, &rec, sizeof(rec));
 }
 
 static inline void index_pathid(const char* pathid) {
-#pragma pack(push)
-#pragma pack(1)
-	struct {
-		size_t offset;
-		uint16_t nr;
-		uint32_t sid;
-		char pathid[PATHID_LEN];
-	} rec;
-#pragma pack(pop)
+  struct pathid_index_record rec;
 	int cpu = smp_processor_id();
 
-	rec.offset = syscall_chan_info[cpu].offset;
-	rec.nr = syscall_chan_info[cpu].nr;
-	rec.sid = syscall_chan_info[cpu].sid;
+	populate_syscall_index(cpu, &rec.s);
 	memcpy(rec.pathid, pathid, PATHID_LEN);
 	__relay_write(pathid_chan, &rec, sizeof(rec));
 }
 
 static inline void index_sock(uint32_t ip, uint32_t port) {
-#pragma pack(push)
-#pragma pack(1)
-	struct {
-		size_t offset;
-		uint16_t nr;
-		uint32_t sid;
-		uint32_t ip;
-		uint32_t port;
-	} rec;
-#pragma pack(pop)
+	struct sock_index_record rec;
 	int cpu = smp_processor_id();
 
-	rec.offset	= syscall_chan_info[cpu].offset;
-	rec.nr		= syscall_chan_info[cpu].nr;
-	rec.sid		= syscall_chan_info[cpu].sid;
+	populate_syscall_index(cpu, &rec.s);
 	rec.ip		= ip;
 	rec.port	= port;
 	

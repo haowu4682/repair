@@ -1,0 +1,4 @@
+../retro/trace/hook.c
+../retro/trace/igetfs.c
+../retro/trace/ktrace.c
+../syslogs/syslogs.c

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+INCLUDE_SPEC=--include=*.[ch]
+if [ -e gr-exclude ]; then
+  EXCLUDE_SPEC=--exclude-from=gr-exclude
+fi
+GREP_OPTS="-irInw -C 3"
+
+if test -t 1; then
+  grep $GREP_OPTS $EXCLUDE_SPEC $INCLUDE_SPEC --color=always $1 . | less -R
+else
+  grep $GREP_OPTS $EXCLUDE_SPEC $INCLUDE_SPEC $1 .
+fi

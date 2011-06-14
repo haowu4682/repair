@@ -3,6 +3,8 @@
 import os
 import optparse
 
+import code
+
 import dbg
 import mgrapi
 import mgrutil
@@ -16,7 +18,7 @@ PICK_ATTACK	= 1<<2
 
 def pick_execve(r):
 	"""choose first successful execve"""
-	
+
 	if r.name == "execve" and		\
 		    hasattr(r, "ret") and	\
 		    r.ret == 0:
@@ -25,14 +27,14 @@ def pick_execve(r):
 
 def pick_attack_execve(r):
 	"""choose execve containing 'attacker' string"""
-	
+
 	if r.name == "execve" and str(r).find("attacker") != -1:
 		dbg.info("#R<attack#>:%s" % r)
 		return PICK_ATTACK|PICK_STOP
 
 def pick_attack_write(r):
 	"""choose write system call containing 'attack' string"""
-	
+
 	if r.name == "write" and		\
 		    str(r).find("attack") != -1:
 		dbg.info("pick:#R<%s#> %s" % (r.tac, r))
@@ -52,12 +54,12 @@ def find_picker(name):
 			     ", ".join([l for l in globals()
 					if l.find("pick_") != -1]))
 	return globals()[name]
-	
+
 def __find_attack_node(log, picker, pn, node):
 	osloader.set_logdir(log)
-	
+
 	s = os.stat(pn)
-	hint = ('ino', s.st_dev, s.st_ino)
+	hint = ('ino', s.st_dev, s.st_ino) # ipopov: useful for reference
 	mgrapi.RegisteredObject.by_name_load(hint)
 
 	done = False
@@ -82,9 +84,11 @@ def __find_attack_node(log, picker, pn, node):
 def find_attack_node(log, picker, pn):
 	picker = find_picker(picker)
 	node = multiprocessing.Array("c", " "*100)
-	p = multiprocessing.Process(target=__find_attack_node, args=(log, picker, pn, node))
-	p.start()
-	p.join()
+	#p = multiprocessing.Process(target=__find_attack_node, args=(log, picker, pn, node))
+	#p.start()
+	#p.join()
+	__find_attack_node(log, picker, pn, node)
+	#code.interact(local=locals())
 	return eval(node.value)
 
 if __name__ == "__main__":

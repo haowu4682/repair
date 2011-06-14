@@ -28,7 +28,7 @@ class Scope:
 	def __init__(self, beg, end):
 		self.beg = (eval(beg),) if isinstance(beg, str) else beg
 		self.end = (eval(end),) if isinstance(end, str) else end
-		
+
 	def valid(self, node):
 		# display all
 		if self.beg == None and self.end ==None:
@@ -36,7 +36,7 @@ class Scope:
 		if self.end == None:
 			return self.beg < node.tic
 		return self.beg < node.tic and node.tac < self.end
-	
+
 class Dot:
 	def __init__(self):
 		self.subs = set()
@@ -47,31 +47,31 @@ class Dot:
 		m = __import__(loader)
 		m.set_logdir(path)
 		m.load(None, None)
-                
+
 	def load_xref(self):
 		for o in mgrapi.RegisteredObject.all():
 			if isinstance(o, mgrapi.DataNode):
 				if isinstance(o, mgrutil.BufferNode):
 					continue
-				
+
 				name = "cluster data_%s" % dot_repr(o)
 				for x in sorted(o.checkpoints):
 					self.xref[dot_repr(x)] = name
                                 self.subs.add(name)
-					
+
 			if isinstance(o, mgrapi.ActorNode) and o.actions:
 				if isinstance(o, mgrutil.StatelessActor):
 					continue
-				
+
 				name = "cluster actor_%s" % dot_repr(o)
 				for x in sorted(o.actions):
 					self.xref[dot_repr(x)] = name
                                 self.subs.add(name)
-		
+
 	def collapse_subgraph(self, f, omit_sub = [], *args, **kwds):
 		if len(self.xref) == 0:
 			self.load_xref()
-		
+
 		# special case, subgraphs == [] => collapse all subgraphs
 		if len(omit_sub) == 0:
 			omit_sub = self.subs
@@ -81,7 +81,7 @@ class Dot:
 	def getopts(self):
 		default_omit = set(["lib", "etc", "LC", "mmap", "unmap", "access", "close", "cache", "wait"])
 		default_hl   = set(["write"])
-		
+
 		return {"omit"     : list(default_omit|set(self.opts.get("omit", []))),
 			"highlight": list(default_hl  |set(self.opts.get("highlight", []))),
 			"subgraph" : self.subs,
@@ -94,10 +94,10 @@ class Dot:
 				 highlight = opts["highlight"],
 				 omit_sub  = opts["subgraph" ],
 				 omit_sys  = opts["sysnode"  ])
-				 
+
 	def dump(self, f, beg = None, end = None, omit = [], highlight = [], omit_sub = [], omit_sys = False):
 		scope = Scope(beg, end)
-		
+
 		# update options
 		self.opts["omit"     ] = omit
 		self.opts["highlight"] = highlight
@@ -113,7 +113,7 @@ class Dot:
 		omitted = set()
 
 		f.write("digraph G {\n")
-		
+
 		fbuf = []
 		fact = []
 		for o in mgrapi.RegisteredObject.all():
@@ -140,16 +140,16 @@ class Dot:
 					if isinstance(n, mgrutil.BufferNode) and omit_sys:
 						assert len(n.writers) == 1
 						n = list(n.writers)[0]
-						
+
 					n_repr = dot_repr(n, self.xref, omit_sub)
 
 					if n_repr in out_edges and o_repr in out_edges[n_repr]:
 						continue
-					
+
 					# general omit
 					if any(n_repr.find(s) != -1 for s in omit):
 						continue
-					
+
 					fbuf.append('  "%s" -> "%s" [color=green];\n' % (n_repr, o_repr))
 
 					if not n_repr in out_edges:
@@ -165,7 +165,7 @@ class Dot:
 					if isinstance(n, mgrutil.BufferNode) and omit_sys:
 						assert len(n.readers) == 1
 						n = list(n.readers)[0]
-						
+
 					n_repr = dot_repr(n, self.xref, omit_sub)
 
 					if n_repr in in_edges and o_repr in in_edges[n_repr]:
@@ -174,7 +174,7 @@ class Dot:
 					# general omit
 					if any(n_repr.find(s) != -1 for s in omit):
 						continue
-						
+
 					fbuf.append('  "%s" -> "%s" [color=green];\n' % (o_repr, n_repr))
 
 					if not n_repr in in_edges:
@@ -194,7 +194,7 @@ class Dot:
 						fbuf.append('  "%s" [shape=box %s];\n' %
                                                         (o_repr, o.color if has_color(o) else ''))
 					continue
-				
+
 				name = "cluster data_%s" % dot_repr(o, self.xref)
 				if name in omit_sub:
 					continue
@@ -206,7 +206,7 @@ class Dot:
 				ckps = sorted(o.checkpoints)
 				if len(ckps) == 0:
 					continue
-				
+
 				# draw omit_sub of checkpoints
 				out = cStringIO.StringIO()
 				out.write('  subgraph "%s" {\n' % name)
@@ -220,11 +220,11 @@ class Dot:
 				out.write('  }\n')
 
 				fbuf.append(out.getvalue())
-				
+
 			if isinstance(o, mgrapi.ActorNode) and o.actions:
 				if isinstance(o, mgrutil.StatelessActor):
 					continue
-				
+
 				name = "cluster actor_%s" % dot_repr(o, self.xref)
 				if name in omit_sub:
 					# store for later use
@@ -243,11 +243,11 @@ class Dot:
 						objs.append('"%s"' % x_repr)
 
 				out = cStringIO.StringIO()
-				
+
 				# draw omit_sub of actions
 				if len(objs) == 0:
 					continue
-				
+
 				out.write('  subgraph "%s" {\n' % name)
                                 if has_color(o):
                                         out.write('	 %s' % ('; '.join(o.color.split())))
@@ -262,7 +262,7 @@ class Dot:
 		# print actor
 		for l in fact:
 			f.write(l)
-				
+
 		for o in omitted:
 			fbuf.append('  "%s" [style=filled shape=box color=green];\n' % o)
 
@@ -270,9 +270,9 @@ class Dot:
 		fbuf.sort()
 		for l in fbuf:
 			f.write(l)
-			
+
 		f.write("}\n")
-		
+
 if __name__ == "__main__":
 	parser = optparse.OptionParser(usage="%prog [options] LOG-DIRECTORY")
 	parser.add_option("-o", "--dot" , dest="dot",
@@ -302,7 +302,7 @@ if __name__ == "__main__":
 	out = (opts.dot == "-") and sys.stdout or open(opts.dot, "w")
 	d = Dot()
         d.load_graph(opts.module, args[0])
-	
+
 	d.dump(out, beg = opts.beg, end = opts.end, highlight = ["sock", "network"], omit_sys = False)
-	
+
 

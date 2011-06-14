@@ -13,9 +13,9 @@ class SocketNode(mgrapi.DataNode):
         self.dip        = inode.dip   if hasattr(inode, "dip"  ) else None
         self.dport      = inode.dport if hasattr(inode, "dport") else None
         self.sport      = inode.sport if hasattr(inode, "sport") else None
-        
+
         self.checkpoints.add(mgrutil.InitialState(name + ('init',)))
-        
+
     @staticmethod
     def get(inode):
         name = ('sock', inode.dev, inode.ino)
@@ -29,7 +29,7 @@ class SocketNode(mgrapi.DataNode):
             n.dport = inode.dport
         if hasattr(inode, "sport"):
             n.sport = inode.sport
-            
+
         return n
 
     def __repr__(self):
@@ -37,7 +37,7 @@ class SocketNode(mgrapi.DataNode):
         if self.sport and self.dip and self.dport:
             name += ":%s->%s@%s" % (self.sport, self.dip, self.dport)
         return name
-    
+
     def rollback(self, c):
         assert(isinstance(c, mgrutil.InitialState))
         return

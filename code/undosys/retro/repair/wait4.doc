@@ -1,0 +1,15 @@
+# wait4() strategy
+#
+# why special?  - this repair routine() should serialize all the execution of
+# child/parent process whatever - but the history graph was created with
+# multiple processes - then blocking in the wait4() (surely parent process) is
+# acceptible but we can't do that (see rerun.wait4()) - we want to propagate
+# our repair as far as possible without blocking
+#
+# how emulate?  - return from (first) wait4() by modifying the argument of
+# wait4 to non blocking - since tic of rest syscalls of child process should
+# precede this wait()'s tac, the next (second) wait4() should retrieve child
+# exit status
+#
+# wrong implementation?  - tic/tac of wait4() unfortunately overlap in many
+# cases - so I intentionally change tac -> tic to avoid this situation
