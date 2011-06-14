@@ -22,6 +22,8 @@ struct syscall {
 	argtype_t ret;
 	size_t nargs;
 	struct sysarg args[6];
+    // haowu: Add an unsigned integer as clock here
+    unsigned clock_number;
 };
 
 struct syscall_index {
@@ -75,7 +77,7 @@ typedef void (*__ptrace_notify)(int exit_code);
 #define is_deterministic(task) ((task)->flags & RETRO_PID_MARK)
 #define set_deterministic(task) ((task)->flags |= RETRO_PID_MARK)
 
-const struct syscall *syscall_get(int nr);
+struct syscall *syscall_get(int nr);
 
 static inline void syscall_log(const void *buf, size_t len)
 {

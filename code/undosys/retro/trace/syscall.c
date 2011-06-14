@@ -7,11 +7,14 @@
 #include "dbg.h"
 #include "btrfs.h"
 
+//haowu: a clock value starting from 0
+unsigned current_clock = 0;
+
 static struct syscall syscalls[] = {
 	#include "trace_syscalls.inc"
 };
 
-const struct syscall * syscall_get(int nr)
+struct syscall * syscall_get(int nr)
 {
 	struct syscall *sc;
 	if (nr < 0 || nr >= sizeof(syscalls)/sizeof(syscalls[0]))
@@ -68,7 +71,7 @@ extern struct file *fget_light(unsigned int fd, int *fput_needed);
 static long _record(int usage, pid_t pid, int nr, long args[6],
 		    long ret, long *retp, uint64_t *sidp)
 {
-	const struct syscall *sc;
+	struct syscall *sc;
 	const struct sysarg *arg;
 
 	int i, used[7] = {0};
@@ -243,6 +246,8 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
 		a.ty(args[i], &a);
 	}
 
+    // haowu: Assign the clock value to the syscall and increase the value
+    sc->clock_number = current_clock++;
 	if (usage && !used[6])
 		sc->ret(ret, NULL);
 
