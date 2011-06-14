@@ -1,0 +1,5 @@
+#! /bin/sh
+
+if [ -z "$(lsmod | grep retro)" ]; then
+   insmod $PWD/`dirname $0`/../trace/retro.ko;
+fi

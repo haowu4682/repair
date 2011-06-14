@@ -1,0 +1,49 @@
+Build prerequisites
+===================
+
+Linux kernel  >= 2.6.32 (with debugfs and kprobes)
+Python        >= 2.6
+zlib1g        >= 1.0
+python-ptrace >= 0.6.2
+python-gtk    >= 2.0
+
+btrfs: git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
+
+Quickest start
+==============
+
+Move to `retro/bin' and execute under with root
+
+./load
+./retroctl -p -o /tmp -- ls -l
+./strace /tmp
+./dot /tmp > ls.dot
+
+Quick start
+===========
+
+Build the kernel module and the control tool.
+	make -C trace
+	make -C ctl
+
+Run the following two commands under root.
+
+Load the `retro' and `iget' modules in the `trace' directory.
+	insmod retro.ko
+	insmod iget.ko
+
+Do a per-process tracing, using rectrctl in the `ctl' directory.
+	retroctl -p -o /tmp -- ls -l
+
+Then you can use the scripts in the `repair' directory to analyze the log.
+
+To inspect the raw log, use dump.py.
+	dump.py /tmp/syscall0
+
+Another script strace.py produces a strace-like output.
+	strace.py /tmp
+
+Dependency graph can be generated using dot.py.
+	dot.py /tmp > ls.dot
+
+See more documentations in the `doc' directory.

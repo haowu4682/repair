@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
+<?xml-stylesheet type="text/css"
+  href="chrome://xulschoolhello/skin/browserOverlay.css" ?>
+
+<!DOCTYPE overlay SYSTEM
+  "chrome://xulschoolhello/locale/browserOverlay.dtd">
+
+<overlay id="xulschoolhello-browser-overlay"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script type="application/x-javascript"
+    src="chrome://xulschoolhello/content/md5.js" />
+  <script type="application/x-javascript"
+    src="chrome://xulschoolhello/content/io.js" />
+  <script type="application/x-javascript"
+    src="chrome://xulschoolhello/content/util.js" />
+  <script type="application/x-javascript"
+    src="chrome://xulschoolhello/content/java.js" />
+  <script type="application/x-javascript"
+    src="chrome://xulschoolhello/content/robot.js" />
+  <!--<script type="application/x-javascript"
+    src="chrome://xulschoolhello/content/recorder.js" />
+  <script type="application/x-javascript"
+    src="chrome://xulschoolhello/content/replayer.js" />
+  <script type="application/x-javascript"
+    src="chrome://xulschoolhello/content/browserOverlay.js" />-->
+  <script type="application/x-javascript"
+    src="chrome://xulschoolhello/content/RecordHTTP.js" />
+  <script type="application/x-javascript"
+    src="chrome://xulschoolhello/content/RecordDOM.js" />
+  <script type="application/x-javascript"
+    src="chrome://xulschoolhello/content/ReplayHTTP.js" />
+  <script type="application/x-javascript"
+    src="chrome://xulschoolhello/content/ReplayDOM.js" />
+
+  <!-- Init only if this is an actual browser window (not prefs or something) -->
+  <window id="main-window">
+    <script type="application/x-javascript">
+	//window.addEventListener("load", util_init, false);
+    </script>
+  </window>
+
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="xulschoolhello-string-bundle"
+      src="chrome://xulschoolhello/locale/browserOverlay.properties" />
+  </stringbundleset>
+
+  <menupopup id="menu_ToolsPopup">
+    <menu id="xs-hw-hello-menu" label="&xulschoolhello.hello.label;"
+      accesskey="&xulschoolhello.helloMenu.accesskey;"
+      insertafter="javascriptConsole,devToolsSeparator">
+      <menupopup>
+        <menuitem id="xulschoolhello-hello-menu-item"
+          label="&xulschoolhello.hello.label;"
+          accesskey="&xulschoolhello.helloItem.accesskey;"
+          oncommand="pdos.ReplayDOM.startReplay();"/>
+      </menupopup>
+    </menu>
+  </menupopup>
+</overlay>

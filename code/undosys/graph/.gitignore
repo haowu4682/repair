@@ -1,0 +1,17 @@
+/trace.ascii
+/trace.dot
+/trace.png
+/trace-collapse.dot
+/trace-collapse.png
+/traceback.dot
+/traceback.png
+/record.log
+/record.py
+/parser.out
+/parsetab.py
+/*.pyc
+/*.o
+/*~
+/TAGS
+/exec-ptrace
+/.ropeproject

@@ -1,0 +1,22 @@
+Incremental loading plan
+========================
+
+Action objects are always fully-loaded (meaning, if an Action object exists,
+its inputs and outputs sets should be fully populated, and the actor reference
+should be correct).
+
+Nodes (either data or actor nodes) can be less than fully-populated.  This
+means that, it's OK for a node to exist without having a complete set of
+checkpoints, a complete set of actions (for an actor), and a complete set
+of readers and writers (for a data node).
+
+For nodes, the framework will call the loader corresponding to the node's
+name (see mgrapi.LoaderMap.register_loader), with the node's name as the
+argument, before using the node's checkpoint list, action list, or reader
+and writer sets.
+
+The expected plan for the loader is to load up all of the actions that
+touch the node in question (which, by rule 1 above, must be fully loaded
+at that time), and call register on those actions, which adds them to
+the node's action/reader/writer sets as appropriate.
+

@@ -1,0 +1,54 @@
+#!/usr/bin/expect
+
+set timeout -1
+
+# 1. login as root
+spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "root\n"
+
+# 2. chmod
+expect ":~# "
+send "chmod -R o+rw /home/P\n"
+
+expect ":~# "
+send "logout\n"
+wait
+
+sleep 2
+
+# 3/4. A logins
+spawn ssh A@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "A\n"
+
+expect ":~$ "
+send "echo A=A+ > /home/P/grades\n"
+
+expect ":~$ "
+send "cp /home/P/grades ~/grades\n"
+
+expect ":~$ "
+send "logout\n"
+wait
+
+sleep 2
+
+# 5. B logins
+spawn ssh B@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "B\n"
+
+expect ":~$ "
+send "cp /home/P/grades ~/grades\n"
+
+expect ":~$ "
+send "touch tmp1\n"
+
+expect ":~$ "
+send "touch tmp2\n"
+
+expect ":~$ "
+send "logout\n"
+wait
+

@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+
+<overlay id="%EXT_NAME%-browser-overlay"
+	 xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/libs/md5.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/libs/io.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/fs.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/dbg.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/atexit.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/log.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/ids.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/events.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/keycode.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/util.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/java.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/robot.js" />
+  <!--<script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/recorder.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/replayer.js" />-->
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/RecordHTTP.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/RecordDOM.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/repair.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/ReplayHTTP.js" />
+  <script type="application/x-javascript"
+          src="chrome://%EXT_NAME%/content/ReplayDOM2.js" />
+
+</overlay>

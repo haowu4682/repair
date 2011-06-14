@@ -1,0 +1,25 @@
+#!/usr/bin/expect
+
+set timeout -1
+
+# victim login
+spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "root\n"
+
+# 4. resotre project.c
+expect ":~# "
+send "cp backup/project.c.bak src/project.c\n"
+
+# 5. mv p1.h
+expect ":~# "
+send "mv hfiles/p1.h src/p1.h\n"
+
+# 6. rm hfiles
+expect ":~# "
+send "rm -rf hfiles\n"
+
+expect ":~# "
+send "logout\n"
+wait
+

@@ -1,0 +1,46 @@
+
+Make sure the dir /tmp/retro exists before running these tests. The
+tests run with textdb by default. zoobar doesn't work with postgres
+yet. 
+
+Testcase 1
+----------
+
+Simple undo of a profile update. This test runs with wget.
+
++ Record: Run ./run.sh --reset
++ Repair: Run ../../repair/repair.py
+
+Testcase 2
+----------
+
+Undo of zoobar profile worm. In this scenario, we have three users:
+attacker, alice, and bob. The attacker updates his profile with
+profile worm code; alice gets infected by viewing the attacker's
+profile, and bob gets infected by viewing alice's profile.
+
++ Record: 
+  + Create firefox profiles for the different users:
+    + Run firefox -ProfileManager
+    + Create profiles: attacker, alice, bob, _repair_
+  + Run ./run.sh --reset python ../../../firefox/run.py --reset --profile attacker
+    + Register as user attacker, and update attacker's profile with the
+      attack profile in attacks/xss_profile_worm.txt
+  + Run ./run.sh python ../../../firefox/run.py --reset --profile alice
+    + Register as user alice, and view attacker's profile
+  + Run ./run.sh python ../../../firefox/run.py --reset --profile bob
+    + Register as user bob, and view alice's profile
+  + At the end of this, alice's and bob's profiles have the zoobar
+    worm, and they have zoobars transfered to the attacker.
+
++ Process the logs:
+  + Run ../../../firefox/process_logs2.py attacker alice bob
+  + This simulates copying the logs to the server, by copying them to
+    /tmp/retro/client_logs and indexing by client id
+
++ Repair:
+  + Run ../../repair/patch_zoobar.py users.php
+  + This reruns all the HTTP requests that accessed users.php. The
+    final db state should have clean profiles for alice and bob, and
+    their zoobar transfers should have been undone.
+

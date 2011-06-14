@@ -1,0 +1,63 @@
+#!/usr/bin/expect
+
+# run ./setup-ssh.sh first
+
+#
+# initial password is root
+#
+set timeout -1
+
+#
+# brute force ssh
+#
+# #attacks = i
+# 
+for {set i 0} {$i < 20} {incr i 1} {
+    spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+    expect "password:"
+    send "test1-{$i}\n"
+    expect "password:"
+    send "test2-{$i}\n"
+    expect "password:"
+    send "test3-{$i}\n"
+    sleep 5
+}
+
+spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "root\n"
+
+expect ":~# "
+send "passwd\n"
+
+expect "Enter"
+send "iacovlev\n"
+
+expect "Retype"
+send "iacovlev\n"
+
+# 
+# send "reboot"
+# 
+expect ":~# "
+send "logout\n"
+
+sleep 2
+
+spawn ssh alice@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "alice\n"
+
+expect "\\$"
+send "wget http://www.opensource.apple.com/source/autoconf/autoconf-8/autoconf/autoconf.texi?txt\n"
+
+expect "\\$"
+send "mv autoconf.texi\?txt autoconf.texi\n"
+
+expect "\\$"
+send "texi2pdf -b autoconf.texi\n"
+
+expect "\\$"
+send "exit\n"
+
+wait

@@ -1,0 +1,4 @@
+*.o
+undosyscalls.inc
+/libundo.so
+/undotest

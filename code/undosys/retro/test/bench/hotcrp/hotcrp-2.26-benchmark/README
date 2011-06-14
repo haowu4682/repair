@@ -1,0 +1,8 @@
+1. run mysqld
+
+ - sudo service mysql stop
+ - in retro/test
+ - sudo make login
+ - mysqld
+
+2. run bench-btrfs*.sh

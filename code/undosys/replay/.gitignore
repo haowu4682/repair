@@ -1,0 +1,11 @@
+/record.x
+/record.h
+/record_xdr.c
+/*.o
+/replay
+/dump
+/dump2
+/sysarg.c
+/sysarg.h
+/sysarg-types.h
+/*~

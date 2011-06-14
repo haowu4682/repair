@@ -1,0 +1,16 @@
+How to handle mmap for Unix processes:
+
+    The mmap system call itself looks like any other system call
+    (i.e. there's a ProcSysCall, ProcSysRet, and SyscallAction),
+    and the specific SyscallAction might have a dependency to or
+    from the file being mmap'ed, for the duration of the mmap
+    system call.
+
+    Every action that's part of the process actor (right now, the
+    ProcSysCall and ProcSysRet actions) has dependencies on all
+    of the files that are memory-mapped at that point in time (i.e.
+    starting from the time mmap of that file returns).  Specifically,
+    each action by a process actor depends on every file mmap'ed into
+    that process, and has a dependency to every file mmap'ed writable
+    into that process.
+

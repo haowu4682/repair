@@ -1,0 +1,22 @@
+Content Destruction
+
+Scenario:
+
+0. src/project.c, hfiles/p1.h, hfiles/p2.h & backup/project.c.bak
+
+2. attacker login
+3. delete project.c & p2.h
+
+4. victim: cp backup/project.c.bak src/project.c
+5. victim: mv hfiles/p1.h src/p1.h
+6. victim: rm -rf hfiles
+
+Correct recovery actions: 
+
+1. restore the deleted p2.h file in the hfiles directory
+2. recover the original project.c file
+3. deal with different versions of this file
+
+Detection points:
+
+1. rm

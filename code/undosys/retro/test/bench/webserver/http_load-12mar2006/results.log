@@ -1,0 +1,7 @@
+607713 fetches, 100 max parallel, 6.22298e+08 bytes, in 60 seconds
+1024 mean bytes/connection
+10128.5 fetches/sec, 1.03716e+07 bytes/sec
+msecs/connect: 0.192567 mean, 4.586 max, 0.017 min
+msecs/first-response: 1.40323 mean, 11.683 max, 0.435 min
+HTTP response codes:
+  code 200 -- 607713

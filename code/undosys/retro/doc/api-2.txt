@@ -1,0 +1,60 @@
+New plan for repair controller/manager API
+==========================================
+
+Two types of nodes: data nodes and actor nodes.
+Each node has an ordered set of states, some of which are directly accessible
+    (i.e., checkpointed, and can be directly rolled back to).
+Each actor consists of actions between every adjacent pair of states.
+An action has a set of inputs, and a set of outputs, which are non-actor nodes.
+    No actor-actor interactions.
+    Always buffered via data nodes:
+	e.g. function call: args node, ret val node
+	     system call: args node, ret val node
+
+Examples of data nodes, actor nodes, and actions:
+    actor nodes: process.  function call execution.  a single system call.
+    data notes: file.  args/retval for function call.  args/retval for syscall.
+    actions: proc/func writing arguments to args for func/syscall.
+	     proc/func reading retval from ret of func/syscall.
+	     syscall execution (one action).
+
+Manager API methods:
+      any node: states() or checkpts(), returns set of states/checkpoints
+      any node: rollback(cp), rolls back to checkpoint
+    actor node: actions(), returns set of actions.
+     data node: readers() and writers(), returns set of reader/writer actions
+        action: actor(), returns the parent actor node
+        action: inputs() and outputs(), returns set of input/output data nodes
+        action: equiv(), check equivalence of inputs
+        action: redo(), re-execute and update output data nodes
+        action: connect(), change action's inputs/outputs based on new args;
+		indicate whether changes were made so that the controller can
+		repeatedly roll back nodes and call connect() until stable.
+		NOTE: connect should only add, not remove, any dependencies.
+	action: cancel [attribute], True if action should be replaced with nop
+
+Where is the state stored?
+    Each data node stores the current state of that node (e.g. file contents)
+	at the current point in the re-execution timeline.
+    On rollback(), data node changes current state to the checkpointed version.
+    On rollback(), actor node changes internal state to checkpointed version
+	(e.g. initial process or function state).
+    Each action stores the original values it saw for all of its inputs.
+    On equiv(), action pulls new values from input data nodes & compares to orig
+    On redo(), action pulls new values from input nodes & modifies output nodes.
+
+How are actions cancelled?
+    Each action has some input that provides its arguments (e.g. arguments for
+	a system call, arguments for a function call, args for exec/fork, etc.)
+    Each action should be prepared to accept a null argument (i.e., the
+	checkpoint before the arguments were written by the caller).
+    A null argument indicates that the action should be cancelled (i.e. turned
+	into a nop).
+    The nop action should keep its output dependencies (connect cannot remove
+	dependencies), but equiv() should return false, and redo() should do
+	nothing.
+
+What happens when actor execution diverges?
+    Old actions stay as part of the actor (e.g. process), but set cancel = True
+    New actions are added to the actor.
+

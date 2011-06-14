@@ -1,0 +1,23 @@
+----------------------------
+apache/mod-php for web retro
+----------------------------
+
+1. deps
+ - php5-5.3.3
+ - apache2.2.14-5
+
+ make setup
+ 
+2. rerun
+ - set RETRO_RERUN=/tmp/logfile
+ - run apache (./run.sh)
+
+ make rerun
+
+3. run
+ - run apache (./run.sh)
+
+ make run
+
+* modify `RETRO_WEBDIR' (in run.sh) pointing to the directory of web documents
+ 

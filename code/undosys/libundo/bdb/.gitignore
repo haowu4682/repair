@@ -1,0 +1,6 @@
+*.db
+*.o
+*.so
+bdbtest
+db
+test

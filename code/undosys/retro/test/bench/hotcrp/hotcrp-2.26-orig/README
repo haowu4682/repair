@@ -1,0 +1,153 @@
+HotCRP: Conference Review Package 2.26
+======================================
+
+New version by Eddie Kohler, UCLA
+CRP originally by Dirk Grunwald, University of Colorado
+banal by Geoff Voelker, UCSD
+
+Prerequisites
+-------------
+HotCRP requires the following software.  Tested versions are in parentheses.
+
+* Apache			http://apache.org/
+  (You may be able to use another web server that works with PHP.)
+* PHP version 5 or higher	http://php.net/
+  - Including MySQL and GD support
+  - PHP 5.2 or higher recommended
+* MySQL version 5 or higher	http://mysql.org/
+* PHP PEAR extensions		http://pear.php.net/
+
+Apache is preloaded on most Linux distributions.  You may need to install
+additional packages for PHP, MySQL, GD, and PEAR, such as:
+
+* Fedora Linux: php-mysql, php-pear, php-gd
+* Debian Linux: php5-common, php5-gd, php5-mysql, php-pear, 
+  libapache2-mod-php5 (or libapache-mod-php5 for Apache 1.x)
+* Ubuntu Linux: php5-common, php5-gd, php5-mysql, php-pear,
+  libapache2-mod-php5 (or libapache-mod-php5 for Apache 1.x), and a package
+  for SMTP support, such as postfix
+
+You may need to restart the Apache web server after installing these
+packages ("sudo apachectl graceful" or "sudo apache2ctl graceful").
+
+Versions of the Mail and Mail_Mime PHP PEAR packages are currently
+distributed as part of the HotCRP tarball (Mail 1.1.14, Mail_Mime 1.4.0).
+
+Additional packages required for paper format checking:
+
+* pdftohtml (0.39)		http://pdftohtml.sourceforge.net/
+
+Warning: We have had problems with pdftohtml 0.40.  If paper format
+checking takes too long, it should be disabled.
+
+Load notes: HotCRP requires a system with at least 256MB of memory, more if
+paper format checking is used and submission load is expected to be high.
+If you run HotCRP in a virtual machine, make sure you configure suitable
+swap space!  If MySQL is killed due to memory shortages your database may
+be corrupted.
+
+
+Configuration
+-------------
+* Database configuration
+
+  - Decide on a name for your database (no spaces allowed).
+
+  - If you checked HotCRP out from CVS, remove the "Code/options.inc" file.
+
+  - Run "sudo Code/createdb.sh" to create the database.  You may also run
+    "sudo Code/createdb.sh OPTIONS" to pass options to MySQL, such as
+    --user and --password.  Run "Code/createdb.sh --help" for more
+    information.
+
+* Site configuration
+
+  - Edit "Code/options.inc", which is annotated to guide you.
+    ("Code/createdb.sh" creates this file based on "Code/distoptions.inc".)
+
+  - Redirect Apache so your server URL will point at the HotCRP directory.
+    (If you get an Error 500, see "Configuration notes".)  This will
+    generally require adding a <Directory> for the HotCRP directory, and an
+    Alias redirecting a particular URL to that directory.  For example,
+    this section of httpd.conf makes the "/testconf" URL point at a HotCRP
+    installation in /home/kohler/hotcrp.
+
+	<Directory "/home/kohler/hotcrp">
+	        Options Indexes Includes FollowSymLinks MultiViews
+	        AllowOverride all
+	        Order allow,deny
+	        Allow from all
+	</Directory>
+	Alias /testconf /home/kohler/hotcrp
+
+    Note that the first argument to Alias should NOT end in a slash.  The
+    "AllowOverride all" directive is required.
+
+  - Update the systemwide setting for PHP's 'session.gc_maxlifetime'
+    configuration variable.  This provides an upper bound on HotCRP session
+    lifetimes (the amount of idle time before a user is logged out
+    automatically).  On Unix machines, systemwide PHP settings are often
+    stored in '/etc/php.ini'.  The suggested value for this setting is
+    86400, e.g., 24 hours:
+
+	session.gc_maxlifetime = 86400
+
+    If you want sessions to expire sooner, we recommend you set
+    'session.gc_maxlifetime' to 86400 anyway, then edit Code/options.inc to
+    set '$Opt["sessionLifetime"]' to the correct session timeout.
+
+  - Sign in to the site to create an account.  The first account created
+    automatically receives PC chair privilege.
+
+    If your server configuration doesn't allow .htaccess files to set
+    options, Apache will report an "Error 500" when you try to load HotCRP.
+    Change your Apache configuration to "AllowOverride All" in the HotCRP
+    directory, as our example does above.
+
+    If your server shows you a directory listing rather than the HotCRP
+    homepage, add the following line to the <Directory>:
+
+	        DirectoryIndex index.html index.php
+
+  - You can set up everything else through the web site itself.
+
+* Configuration notes
+
+  - Uploaded papers and reviews are limited in size by several PHP
+    configuration variables, set by default to 20 megabytes in the base
+    directory's ".htaccess".  You may want to lower them.
+
+  - HotCRP PHP scripts can take a lot of memory, particularly if they're
+    doing things like generating MIME-encoded mail messages.  By default
+    HotCRP sets the PHP memory limit to 128MB.
+
+  - HotCRP uses Apache's mod_expires module; consider enabling it.
+
+  - HotCRP sets MySQL's max_allowed_packet variable based on the 
+    upload_max_filesize set in the base directory's ".htaccess".
+
+
+Backing up the database
+-----------------------
+Run "Code/backupdb.sh" at the shell prompt to back up the database.  This
+will write the database's current structure and comments to the standard
+output.
+
+
+Updating the code
+-----------------
+HotCRP code can be updated without updating the database schema.  Simply
+copy the new version over your old code, preserving Code/options.inc.  For
+instance, using GNU tar:
+
+   % cd HOTCRPINSTALLATION
+   % tar --strip=1 -xzf ~/hotcrp-VERSIONNUMBER.tar.gz
+
+The next time someone uses the site the schema should automatically be
+upgraded.  See "Code/updateschema.inc".
+
+
+License
+-------
+HotCRP is available under the Click license, a BSD-like license. See the 
+LICENSE file for full license terms.

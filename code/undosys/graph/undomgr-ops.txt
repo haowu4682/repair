@@ -1,0 +1,82 @@
+"repair" call:
+
+- undo the operation associated with an edge from an actor to an object
+  (e.g. undo file ops, dir ops, kv ops by an undone process/function).
+  => handled by destination object's undo manager.
+
+- undo the operation associated with an edge from an actor to another actor
+  (e.g. do not spawn initial attacker process; later maybe undo children
+  that did not get run in a re-execution); translates into undoing any
+  operation of that actor on other actors/objects.
+  => handled by destination actor's undo manager.
+
+- re-execute an edge from an actor to an object (e.g. file write) -- not
+  done right now.
+  => handled by source actor's undo manager.
+
+- re-execute an edge from an actor to an actor (e.g. process spawn, or
+  function call).
+  => could be handled by either side; currently handled by dst actor.
+
+- return a set of new edges potentially needing "repair" (potentially not
+  doing any of the above repair operations, such as for an object that was
+  already repaired, and we just want to find what other operations need to
+  be re-executed).
+
+what kinds of edges are possible, and what should be done with them?
+
+- object->object: should not exist.
+- object->actor:  no undo; currently causes re-execution, but in general
+		  could do incremental updates based on what inputs changed.
+		  if the undomgr cannot do incremental updates, it can return
+		  its initial start edge for re-execution (then we need to deal
+		  with time going back, but that's a problem we have anyway).
+		  maybe the undomgr method should be called "redo"?
+- actor->object:  undo implemented; redo not implemented but should be.
+- actor->actor:   undo implemented ("nullify") for start edges (exec/call);
+		  undo for other a->a dependencies not implemented (kill?)
+
+		  redo: re-start implemented;
+		  incremental redo not implemented (e.g. new wait4 status
+		  or new function retval, even if function args were same;
+		  similar to the object->actor "redo" case above).
+
+		  one way to think of actor->actor edges is with a hidden
+		  intermediate object, so it's actor->object->actor; object
+		  is exit status for wait4, or args for exec/call.  this
+ 		  might make it easier to figure out how to undo a non-start
+		  dependency (e.g. undoing a signal from a dead process).
+
+other calls:
+
+- indicate whether an edge requires repair (check predicates, e.g.
+  function return, wait4, data returned by file read).  note that the
+  re-execution functions should not make the determination that they
+  don't need to run -- the source might be the same, but we need to
+  re-apply the edge operation to reconstruct the destination!  already
+  implemented, but missing some cases that are hard-coded as cascading
+  choices in repair now.
+
+tentative plan:
+
+- undo() gets called on destination undo manager.
+- redo() gets called on actor undo managers (potentially both;
+  maybe for a->a redo, src usually ignores it?).  so, there's
+  really two redo operations -- redo_src() and redo_dst().
+- both undo and redo can return a set of edges to redo, and
+  those edges will be redone regardless of edge_same() status,
+  to force reconstruction even if predicates didn't change.
+- cascading done by higher-level loop, including deciding whether
+  to undo or redo edges based on whether changed node is dead or
+  not.
+- put all current cascading logic into the edge_same() method.
+- associated with each edge should be a repair status -- redo or undo.
+  an edge might be marked for redo first (as a later write that needs
+  to be redone to reconstruct a rolled-back file), but marked for undo
+  later (if it turns out its actor should be undone).
+
+as implemented:
+
+- almost as above, except redo() gets called on dst only.
+  slightly annoying, see KvUndoManager::redo comment in code.
+

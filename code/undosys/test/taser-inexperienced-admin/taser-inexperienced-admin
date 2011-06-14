@@ -1,0 +1,50 @@
+#!/usr/bin/expect
+
+set timeout -1
+
+# 3. login as root (admin)
+spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "root\n"
+
+expect ":~# "
+send "cd /home/A\n"
+
+# create new album
+expect "# "
+send "./gallery create admins-album\n"
+
+# add 2 pictures
+expect "# "
+send "./gallery add admins-album admins-picture1\n"
+
+expect "# "
+send "./gallery add admins-album admins-picture2\n"
+
+expect "# "
+send "chown -R A:A mygallery\n"
+
+expect "# "
+send "logout\n"
+
+sleep 2
+
+# 4. attacker as A
+spawn ssh A@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "A\n"
+
+# create new album & 14 pictures
+expect "$ "
+send "./gallery create As-album\n"
+
+for {set i 0} {$i < 14} {incr i 1} {
+    expect "$ "
+    send "./gallery add As-album picture-$i\n"
+}
+
+expect "$ "
+send "logout\n"
+
+wait
+

@@ -1,0 +1,10 @@
+#remove "pid" column from dump
+#mapping fd 0, 1, 2 etc. to a file object
+unlinkat; is inode# for directory; where is pathname for file name?
+#wait4; need pid, first argument, for processing being waited on
+should time be an interval? (from starting to done?)
+shouldn't field 6 be a fd? (pid, 23884, 4, stat, done, 0x636f6c2f7273752f, 0x762f0e)
+distinguish failed and succesful opens (e.g., bar.txt and foo.txt)
+include return values in trace
+new file has no associated name space entry
+

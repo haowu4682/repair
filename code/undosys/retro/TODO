@@ -1,0 +1,117 @@
+====
+TODO
+====
+ - kernel module & support
+    - prevent inode reuse
+    - per-file snapshot for mmap
+    - name and lookup file systems and btrfs subvolumes better (kutil.py)
+ - repair controller
+    - figure out how to do equiv() for action outputs in new design,
+      e.g. return value from an UPDATE SQL query
+    - fs repair manager
+    - dir repair manager
+    - syscall repair manager
+    - process repair manager
+    - libc/passwd repair manager
+    - terminal repair manager
+ - applications
+    - running example
+    - performance: repairing time, compiling kernel, precise user inputs
+ - subobjects
+ - annotations (e.g., for file paths)
+ - improve pty/socket/pipe
+ - test scripts (via qemu?)
+
+Possible optimizations:
+ - force determinism during normal execution (e.g. ideas from dOS, but
+   only when it's cheap to do), so that there is less to record.
+
+=====
+DOING
+=====
+  - why sshd closing all fds? (maybe beause of chroot?) check
+  - read()/write() emulating on pts/ptm
+
+  - fifo mgr
+  - simpler distributed (collaborative) retro scenario:
+ 
+   pc:ssh server <- vm1 (real alice)
+   alice do normal jobs - ls/.. & exit
+   alice start working - ie. write a paper
+
+   alice is affected by virus
+   virus modify local file
+   pc:ssh server <- vm1 (virus:brute force the passwd)
+   attack (by trojan or virus)
+   install torjan
+   exit
+   
+   pc:ssh server <- vm1 (real alice)
+   alice work again - updating preivous file
+   
+   alice's virus scanner detects the virus after a few days
+   pick the infected file and check it with retro
+   distributed retro will collaborately repair the attacks
+      not only in the local but also in the server side
+
+ - next plan for distributed retro
+ 
+   pc:ssh server <-ssh- vm1 (alice)
+   pc:ssh server <-ssh- vm2 (attacker)
+   pc:ssh server <-ssh- vm1 (alice)
+   
+   - 1) detect attack from server and repair the attack
+   - 2) detect attack from vm2 and repair the attack
+
+   - retroctl on pc/vm1/vm2
+   - repair-os-daemon (sort of) on pc/vm1/vm2
+     - invoke local repair-os.py (or mgr)
+     - daemon, which start repairing after detection, requests repair actions
+       to other daemons
+     - let alice user logins automatically via ssh
+     
+ - make gui work again (general or extensible for other undo projects)
+ - clean up dirty key
+ - clean up stupid deterministic optimization
+ 
+ - !! collaborate undo system
+
+====
+DONE
+====
+  - socket related: redo/checkpoint
+  - repair-os-daemon & interface
+    - states:
+       - init    : runtime logging (-> ready after init request)
+       - ready   : ready to get undo/redo request
+       - undoing : after undo request (->ready, after sending done)
+       - redoing : after redo request (->ready, after sending done)
+    - protocol: 
+       - init request
+       - undo(rollback) request (to ts, or maybe relative ts like before the socket connection)
+       - undo(rollback) done
+       - redo request (after this system call)
+       - redo done
+  
+  - dot merging across different machine based on socket connections
+    - sockmgr
+    - index for socket related system calls
+ - optimize common path components in namei.
+ - make re-execution work again
+   - separate child process controller (for clone())
+     then ctrl.py will decide the execution orders
+   - logical time stamp
+   - wait4:
+      - change option -> WNOHANG (and change rip to retry wait4)
+      - if no child, create new node (+ ts[0] + 1 delay to yield child to execute)
+ - clean up test routines
+ - create unit test and profile
+ - clean up old mgr & files
+ - move .inode/safe.txt to the right place
+ - integrate process_flag and clean up ktrace.c & kprobes.c
+ - split retro.ko into two modules to prevent broken syscalls on unload
+ - exclude /usr etc.
+ - undo* system calls for undomgr
+ - log ioctls, including btrfs snapshot ioctls (or change them to syscalls)
+ - indexing
+

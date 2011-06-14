@@ -1,0 +1,109 @@
+workload                                1 core          2 cores         4 cores         log    |  snapshot        #obj    #actions
+kernel build    without retro           289.28 sec      220.02 sec      220.60 sec      -      |    309M         28632648 5720137
+                with retro + x comp.    459.45 sec      363.91 sec      345.44 sec      3.765G |    
+                with retro + o comp.    788.73 sec      441.60 sec      400.91 sec      1.477G | 
+                with retro + offline                                                           |
+                          (squashfs)                                    + 4.44 min        770M |
+                
+webserver       without retro           6960.8 req/s    10618.0 req/s   15759.3 req/s   -      |     ~0M           927136 185325
+                with retro + x comp.    4319.3 req/s     7791.2 req/s   11830.3 req/s   44.3M  |
+                with retro + o comp.    4276.2 req/s     6415.2 req/s   10695.9 req/s   39.1M  |
+                
+ - apache (default setting: 5~10 servers, 150 clients)
+ - bench  (with 10 parallel threads)
+ - 1k file transfer for 1 min
+ 
+hotcrp          without retro           20.49 req/s     20.97 req/s     21.01 req/s     -      |     ~0M          3946301 788427
+                with retro + x comp.    16.50 req/s     19.90 req/s     20.06 req/s     180.0M |
+                with retro + o comp.    13.90 req/s     19.52 req/s     20.06 req/s      94.1M |
+                
+ - not tracing mysql
+ - test hotcrp reps: 1000
+
+NOTE.
+- compression filesystem: fusecompress/squashfs
+
+1) counting
+
+1. kernel (skip 48 syscalls)
+                     category	#items
+
+                    BufferNode	11420209
+            CloneSyscallAction	21387
+                DirentDataNode	24465
+                  FileDataNode	13088
+                   ProcSysCall	5710224 (+48)
+                    ProcSysRet	5694480 (+48)
+                  ProcessActor	49852 (+48)
+                       PtyNode	1
+                StatelessActor	5720137 (+48)
+                 SyscallAction	5698750
+
+
+2. webserver
+                      category  #items
+                    BufferNode  370651
+            CloneSyscallAction  10
+                DirentDataNode  262
+                  FileDataNode  234
+                   ProcSysCall  185324
+                    ProcSysRet  185327
+                  ProcessActor  12
+                       PtyNode  1
+                StatelessActor  185325
+                 SyscallAction  185315
+                 
+3. hotcrp (skip <wait)
+
+                     category	#items
+                   BufferNode	1576630
+            CloneSyscallAction	2909
+                DirentDataNode	454
+                  FileDataNode	247
+                   ProcSysCall	788009 (+1)
+                    ProcSysRet	787621 (+1)
+                  ProcessActor	4911
+                StatelessActor	788426 (+1)
+                 SyscallAction	785517 (+1)
+
+2) snapshot
+
+1. kernel
+
+/dev/loop0            8.0G  2.7G  5.4G  34% /mnt/retro
+/dev/loop0            8.0G  2.4G  5.7G  30% /mnt/retro
+
+/dev/loop0             8388608   2770212   5618396  34% /mnt/retro
+/dev/loop0             8388608   2453336   5935272  30% /mnt/retro
+
+=> 309M (= .inodes, snapshot)
+
+2.hotcrp
+
+/dev/loop0            8.0G  2.5G  5.6G  31% /mnt/retro
+/dev/loop0            8.0G  2.5G  5.6G  31% /mnt/retro
+
+/dev/loop0             8388608   2523228   5865380  31% /mnt/retro
+/dev/loop0             8388608   2526120   5862488  31% /mnt/retro
+
+=> ~0M
+
+3. webserver
+
+/dev/loop0            8.0G  2.4G  5.7G  30% /mnt/retro
+/dev/loop0            8.0G  2.4G  5.7G  30% /mnt/retro
+
+/dev/loop0             8388608   2515180   5873428  30% /mnt/retro
+/dev/loop0             8388608   2515104   5873504  30% /mnt/retro
+
+=> ~0M
+
+3) optimization
+
+ - sha1 vs buf (if <128 go with buf)
+ - iov() (if >1024 think it as non-equivalent, so do not record)
+
+
+115.87user 17.64system 4:55.40elapsed 45%CPU (0avgtext+0avgdata 1200320maxresident)k
+233240inputs+6456832outputs (2476major+21079888minor)pagefaults 0swaps
+ 

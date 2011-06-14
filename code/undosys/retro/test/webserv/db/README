@@ -1,0 +1,6 @@
+
+To test dbmgr:
+
++ Setup postgres : test/webserv/db/pg_setup.py setup
++ Record testcase: test/webserv/db/dbmgr_record.py
++ Repair testcase: repair/dbmgr_repair.py

@@ -1,0 +1,1220 @@
+From http://www.ubuntu.com/usn
+
+USN-1017-1: MySQL vulnerabilities
+    DoS with specialized SQL queries.
+USN-1016-1: libxml2 vulnerability
+    Execute code by opening a specially-crafted XML file.
+USN-1015-1: libvpx vulnerability
+    Execute code by opening a specially-crafted WebM file.
+USN-1008-4: libvirt regression
+USN-1008-3: libvirt update
+USN-1008-2: Virtinst update
+USN-1008-1: libvirt vulnerabilities
+    Read arbitrary files on server's disk.
+USN-1014-1: Pidgin vulnerabilities
+    DoS via malformed SLP messages in MSN plugin.
+USN-1013-1: FreeType vulnerabilities
+    Execute code by opening a specially-crafted font file (x3).
+USN-1012-1: CUPS vulnerability
+    Execute code via malformed IPP packets.
+USN-1010-1: OpenJDK vulnerabilities
+    Various insufficient checks in network, HTTP, SSL, other libaries.
+USN-1011-3: Xulrunner vulnerability
+USN-1011-2: Thunderbird vulnerability
+USN-1011-1: Firefox vulnerability
+    Malicious site can exploit buffer overflow in Firefox.
+USN-959-2: PAM vulnerability
+    PAM's motd module did not handle path permissions when creating files.
+USN-1009-1: GNU C Library vulnerabilities
+    LD_AUDIT bugs for setuid binaries.
+    http://seclists.org/fulldisclosure/2010/Oct/344
+USN-998-1: Thunderbird vulnerabilities
+USN-997-1: Firefox and Xulrunner vulnerabilities
+    Bugs in Javascript engine.  Bugs in LD_LIBRARY_PATH setting.
+USN-1007-1: NSS vulnerabilities
+    Insufficient checks in certificate matching.
+    Weak Diffie-Hellman keys.
+USN-1000-1: Linux kernel vulnerabilities
+    Race conditions, missing permission checks, parameter validation, ..
+USN-1006-1: WebKit vulnerabilities
+    Javascript engine bugs.
+USN-1005-1: poppler vulnerabilities
+    Execute code when opening a specially-crafted PDF file.
+USN-1004-1: Django vulnerability
+    Failed to sanitize (cookie value), resulting in a XSS bug.
+USN-1002-2: PostgreSQL vulnerability
+USN-1002-1: PostgreSQL vulnerability
+    Missing permission checks in Perl, Tcl functions.
+USN-1003-1: OpenSSL vulnerabilities
+    Execute code due to mishandling of return codes from internal function.
+USN-1001-1: LVM2 vulnerability
+    Daemon did not correctly validate credentials.
+USN-999-1: Kerberos vulnerability
+    DoS via specially-crafted TGS requests.
+USN-996-1: Mako vulnerability
+    Incorrect filtering of single-quote characters, leading to XSS.
+USN-995-1: libMikMod vulnerabilities
+    Execute code via specially-crafted music tracking files.
+USN-994-1: libHX vulnerability
+    Bug in string handling API may lead to memory corruption.
+
+
+
+
+
+
+USN-993-1: libgdiplus vulnerability
+USN-992-1: Avahi vulnerabilities
+USN-991-1: quassel vulnerability
+USN-990-2: Apache vulnerability
+USN-990-1: OpenSSL vulnerability
+USN-989-1: PHP vulnerabilities
+USN-986-3: dpkg vulnerability
+USN-986-2: ClamAV vulnerability
+USN-986-1: bzip2 vulnerability
+USN-988-1: Linux kernel vulnerabilities
+USN-978-2: Thunderbird regression
+USN-975-2: Firefox and Xulrunner regression
+USN-987-1: Samba vulnerability
+USN-975-1: Firefox and Xulrunner vulnerabilities
+USN-978-1: Thunderbird vulnerabilities
+USN-985-1: mountall vulnerability
+USN-984-1: LFTP vulnerability
+USN-983-1: Sudo vulnerability
+USN-982-1: Wget vulnerability
+USN-981-1: libwww-perl vulnerability
+USN-980-1: bogofilter vulnerability
+USN-979-1: okular vulnerability
+USN-974-2: Linux kernel regression
+USN-977-1: MoinMoin vulnerabilities
+USN-976-1: Tomcat vulnerability
+USN-974-1: Linux kernel vulnerabilities
+USN-973-1: KOffice vulnerabilities
+USN-972-1: FreeType vulnerabilities
+USN-971-1: OpenJDK vulnerabilities
+USN-970-1: GnuPG2 vulnerability
+USN-967-1: w3m vulnerability
+USN-965-1: OpenLDAP vulnerabilities
+USN-969-1: PCSC-Lite vulnerability
+USN-968-1: Dell Latitude 2110 vulnerability
+USN-966-1: Linux kernel vulnerabilities
+USN-964-2: Likewise Open regression
+USN-964-1: Likewise Open vulnerability
+USN-957-2: Firefox and Xulrunner vulnerability
+USN-930-6: Firefox and Xulrunner vulnerability
+USN-958-1: Thunderbird vulnerabilities
+USN-930-5: ant, apturl, Epiphany, gluezilla, gnome-python-extras, liferea, mozvoikko, OpenJDK, packagekit, ubufox, webfav, yelp update
+USN-957-1: Firefox and Xulrunner vulnerabilities
+USN-930-4: Firefox and Xulrunner vulnerabilities
+USN-927-8: Thunderbird update
+USN-927-7: nspr update
+USN-927-6: NSS vulnerability
+USN-940-2: Kerberos vulnerability
+USN-963-1: FreeType vulnerabilities
+USN-962-1: VTE vulnerability
+USN-961-1: Ghostscript vulnerabilities
+USN-960-1: libpng vulnerabilities
+USN-959-1: PAM vulnerability
+USN-943-1: Thunderbird vulnerabilities
+USN-956-1: sudo vulnerability
+USN-930-3: Firefox regression
+USN-930-2: apturl, Epiphany, gecko-sharp, gnome-python-extras, liferea, rhythmbox, totem, ubufox, yelp update
+USN-930-1: Firefox and Xulrunner vulnerabilities
+USN-927-5: nspr update
+USN-927-4: nss vulnerability
+USN-952-1: CUPS vulnerabilities
+USN-955-2: libpam-opie vulnerability
+USN-954-1: tiff vulnerabilities
+USN-955-1: OPIE vulnerability
+USN-953-1: fastjar vulnerability
+USN-951-1: Samba vulnerability
+USN-950-1: MySQL vulnerabilities
+USN-949-1: OpenOffice.org vulnerability
+USN-947-2: Linux kernel regression
+USN-948-1: GnuTLS vulnerability
+USN-947-1: Linux kernel vulnerabilities
+USN-946-1: Net-SNMP vulnerability
+USN-945-1: ClamAV vulnerabilities
+USN-944-1: GNU C Library vulnerabilities
+USN-942-1: PostgreSQL vulnerabilities
+USN-941-1: MoinMoin vulnerability
+USN-940-1: Kerberos vulnerabilities
+USN-939-1: X.org vulnerabilities
+USN-938-1: KDENetwork vulnerabilities
+USN-937-1: TeX Live vulnerabilities
+USN-936-1: dvipng vulnerability
+USN-934-1: Netpbm vulnerability
+USN-933-1: PostgreSQL vulnerability
+USN-931-2: FFmpeg regression
+USN-929-2: irssi regression
+USN-932-1: KDM vulnerability
+USN-931-1: FFmpeg vulnerabilities
+USN-929-1: irssi vulnerabilities
+USN-890-6: CMake vulnerabilities
+USN-928-1: Sudo vulnerability
+USN-927-3: Thunderbird regression
+USN-927-2: NSS regression
+USN-920-1: Firefox 3.0 and Xulrunner vulnerabilities
+USN-921-1: Firefox 3.5 and Xulrunner vulnerabilities
+USN-927-1: NSS vulnerability
+USN-624-2: Erlang vulnerability
+USN-926-1: ClamAV vulnerabilities
+USN-925-1: MoinMoin vulnerabilities
+USN-924-1: Kerberos vulnerabilities
+USN-923-1: OpenJDK vulnerabilities
+USN-922-1: libnss-db vulnerability
+USN-919-1: Emacs vulnerability
+USN-918-1: Samba vulnerability
+USN-917-1: Puppet vulnerabilities
+USN-916-1: Kerberos vulnerabilities
+USN-915-1: Thunderbird vulnerabilities
+USN-914-1: Linux kernel vulnerabilities
+USN-913-1: libpng vulnerabilities
+USN-912-1: Audio File Library vulnerability
+USN-911-1: MoinMoin vulnerabilities
+USN-909-1: dpkg vulnerability
+USN-908-1: Apache vulnerabilities
+USN-907-1: gnome-screensaver vulnerabilities
+USN-906-1: CUPS vulnerabilities
+USN-905-1: sudo vulnerabilities
+USN-904-1: Squid vulnerability
+USN-903-1: OpenOffice.org vulnerabilities
+USN-902-1: Pidgin vulnerabilities
+USN-890-5: XML-RPC for C and C++ vulnerabilities
+USN-896-1: Firefox 3.5 and Xulrunner 1.9.1 vulnerabilities
+USN-895-1: Firefox 3.0 and Xulrunner 1.9 vulnerabilities
+USN-900-1: Ruby vulnerabilities
+USN-901-1: Squid vulnerabilities
+USN-899-1: Tomcat vulnerabilities
+USN-898-1: gnome-screensaver vulnerability
+USN-897-1: MySQL vulnerabilities
+USN-894-1: Linux kernel vulnerabilities
+USN-892-1: FUSE vulnerability
+USN-893-1: Samba vulnerability
+USN-891-1: lintian vulnerabilities
+USN-803-2: Dhcp vulnerability
+USN-890-4: PyXML vulnerabilities
+USN-890-3: Python 2.4 vulnerabilities
+USN-890-2: Python 2.5 vulnerabilities
+USN-890-1: Expat vulnerabilities
+USN-889-1: gzip vulnerabilities
+USN-888-1: Bind vulnerabilities
+USN-887-1: LibThai vulnerability
+USN-886-1: Pidgin vulnerabilities
+USN-885-1: Transmission vulnerabilities
+USN-884-1: OpenSSL vulnerability
+USN-883-1: network-manager-applet vulnerabilities
+USN-882-1: PHP vulnerabilities
+USN-881-1: Kerberos vulnerability
+USN-878-1: Firefox 3.5 and Xulrunner 1.9.1 regression
+USN-877-1: Firefox 3.0 and Xulrunner 1.9 regression
+USN-880-1: GIMP vulnerabilities
+USN-879-1: Kerberos vulnerability
+USN-876-1: PostgreSQL vulnerabilities
+USN-874-1: Firefox 3.5 and Xulrunner 1.9.1 vulnerabilities
+USN-873-1: Firefox 3.0 and Xulrunner 1.9 vulnerabilities
+USN-875-1: Red Hat Cluster Suite vulnerabilities
+USN-872-1: KDE 4 Runtime vulnerabilities
+USN-871-2: KDE 4 vulnerabilities
+USN-871-1: KDE vulnerabilities
+USN-870-1: PyGreSQL vulnerability
+USN-869-1: Linux kernel vulnerabilities
+USN-868-1: GRUB 2 vulnerability
+USN-867-1: Ntp vulnerability
+USN-866-1: gnome-screensaver vulnerability
+USN-865-1: Bind vulnerability
+USN-864-1: Linux kernel vulnerabilities
+USN-863-1: QEMU vulnerability
+USN-862-1: PHP vulnerabilities
+USN-861-1: libvorbis vulnerabilities
+USN-860-1: Apache vulnerabilities
+USN-859-1: OpenJDK vulnerabilities
+USN-858-1: OpenLDAP vulnerability
+USN-853-2: Firefox and Xulrunner regression
+USN-857-1: Qt vulnerabilities
+USN-856-1: CUPS vulnerability
+USN-855-1: libhtml-parser-perl vulnerability
+USN-854-1: GD library vulnerabilities
+USN-850-3: poppler vulnerabilities
+USN-853-1: Firefox and Xulrunner vulnerabilities
+USN-850-2: poppler regression
+USN-852-1: Linux kernel vulnerabilities
+USN-851-1: Elinks vulnerabilities
+USN-850-1: poppler vulnerabilities
+USN-849-1: libsndfile vulnerabilities
+USN-848-1: Zope vulnerabilities
+USN-847-2: devscripts vulnerability
+USN-847-1: Devscripts vulnerability
+USN-846-1: ICU vulnerability
+USN-845-1: Pan vulnerability
+USN-844-1: mimeTeX vulnerabilities
+USN-843-1: BackupPC vulnerability
+USN-842-1: Wget vulnerability
+USN-841-1: GLib vulnerability
+USN-840-1: OpenOffice.org vulnerabilities
+USN-839-1: Samba vulnerabilities
+USN-838-1: Dovecot vulnerabilities
+USN-837-1: Newt vulnerability
+USN-836-1: WebKit vulnerabilities
+USN-835-1: neon vulnerabilities
+USN-834-1: PostgreSQL vulnerabilities
+USN-833-1: KDE-Libs vulnerability
+USN-832-1: FreeRADIUS vulnerability
+USN-831-1: OpenEXR vulnerabilities
+USN-830-1: OpenSSL vulnerability
+USN-829-1: Qt vulnerability
+USN-821-1: Firefox and Xulrunner vulnerabilities
+USN-828-1: PAM vulnerability
+USN-810-3: NSS regression
+USN-827-1: Dnsmasq vulnerabilities
+USN-826-1: Mono vulnerabilities
+USN-825-1: libvorbis vulnerability
+USN-824-1: PHP vulnerability
+USN-823-1: KDE-Graphics vulnerabilities
+USN-822-1: KDE-Libs vulnerabilities
+USN-817-1: Thunderbird vulnerabilities
+USN-820-1: Pidgin vulnerability
+USN-809-1: GnuTLS vulnerabilities
+USN-802-2: Apache regression
+USN-819-1: Linux kernel vulnerability
+USN-818-1: curl vulnerability
+USN-816-1: fetchmail vulnerability
+USN-815-1: libxml2 vulnerabilities
+USN-814-1: OpenJDK vulnerabilities
+USN-813-3: apr-util vulnerability
+USN-813-2: Apache vulnerability
+USN-813-1: apr vulnerability
+USN-812-1: Subversion vulnerability
+USN-811-1: Firefox and Xulrunner vulnerability
+USN-810-2: NSPR update
+USN-810-1: NSS vulnerabilities
+USN-808-1: Bind vulnerability
+USN-807-1: Linux kernel vulnerabilities
+USN-806-1: Python vulnerabilities
+USN-798-1: Firefox and Xulrunner vulnerabilities
+USN-805-1: Ruby vulnerabilities
+USN-804-1: PulseAudio vulnerability
+USN-803-1: dhcp vulnerability
+USN-802-1: Apache vulnerabilities
+USN-801-1: tiff vulnerability
+USN-799-1: D-Bus vulnerability
+USN-800-1: irssi vulnerability
+USN-797-1: tiff vulnerability
+USN-796-1: Pidgin vulnerability
+USN-795-1: Nagios vulnerability
+USN-794-1: Perl vulnerability
+USN-793-1: Linux kernel vulnerabilities
+USN-782-1: Thunderbird vulnerabilities
+USN-792-1: OpenSSL vulnerabilities
+USN-791-2: Moodle vulnerability
+USN-791-3: Smarty vulnerability
+USN-791-1: Moodle vulnerabilities
+USN-790-1: Cyrus SASL vulnerability
+USN-789-1: GStreamer Good Plugins vulnerability
+USN-788-1: Tomcat vulnerabilities
+USN-779-1: Firefox and Xulrunner vulnerabilities
+USN-787-1: Apache vulnerabilities
+USN-786-1: apr-util vulnerabilities
+USN-775-2: Quagga regression
+USN-785-1: ipsec-tools vulnerabilities
+USN-784-1: ImageMagick vulnerability
+USN-783-1: eCryptfs vulnerability
+USN-781-2: Gaim vulnerabilities
+USN-781-1: Pidgin vulnerabilities
+USN-780-1: CUPS vulnerability
+USN-778-1: cron vulnerability
+USN-777-1: Ntp vulnerabilities
+USN-776-2: KVM regression
+USN-775-1: Quagga vulnerability
+USN-776-1: KVM vulnerabilities
+USN-774-1: MoinMoin vulnerability
+USN-773-1: Pango vulnerability
+USN-772-1: MPFR vulnerability
+USN-771-1: libmodplug vulnerabilities
+USN-770-1: ClamAV vulnerability
+USN-769-1: libwmf vulnerability
+USN-768-1: Apport vulnerability
+USN-765-1: Firefox and Xulrunner vulnerabilities
+USN-767-1: FreeType vulnerability
+USN-766-1: acpid vulnerability
+USN-761-2: PHP vulnerabilities
+USN-764-1: Firefox and Xulrunner vulnerabilities
+USN-763-1: xine-lib vulnerabilities
+USN-761-1: PHP vulnerabilities
+USN-762-1: APT vulnerabilities
+USN-760-1: CUPS vulnerability
+USN-759-1: poppler vulnerabilities
+USN-758-1: udev vulnerabilities
+USN-757-1: Ghostscript vulnerabilities
+USN-756-1: ClamAV vulnerability
+USN-755-1: Kerberos vulnerabilities
+USN-754-1: ClamAV vulnerabilities
+USN-752-1: Linux kernel vulnerabilities
+USN-753-1: PostgreSQL vulnerability
+USN-751-1: Linux kernel vulnerabilities
+USN-750-1: OpenSSL vulnerability
+USN-749-1: libsndfile vulnerability
+USN-745-1: Firefox and Xulrunner vulnerabilities
+USN-748-1: OpenJDK vulnerabilities
+USN-747-1: ICU vulnerability
+USN-746-1: xine-lib vulnerability
+USN-744-1: LittleCMS vulnerabilities
+USN-743-1: Ghostscript vulnerabilities
+USN-741-1: Thunderbird vulnerabilities
+USN-742-1: JasPer vulnerabilities
+USN-740-1: NSS vulnerability
+USN-739-1: Amarok vulnerabilities
+USN-734-1: FFmpeg vulnerabilities
+USN-738-1: GLib vulnerability
+USN-737-1: libsoup vulnerability
+USN-736-1: GStreamer Good Plugins vulnerabilities
+USN-735-1: GStreamer Base Plugins vulnerability
+USN-733-1: evolution-data-server vulnerability
+USN-732-1: dash vulnerability
+USN-731-1: Apache vulnerabilities
+USN-730-1: libpng vulnerabilities
+USN-728-3: Firefox vulnerabilities
+USN-728-2: Firefox vulnerabilities
+USN-728-1: Firefox and Xulrunner vulnerabilities
+USN-729-1: Python Crypto vulnerability
+USN-726-2: curl regression
+USN-727-2: NetworkManager vulnerability
+USN-727-1: network-manager-applet vulnerabilities
+USN-726-1: curl vulnerability
+USN-725-1: KMail vulnerability
+USN-724-1: Squid vulnerability
+USN-723-1: Git vulnerabilities
+USN-722-1: sudo vulnerability
+USN-721-1: fglrx-installer vulnerability
+USN-720-1: PHP vulnerabilities
+USN-719-1: pam-krb5 vulnerabilities
+USN-717-3: Firefox vulnerabilities
+USN-717-2: Firefox vulnerabilities
+USN-717-1: Firefox and Xulrunner vulnerabilities
+USN-716-1: MoinMoin vulnerabilities
+USN-715-1: Linux kernel vulnerabilities
+USN-714-1: Linux kernel vulnerabilities
+USN-713-1: OpenJDK vulnerabilities
+USN-712-1: Vim vulnerabilities
+USN-711-1: KTorrent vulnerabilities
+USN-710-1: xine-lib vulnerabilities
+USN-700-2: Perl regression
+USN-709-1: tar vulnerability
+USN-708-1: HPLIP vulnerability
+USN-707-1: CUPS vulnerabilities
+USN-706-1: Bind vulnerability
+USN-705-1: NTP vulnerability
+USN-704-1: OpenSSL vulnerability
+USN-701-2: Thunderbird vulnerabilities
+USN-701-1: Thunderbird vulnerabilities
+USN-703-1: xterm vulnerabilities
+USN-702-1: Samba vulnerability
+USN-700-1: Perl vulnerabilities
+USN-677-2: OpenOffice.org Internationalization update
+USN-698-3: Nagios vulnerabilities
+USN-699-1: Blender vulnerabilities
+USN-698-2: Nagios3 vulnerabilities
+USN-698-1: Nagios vulnerability
+USN-697-1: Imlib2 vulnerability
+USN-696-1: Avahi vulnerabilities
+USN-695-1: shadow vulnerability
+USN-694-1: libvirt vulnerability
+USN-690-3: Firefox vulnerabilities
+USN-693-1: LittleCMS vulnerability
+USN-692-1: Gadu vulnerability
+USN-690-2: Firefox vulnerabilities
+USN-690-1: Firefox and xulrunner vulnerabilities
+USN-691-1: Ruby vulnerability
+USN-678-2: GnuTLS regression
+USN-689-1: Vinagre vulnerability
+USN-688-1: Compiz vulnerability
+USN-687-1: nfs-utils vulnerability
+USN-686-1: AWStats vulnerability
+USN-685-1: Net-SNMP vulnerabilities
+USN-684-1: ClamAV vulnerability
+USN-683-1: Imlib2 vulnerability
+USN-682-1: libvorbis vulnerabilities
+USN-681-1: ImageMagick vulnerability
+USN-679-1: Linux kernel vulnerabilities
+USN-680-1: Samba vulnerability
+USN-678-1: GnuTLS vulnerability
+USN-668-1: Thunderbird vulnerabilities
+USN-677-1: OpenOffice.org vulnerabilities
+USN-676-1: WebKit vulnerability
+USN-675-2: Gaim vulnerability
+USN-675-1: Pidgin vulnerabilities
+USN-674-2: HPLIP vulnerabilities
+USN-674-1: HPLIP vulnerabilities
+USN-673-1: libxml2 vulnerabilities
+USN-672-1: ClamAV vulnerability
+USN-667-1 Firefox and xulrunner vulnerabilities
+USN-671-1: MySQL vulnerabilities
+USN-670-1: VMBuilder vulnerability
+USN-669-1: gnome-screensaver vulnerabilities
+USN-666-1: Dovecot vulnerability
+USN-662-2: Ubuntu kernel modules vulnerability
+USN-665-1: Netpbm vulnerability
+USN-664-1: Tk vulnerability
+USN-663-1: system-tools-backends regression
+USN-662-1: Linux kernel vulnerabilities
+USN-660-1: enscript vulnerability
+USN-661-1: Linux kernel regression
+USN-659-1: Linux kernel vulnerabilities
+USN-658-1: Moodle vulnerability
+USN-657-1: Amarok vulnerability
+USN-656-1: CUPS vulnerabilities
+USN-655-1: exiv2 vulnerabilities
+USN-654-1: libexif vulnerabilities
+USN-653-1: D-Bus vulnerabilities
+USN-652-1: LittleCMS vulnerability
+USN-651-1: Ruby vulnerabilities
+USN-650-1: cpio vulnerability
+USN-649-1: OpenSSH vulnerabilities
+USN-648-1: nasm vulnerability
+USN-647-1: Thunderbird vulnerabilities
+USN-645-3: Firefox and xulrunner regression
+USN-645-2: Firefox vulnerabilities
+USN-645-1: Firefox and xulrunner vulnerabilities
+USN-646-1: rdesktop vulnerabilities
+USN-644-1: libxml2 vulnerabilities
+USN-643-1: FreeType vulnerabilities
+USN-642-1: Postfix vulnerability
+USN-641-1: Racoon vulnerabilities
+USN-640-1: libxml2 vulnerability
+USN-639-1: tiff vulnerability
+USN-638-1: Yelp vulnerability
+USN-637-1: Linux kernel vulnerabilities
+USN-636-1: Postfix vulnerability
+USN-635-1: xine-lib vulnerabilities
+USN-626-2: Devhelp, Epiphany, Midbrowser and Yelp update
+USN-634-1: OpenLDAP vulnerability
+USN-633-1: libxslt vulnerabilities
+USN-632-1: Python vulnerabilities
+USN-626-1: Firefox and xulrunner vulnerabilities
+USN-631-1: poppler vulnerability
+USN-630-1: ffmpeg vulnerability
+USN-629-1: Thunderbird vulnerabilities
+USN-628-1: PHP vulnerabilities
+USN-627-1: Dnsmasq vulnerability
+USN-623-1: Firefox vulnerabilities
+USN-625-1: Linux kernel vulnerabilities
+USN-624-1: PCRE vulnerability
+USN-622-1: Bind vulnerability
+USN-619-1: Firefox vulnerabilities
+USN-617-2: Samba regression
+USN-621-1: Ruby vulnerabilities
+USN-620-1: OpenSSL vulnerabilities
+USN-618-1: Linux kernel vulnerabilities
+USN-612-11: openssl-blacklist update
+USN-617-1: Samba vulnerabilities
+USN-616-1: X.org vulnerabilities
+USN-612-10: OpenVPN regression
+USN-612-9: openssl-blacklist update
+USN-615-1: Evolution vulnerabilities
+USN-614-1: Linux kernel vulnerabilities
+USN-612-8: openssl-blacklist update
+USN-613-1: GnuTLS vulnerabilities
+USN-612-7: OpenSSH update
+USN-612-6: OpenVPN regression
+USN-612-5: OpenSSH update
+USN-612-4: ssl-cert vulnerability
+USN-612-3: OpenVPN vulnerability
+USN-612-2: OpenSSH vulnerability
+USN-612-1: OpenSSL vulnerability
+USN-611-3: GStreamer Good Plugins vulnerability
+USN-611-2: vorbis-tools vulnerability
+USN-611-1: Speex vulnerability
+USN-610-1: LTSP vulnerability
+USN-609-1: OpenOffice.org vulnerabilities
+USN-605-1: Thunderbird vulnerabilities
+USN-608-1: KDE vulnerability
+USN-607-1: Emacs vulnerabilities
+USN-606-1: CUPS vulnerability
+USN-602-1: Firefox vulnerability
+USN-604-1: Gnumeric vulnerability
+USN-603-2: KOffice vulnerability
+USN-603-1: poppler vulnerability
+USN-601-1: Squid vulnerability
+USN-600-1: rsync vulnerability
+USN-599-1: Ghostscript vulnerability
+USN-598-1: CUPS vulnerabilities
+USN-588-2: MySQL regression
+USN-597-1: OpenSSH vulnerability
+USN-596-1: Ruby vulnerabilities
+USN-595-1: SDL_image vulnerabilities
+USN-594-1: libnet-dns-perl vulnerability
+USN-593-1: Dovecot vulnerabilities
+USN-592-1: Firefox vulnerabilities
+USN-590-1: bzip2 vulnerability
+USN-591-1: libicu vulnerabilities
+USN-589-1: unzip vulnerability
+USN-588-1: MySQL vulnerabilities
+USN-587-1: Kerberos vulnerabilities
+USN-586-1: mailman vulnerability
+USN-585-1: Python vulnerabilities
+USN-582-2: Thunderbird regression
+USN-584-1: OpenLDAP vulnerabilities
+USN-583-1: Evolution vulnerability
+USN-582-1: Thunderbird vulnerabilities
+USN-581-1: PCRE vulnerability
+USN-580-1: libcdio vulnerability
+USN-579-1: Qt vulnerability
+USN-578-1: Linux kernel vulnerabilities
+USN-577-1: Linux kernel vulnerability
+USN-576-1: Firefox vulnerabilities
+USN-575-1: Apache vulnerabilities
+USN-574-1: Linux kernel vulnerabilities
+USN-573-1: PulseAudio vulnerability
+USN-571-2: X.org regression
+USN-572-1: apt-listchanges vulnerability
+USN-571-1: X.org vulnerabilities
+USN-570-1: boost vulnerabilities
+USN-569-1: libxml2 vulnerability
+USN-568-1: PostgreSQL vulnerabilities
+USN-567-1: Dovecot vulnerability
+USN-566-1: OpenSSH vulnerability
+USN-565-1: Squid vulnerability
+USN-564-1: Net-SNMP vulnerability
+USN-563-1: CUPS vulnerabilities
+USN-562-1: opal vulnerability
+USN-561-1: pwlib vulnerability
+USN-560-1: Tomboy vulnerability
+USN-559-1: MySQL vulnerabilities
+USN-558-1: Linux kernel vulnerabilities
+USN-557-1: GD library vulnerability
+USN-556-1: Samba vulnerability
+USN-550-3: Cairo regression
+USN-550-2: Cairo regression
+USN-555-1: e2fsprogs vulnerability
+USN-554-1: teTeX and TeX Live vulnerabilities
+USN-553-1: Mono vulnerability
+USN-552-1: Perl vulnerability
+USN-546-2: Firefox regression
+USN-549-2: PHP regression
+USN-551-1: OpenLDAP vulnerabilities
+USN-550-1: Cairo vulnerability
+USN-549-1: PHP vulnerabilities
+USN-548-1: Pidgin vulnerability
+USN-547-1: PCRE vulnerabilities
+USN-546-1: Firefox vulnerabilities
+USN-545-1: link-grammar vulnerability
+USN-544-2: Samba regression
+USN-544-1: Samba vulnerabilities
+USN-543-1: VMWare vulnerabilities
+USN-542-2: KOffice vulnerabilities
+USN-542-1: poppler vulnerabilities
+USN-541-1: Emacs vulnerability
+USN-540-1: flac vulnerability
+USN-539-1: CUPS vulnerability
+USN-537-2: Compiz vulnerability
+USN-538-1: libpng vulnerabilities
+USN-537-1: gnome-screensaver vulnerability
+USN-536-1: Thunderbird vulnerabilities
+USN-531-2: dhcp vulnerability
+USN-535-1: Firefox vulnerabilities
+USN-501-2: Ghostscript vulnerability
+USN-534-1: OpenSSL vulnerability
+USN-533-1: util-linux vulnerability
+USN-532-1: nagios-plugins vulnerability
+USN-531-1: dhcp vulnerability
+USN-530-1: hplip vulnerability
+USN-529-1: Tk vulnerability
+USN-528-1: MySQL vulnerabilities
+USN-527-1: xen-3.0 vulnerability
+USN-526-1: debian-goodies vulnerability
+USN-525-1: libsndfile vulnerability
+USN-524-1: OpenOffice.org vulnerability
+USN-523-1: ImageMagick vulnerabilities
+USN-522-1: OpenSSL vulnerabilities
+USN-521-1: libmodplug vulnerability
+USN-520-1: fetchmail vulnerabilities
+USN-519-1: elinks vulnerability
+USN-518-1: Linux kernel vulnerabilities
+USN-517-1: kdm vulnerability
+USN-516-1: xfsdump vulnerability
+USN-515-1: t1lib vulnerability
+USN-514-1: X.org vulnerability
+USN-513-1: Qt vulnerability
+USN-512-1: Quagga vulnerability
+USN-511-2: Kerberos vulnerability
+USN-511-1: Kerberos vulnerability
+USN-510-1: Linux kernel vulnerabilities
+USN-508-1: Linux kernel vulnerabilities
+USN-509-1: Linux kernel vulnerabilities
+USN-507-1: tcp-wrappers vulnerability
+USN-469-2: Enigmail regression
+USN-506-1: tar vulnerability
+USN-505-1: vim vulnerability
+USN-504-1: Emacs vulnerability
+USN-503-1: Thunderbird vulnerabilities
+USN-502-1: KDE vulnerabilities
+USN-501-1: jasper vulnerability
+USN-500-1: rsync vulnerability
+USN-499-1: Apache vulnerabilities
+USN-498-1: libvorbis vulnerabilities
+USN-497-1: xfce4-terminal vulnerability
+USN-496-2: poppler vulnerability
+USN-496-1: koffice vulnerability
+USN-495-1: Qt vulnerability
+USN-494-1: Gimp vulnerability
+USN-493-1: Firefox vulnerabilities
+USN-492-1: tcpdump vulnerability
+USN-491-1: Bind vulnerability
+USN-490-1: Firefox vulnerabilities
+USN-489-2: redhat-cluster-suite vulnerability
+USN-489-1: Linux kernel vulnerabilities
+USN-486-1: Linux kernel vulnerabilities
+USN-488-1: mod_perl vulnerability
+USN-487-1: Dovecot vulnerability
+USN-485-1: PHP vulnerabilities
+USN-484-1: curl vulnerability
+USN-483-1: libnet-dns-perl vulnerabilities
+USN-482-1: OpenOffice.org vulnerability
+USN-481-1: ImageMagick vulnerabilities
+USN-480-1: Gimp vulnerability
+USN-479-1: MadWifi vulnerabilities
+USN-478-1: libexif vulnerability
+USN-477-1: krb5 vulnerabilities
+USN-476-1: redhat-cluster-suite vulnerability
+USN-475-1: evolution-data-server vulnerability
+USN-474-1: xscreensaver vulnerability
+USN-473-1: libgd2 vulnerabilities
+USN-472-1: libpng vulnerability
+USN-471-1: libexif vulnerability
+USN-439-2: file vulnerability
+USN-470-1: Linux kernel vulnerabilities
+USN-469-1: Thunderbird vulnerabilities
+USN-468-1: Firefox vulnerabilities
+USN-467-1: Gimp vulnerability
+USN-466-1: freetype vulnerability
+USN-465-1: PulseAudio vulnerability
+USN-464-1: Linux kernel vulnerabilities
+USN-463-1: vim vulnerability
+USN-462-1: PHP vulnerabilities
+USN-460-2: Samba regression
+USN-459-2: pptpd regression
+USN-436-2: KTorrent vulnerability
+USN-461-1: Quagga vulnerability
+USN-460-1: Samba vulnerabilities
+USN-459-1: pptpd vulnerability
+USN-458-1: MoinMoin vulnerabilities
+USN-457-1: elinks vulnerability
+USN-456-1: net-snmp vulnerability
+USN-454-1: PostgreSQL vulnerability
+USN-455-1: PHP vulnerabilities
+USN-453-2: rdesktop regression
+USN-453-1: X.org vulnerability
+USN-452-1: KDE library vulnerability
+USN-451-1: Linux kernel vulnerabilities
+USN-450-1: ipsec-tools vulnerability
+USN-449-1: krb5 vulnerabilities
+USN-448-1: X.org vulnerabilities
+USN-447-1: KDE library vulnerabilities
+USN-446-1: NAS vulnerabilities
+USN-445-1: XMMS vulnerabilities
+USN-444-1: OpenOffice.org vulnerabilities
+USN-443-1: Firefox vulnerability
+USN-442-1: Evolution vulnerability
+USN-441-1: Squid vulnerability
+USN-440-1: MySQL vulnerability
+USN-439-1: file vulnerability
+USN-438-1: Inkscape vulnerability
+USN-437-1: libwpd vulnerability
+USN-432-2: GnuPG2, GPGME vulnerability
+USN-436-1: KTorrent vulnerabilities
+USN-435-1: Xine vulnerability
+USN-434-1: Ekiga vulnerability
+USN-433-1: Xine vulnerability
+USN-432-1: GnuPG vulnerability
+USN-424-2: PHP regression
+USN-431-1: Thunderbird vulnerabilities
+USN-430-1: mod_python vulnerability
+USN-429-1: tcpdump vulnerability
+USN-428-2: Firefox regression
+USN-416-2: nvidia-glx-config regression
+USN-428-1: Firefox vulnerabilities
+USN-427-1: Enigmail vulnerability
+USN-426-1: Ekiga vulnerabilities
+USN-425-1: slocate vulnerability
+USN-424-1: PHP vulnerabilities
+USN-423-1: MoinMoin vulnerabilities
+USN-422-1: ImageMagick vulnerabilities
+USN-421-1: MoinMoin vulnerability
+USN-417-3: PostgreSQL regression
+USN-417-2: PostgreSQL regression
+USN-420-1: KDE library vulnerability
+USN-419-1: Samba vulnerabilities
+USN-418-1: Bind vulnerabilities
+USN-417-1: PostgreSQL vulnerabilities
+USN-416-1: Linux kernel vulnerabilities
+USN-415-1: GTK vulnerability
+USN-398-4: Firefox regression
+USN-410-2: teTeX vulnerability
+USN-414-1: Squid vulnerabilities
+USN-413-1: BlueZ vulnerability
+USN-412-1: GeoIP vulnerability
+USN-411-1: libsoup vulnerability
+USN-410-1: poppler vulnerability
+USN-409-1: ksirc vulnerability
+USN-408-1: krb5 vulnerability
+USN-407-1: libgtop2 vulnerability
+USN-406-1: OpenOffice.org vulnerability
+USN-405-1: fetchmail vulnerability
+USN-404-1: MadWifi vulnerability
+USN-403-1: X.org vulnerabilities
+USN-402-1: Avahi vulnerability
+USN-401-1: D-Bus vulnerability
+USN-400-1: Thunderbird vulnerabilities
+USN-398-3: Firefox theme regression
+USN-398-2: Firefox vulnerabilities
+USN-399-1: w3m vulnerability
+USN-398-1: Firefox vulnerabilities
+USN-397-1: mono vulnerability
+USN-396-1: gdm vulnerability
+USN-380-2: Avahi regression
+USN-395-1: Linux kernel vulnerabilities
+USN-394-1: Ruby vulnerability
+USN-393-2: GnuPG2 vulnerabilities
+USN-393-1: GnuPG vulnerability
+USN-390-3: evince-gtk vulnerability
+USN-390-2: evince vulnerability
+USN-392-1: xine-lib vulnerability
+USN-391-1: libgsf vulnerability
+USN-390-1: evince vulnerability
+USN-389-1: GnuPG vulnerability
+USN-388-1: KOffice vulnerability
+USN-387-1: Dovecot vulnerability
+USN-386-1: ImageMagick vulnerability
+USN-385-1: tar vulnerability
+USN-384-1: OpenLDAP vulnerability
+USN-383-1: libpng vulnerability
+USN-382-1: Thunderbird vulnerabilities
+USN-381-1: Firefox vulnerabilities
+USN-380-1: Avahi vulnerability
+USN-379-1: texinfo vulnerability
+USN-376-2: imlib2 regression
+USN-378-1: RPM vulnerability
+USN-377-1: NVIDIA vulnerability
+USN-376-1: imlib2 vulnerabilities
+USN-375-1: PHP vulnerability
+USN-374-1: wvWare vulnerability
+USN-373-1: mutt vulnerabilities
+USN-372-1: ImageMagick vulnerability
+USN-369-2: PostgreSQL vulnerabilities
+USN-371-1: Ruby vulnerability
+USN-370-1: screen vulnerability
+USN-369-1: PostgreSQL vulnerabilities
+USN-368-1: Qt vulnerability
+USN-367-1: Pike vulnerability
+USN-366-1: binutils vulnerability
+USN-365-1: libksba vulnerability
+USN-364-1: Xsession vulnerability
+USN-363-1: libmusicbrainz vulnerabilities
+USN-362-1: PHP vulnerabilities
+USN-361-1: Mozilla vulnerabilities
+USN-360-1: awstats vulnerabilities
+USN-359-1: Python vulnerability
+USN-358-1: ffmpeg, xine-lib vulnerabilities
+USN-357-1: mono vulnerability
+USN-353-2: OpenSSL vulnerabilities
+USN-356-1: gdb vulnerability
+USN-355-1: OpenSSH vulnerabilities
+USN-354-1: Firefox vulnerabilities
+USN-353-1: OpenSSL vulnerabilities
+USN-352-1: Thunderbird vulnerabilities
+USN-351-1: Firefox vulnerabilities
+USN-350-1: Thunderbird vulnerabilities
+USN-349-1: gzip vulnerabilities
+USN-348-1: GnuTLS vulnerability
+USN-347-1: Linux kernel vulnerabilities
+USN-346-2: Fixed linux-restricted-modules-2.6.15 for previous Linux kernel update
+USN-346-1: Linux kernel vulnerabilities
+USN-345-1: mailman vulnerabilities
+USN-344-1: X.org vulnerabilities
+USN-343-1: bind9 vulnerabilities
+USN-342-1: PHP vulnerabilities
+USN-341-1: X.org vulnerability
+USN-340-1: imagemagick vulnerabilities
+USN-339-1: OpenSSL vulnerability
+USN-338-1: MySQL vulnerabilities
+USN-337-1: imagemagick vulnerability
+USN-336-1: binutils vulnerability
+USN-335-1: heartbeat vulnerability
+USN-334-1: krb5 vulnerabilities
+USN-333-1: libwmf vulnerability
+USN-332-1: gnupg vulnerability
+USN-331-1: Linux kernel vulnerabilities
+USN-330-1: tiff vulnerabilities
+USN-327-2: Firefox regression
+USN-329-1: Thunderbird vulnerabilities
+USN-328-1: Apache vulnerability
+USN-327-1: Firefox vulnerabilities
+USN-326-1: heartbeat vulnerability
+USN-325-1: ruby1.8 vulnerability
+USN-324-1: freetype vulnerability
+USN-320-2: PHP regression
+USN-297-3: Thunderbird vulnerabilities
+USN-323-1: Mozilla vulnerabilities
+USN-296-2: Firefox vulnerabilities
+USN-322-1: Konqueror vulnerability
+USN-321-1: mysql-dfsg-4.1 vulnerability
+USN-320-1: PHP vulnerabilities
+USN-319-2: Linux kernel vulnerability
+USN-313-2: OpenOffice.org vulnerabilities
+USN-319-1: Linux kernel vulnerability
+USN-318-1: libtunepimp vulnerability
+USN-317-1: zope vulnerability
+USN-316-1: installer vulnerability
+USN-315-1: libmms, xine-lib vulnerabilities
+USN-314-1: samba vulnerability
+USN-313-1: OpenOffice.org vulnerabilities
+USN-311-1: Linux kernel vulnerabilities
+USN-312-1: Gimp vulnerability
+USN-310-1: ppp vulnerability
+USN-309-1: libmms vulnerability
+USN-308-1: shadow vulnerability
+USN-307-1: mutt vulnerability
+USN-306-1: MySQL 4.1 vulnerability
+USN-305-1: OpenLDAP vulnerability
+USN-304-1: GnuPG vulnerability
+USN-303-1: MySQL vulnerability
+USN-302-1: Linux kernel vulnerabilities
+USN-297-2: Thunderbird extensions update for recent security update
+USN-301-1: kdm vulnerability
+USN-300-1: wv2 vulnerability
+USN-288-4: dovecot regression fix
+USN-299-1: dhcdbd vulnerability
+USN-298-1: libgd2 vulnerability
+USN-297-1: Thunderbird vulnerabilities
+USN-296-1: Firefox vulnerabilities
+USN-288-3: PostgreSQL client vulnerabilities
+USN-295-1: xine-lib vulnerability
+USN-294-1: courier vulnerability
+USN-293-1: gdm vulnerability
+USN-292-1: binutils vulnerability
+USN-288-2: PostgreSQL server/client vulnerabilities
+USN-291-1: FreeType vulnerabilities
+USN-290-1: awstats vulnerability
+USN-289-1: tiff vulnerabilities
+USN-288-1: PostgreSQL server/client vulnerabilities
+USN-287-1: nagios vulnerability
+USN-286-1: Dia vulnerabilities
+USN-285-1: AWStats vulnerability
+USN-284-1: Quagga vulnerabilities
+USN-274-2: MySQL vulnerability
+USN-283-1: MySQL vulnerabilities
+USN-282-1: nagios vulnerability
+USN-281-1: Linux kernel vulnerabilities
+USN-280-1: X.org server vulnerability
+USN-279-1: libnasl/nessus vulnerability
+USN-278-1: gdm vulnerability
+USN-277-1: TIFF library vulnerabilities
+USN-276-1: Thunderbird vulnerabilities
+USN-275-1: Mozilla vulnerabilities
+USN-274-1: MySQL vulnerability
+USN-273-1: Ruby vulnerability
+USN-272-1: cyrus-sasl2 vulnerability
+USN-271-1: Firefox vulnerabilities
+USN-270-1: xpdf vulnerabilities
+USN-269-1: xscreensaver vulnerability
+USN-268-1: kaffeine vulnerability
+USN-267-1: mailman vulnerability
+USN-266-1: dia vulnerabilities
+USN-265-1: cairo/Evolution vulnerability
+USN-264-1: gnupg vulnerability
+USN-263-1: Linux kernel vulnerabilities
+USN-262-1: Ubuntu 5.10 installer vulnerability
+USN-261-1: PHP vulnerabilities
+USN-260-1: flex vulnerability
+USN-259-1: irssi vulnerability
+USN-258-1: PostgreSQL vulnerability
+USN-257-1: tar vulnerability
+USN-256-1: bluez-hcidump vulnerability
+USN-255-1: openssh vulnerability
+USN-254-1: noweb vulnerability
+USN-253-1: heimdal vulnerability
+USN-252-1: gnupg vulnerability
+USN-251-1: libtasn vulnerability
+USN-248-2: unzip regression fix
+USN-250-1: linux-source-2.6.12 vulnerability
+USN-249-1: xpdf, poppler, kdegraphics vulnerabilities
+USN-248-1: unzip vulnerability
+USN-247-1: heimdal vulnerability
+USN-246-1: imagemagick vulnerabilities
+USN-245-1: KDE library vulnerability
+USN-244-1: Linux kernel vulnerabilities
+USN-243-1: tuxpaint vulnerability
+USN-242-1: mailman vulnerabilities
+USN-241-1: Apache vulnerabilities
+USN-240-1: bogofilter vulnerability
+USN-194-2: texinfo regression bug fix
+USN-235-2: sudo vulnerability
+USN-236-2: xpdf vulnerabilities in kword, kpdf
+USN-239-1: libapache2-mod-auth-pgsqlvulnerability
+USN-238-1: blender vulnerability
+USN-237-1: nbd vulnerability
+USN-236-1: xpdf vulnerabilities
+USN-235-1: sudo vulnerability
+USN-234-1: cpio vulnerability
+USN-233-1: fetchmail vulnerability
+USN-232-1: PHP vulnerabilities
+USN-231-1: Linux kernel vulnerabilities
+USN-230-2: ffmpeg/xine-lib vulnerability
+USN-230-1: ffmpeg vulnerability
+USN-229-1: Zope vulnerability
+USN-228-1: curl library vulnerability
+USN-222-2: Perl vulnerability
+USN-227-1: xpdf vulnerabilities
+USN-226-1: Courier vulnerability
+USN-225-1: Apache 2 vulnerability
+USN-224-1: Kerberos vulnerabilities
+USN-180-2: MySQL 4.1 vulnerability
+USN-223-1: Inkscape vulnerability
+USN-222-1: Perl vulnerability
+USN-221-1: ipsec-tools vulnerability
+USN-220-1: w3c-libwww vulnerability
+USN-219-1: Linux kernel vulnerabilities
+USN-218-1: netpbm vulnerabilities
+USN-217-1: Inkscape vulnerability
+USN-190-2: ucs-snmp vulnerability
+USN-216-1: GDK vulnerabilities
+USN-151-4: rpm vulnerability
+USN-215-1: fetchmail vulnerability
+USN-214-1: libungif vulnerabilities
+USN-206-2: Fixed lynx packages for USN-206-1
+USN-151-3: zlib vulnerabilities
+USN-213-1: sudo vulnerability
+USN-212-1: libgda2 vulnerability
+USN-211-1: Enigmail vulnerability
+USN-210-1: netpbm vulnerability
+USN-209-1: SSH server vulnerability
+USN-208-1: graphviz vulnerability
+USN-207-1: PHP vulnerability
+USN-206-1: Lynx vulnerability
+USN-205-1: Curl and wget vulnerabilities
+USN-204-1: SSL library vulnerability
+USN-203-1: Abiword vulnerabilities
+USN-202-1: KOffice vulnerability
+USN-201-1: SqWebmail vulnerabilities
+USN-200-1: Thunderbird vulnerabilities
+USN-199-1: Linux kernel vulnerabilities
+USN-198-1: cfengine vulnerabilities
+USN-197-1: Shorewall vulnerability
+USN-196-1: Xine library vulnerability
+USN-195-1: Ruby vulnerability
+USN-194-1: texinfo vulnerability
+USN-155-3: Fixed mozilla locale packages
+USN-193-1: dia vulnerability
+USN-192-1: Squid vulnerability
+USN-191-1: unzip vulnerability
+USN-190-1: SNMP vulnerability
+USN-189-1: cpio vulnerabilities
+USN-188-1: AbiWord vulnerability
+USN-187-1: Linux kernel vulnerabilities
+USN-186-2: Ubuntu 4.10 packages for USN-186-1 Firefox security update
+USN-186-1: Mozilla and Firefox vulnerabilities
+USN-185-1: CUPS vulnerability
+USN-184-1: umount vulnerability
+USN-183-1: Squid vulnerabilities
+USN-83-2: LessTif 1 vulnerabilities
+USN-182-1: X server vulnerability
+USN-181-1: Mozilla products vulnerability
+USN-180-1: MySQL vulnerability
+USN-179-1: openssl weak default configuration
+USN-178-1: Linux kernel vulnerabilities
+USN-160-2: Apache vulnerability
+USN-177-1: Apache 2 vulnerabilities
+USN-176-1: kcheckpass vulnerability
+USN-145-2: wget bug fix
+USN-175-1: ntp server vulnerability
+USN-173-4: PCRE vulnerabilities
+USN-173-3: Fixed apache2 packages for USN-173-2
+USN-174-1: courier vulnerability
+USN-173-2: PCRE vulnerability
+USN-173-1: PCRE vulnerability
+USN-172-1: lm-sensors vulnerability
+USN-171-1: PHP4 vulnerabilities
+USN-170-1: gnupg vulnerability
+USN-169-1: Linux kernel vulnerabilities
+USN-168-1: Gaim vulnerabilities
+USN-167-1: AWStats vulnerability
+USN-166-1: Evolution vulnerabilities
+USN-165-1: heartbeat vulnerability
+USN-164-1: netpbm vulnerability
+USN-163-1: xpdf vulnerability
+USN-162-1: ekg and Gadu library vulnerabilities
+USN-161-1: bzip2 utility vulnerability
+USN-160-1: Apache 2 vulnerabilities
+USN-157-2: Updated Mozilla Thunderbird Enigmail plugin for Ubuntu 4.10
+USN-159-1: unzip vulnerability
+USN-158-1: gzip utility vulnerability
+USN-157-1: Mozilla Thunderbird vulnerabilities
+USN-156-1: TIFF vulnerability
+USN-155-2: Updated Epiphany packages to match Mozilla security update
+USN-149-3: Ubuntu 4.10 update for Firefox vulnerabilities
+USN-155-1: Mozilla vulnerabilities
+USN-154-1: vim vulnerability
+USN-153-1: fetchmail vulnerability
+USN-149-2: Fixed Firefox packages for USN-149-1
+USN-151-2: zlib vulnerabilities
+USN-152-1: PAM/NSS LDAP vulnerabilitiy
+USN-151-1: zlib vulnerability
+USN-150-1: KDE library vulnerability
+USN-149-1: Firefox vulnerabilities
+USN-147-2: Fixed php4-pear packages for USN-147-1
+USN-148-1: zlib vulnerability
+USN-147-1: PHP XMLRPC vulnerability
+USN-146-1: Ruby vulnerability
+USN-145-1: wget vulnerabilities
+USN-144-1: dbus vulnerability
+USN-143-1: Linux amd64 kernel vulnerabilities
+USN-142-1: sudo vulnerability
+USN-141-1: tcpdump vulnerability
+USN-140-1: Gaim vulnerability
+USN-139-1: Gaim vulnerability
+USN-138-1: gedit vulnerability
+USN-137-1: Linux kernel vulnerabilities
+USN-136-2: Fixed packages for USN-136-1
+USN-136-1: binutils vulnerability
+USN-135-1: gdb vulnerabilities
+USN-114-2: Fixed packages for USN-114-1
+USN-134-1: Firefox vulnerabilities
+USN-133-1: Apache utility vulnerability
+USN-132-1: ImageMagick vulnerabilities
+USN-131-1: Linux kernel vulnerabilities
+USN-130-1: TIFF library vulnerability
+USN-129-1: Squid vulnerability
+USN-128-1: nasm vulnerability
+USN-127-1: bzip2 vulnerabilities
+USN-126-1: GNU TLS library vulnerability
+USN-125-1: Gaim vulnerabilities
+USN-124-2: Fixed packages for USN-124-1
+USN-124-1: Mozilla and Firefox vulnerabilities
+USN-123-1: Xine library vulnerabilities
+USN-122-1: Squid vulnerability
+USN-121-1: OpenOffice.org vulnerability
+USN-120-1: Apache 2 vulnerability
+USN-119-1: tcpdump vulnerabilities
+USN-118-1: PostgreSQL vulnerabilities
+USN-117-1: cvs vulnerability
+USN-116-1: gzip vulnerabilities
+USN-115-1: Kommander vulnerability
+USN-114-1: kimgio vulnerability
+USN-113-1: libnet-ssleay-perl vulnerability
+USN-112-1: PHP4 vulnerabilities
+USN-111-1: Squid vulnerability
+USN-110-1: Linux kernel vulnerabilities
+USN-109-1: MySQL vulnerability
+USN-108-1: GDK vulnerability
+USN-107-1: racoon vulnerability
+USN-106-1:Gaim vulnerabilities
+USN-105-1: PHP4 vulnerabilities
+USN-104-1: unshar vulnerability
+USN-103-1: Linux kernel vulnerabilities
+USN-102-1: shar vulnerabilities
+USN-101-1: telnet vulnerabilities
+USN-100-1: cdrecord vulnerability
+USN-99-2: Fixed php4 packages for USN-99-1
+USN-99-1: PHP4 vulnerabilities
+USN-98-1: OpenSLP vulnerabilities
+USN-97-1: libxpm vulnerability
+USN-96-1: mySQL vulnerabilities
+USN-95-1: Linux kernel vulnerabilities
+USN-94-1: Perl vulnerability
+USN-93-1: Squid vulnerability
+USN-92-1: LessTif vulnerabilities
+USN-91-1: EXIF library vulnerability
+USN-90-1: Imagemagick vulnerability
+USN-89-1: XML library vulnerabilities
+USN-88-1: reportbug information disclosure
+USN-87-1: Cyrus IMAP server vulnerability
+USN-86-1: cURL vulnerability
+USN-85-1: Gaim vulnerabilities
+USN-84-1: Squid vulnerabilities
+USN-66-2: PHP vulnerability
+USN-78-2: Fixed mailman packages for USN-78-1
+USN-83-1: LessTif 2 vulnerabilities
+USN-82-1: Linux kernel vulnerabilities
+USN-81-1: iptables vulnerability
+USN-80-1: mod_python vulnerability
+USN-79-1: PostgreSQL vulnerabilities
+USN-78-1: Mailman vulnerability
+USN-77-1: Squid vulnerabilities
+USN-76-1: Emacs vulnerability
+USN-74-2: Fixed Postfix packages for USN-74-1
+USN-75-1: cpio vulnerability
+USN-74-1: Postfix vulnerability
+USN-73-1: Python vulnerability
+USN-72-1: Perl vulnerabilities
+USN-71-1: PostgreSQL vulnerability
+USN-70-1: libdbi-perl vulnerabilities
+USN-69-1: Evolution vulnerability
+USN-68-1: enscript vulnerabilities
+USN-67-1: Squid vulnerabilities
+USN-66-1: PHP vulnerabilities
+USN-65-1: Apache utility script vulnerability
+USN-64-1: xpdf, CUPS vulnerabilities
+USN-63-1: MySQL client vulnerability
+USN-62-1: imagemagick vulnerability
+USN-61-1: vim vulnerabilities
+USN-60-0: Linux kernel vulnerabilities
+USN-59-1: mailman vulnerabilities
+USN-58-1: MIT Kerberos server vulnerability
+USN-57-1: Linux kernel vulnerabilities
+USN-56-1: exim4 vulnerabilities
+USN-55-1: imlib2 vulnerabilities
+USN-54-1: TIFF library tool vulnerability
+USN-53-1: imlib vulnerabilities
+USN-52-1: vim vulnerability
+USN-51-1: teTeX auxiliary script vulnerability
+USN-50-1: CUPS vulnerabilities
+USN-49-1: debmake vulnerability
+USN-48-1: xpdf, tetex-bin vulnerabilities
+USN-47-1: Linux kernel vulnerabilities
+USN-46-1: TIFF library vulnerability
+USN-45-1: nasm vulnerability
+USN-44-1: perl information leak
+USN-43-1: groff utility vulnerabilities
+USN-42-1: Xine library vulnerabilities
+USN-41-1: Samba vulnerability
+USN-40-1: PHP vulnerabilities
+USN-39-1: Linux amd64 kernel vulnerability
+USN-38-1: Linux kernel vulnerabilities
+USN-37-1: cyrus21-imapd vulnerability
+USN-36-1: NFS statd vulnerability
+USN-35-1: imagemagick vulnerabilities
+USN-34-1: OpenSSH information leakage
+USN-33-1: libgd vulnerabilities
+USN-32-1: mysql vulnerabilities
+USN-31-1: cyrus21-imapd vulnerabilities
+USN-30-1: Linux kernel vulnerabilities
+USN-29-1: samba vulnerability
+USN-28-1: sudo vulnerability
+USN-27-1: libxpm4 vulnerability
+USN-26-1: bogofilter vulnerability
+USN-25-1: libgd2 vulnerability
+USN-24-1: openssl script vulnerability
+USN-23-1: apache2 vulnerability
+USN-22-1: samba vulnerability
+USN-21-1: libgd vulnerabilities
+USN-20-1: Ruby CGI module vulnerability
+USN-19-1: squid vulnerabilities
+USN-18-1: zip vulnerability
+USN-17-1: passwd vulnerability
+USN-16-1: perl vulnerabilities
+USN-15-1: lvm10 vulnerability
+USN-14-1: xpdf vulnerabilities
+USN-13-1: groff utility vulnerability
+USN-12-1: ppp Denial of Service
+USN-11-1: libgd2 vulnerabilities
+USN-10-1: XML library vulnerabilities
+USN-9-1: tetex-bin vulnerabilities
+USN-8-1: gaim vulnerabilities
+USN-7-1: imagemagick vulnerability
+USN-6-1: postgresql contributed script vulnerability
+USN-5-1: gettext vulnerabilities
+USN-4-1: Standard C library script vulnerabilities
+USN-3-1: GhostScript utility script vulnerabilities
+USN-2-1: xpdf vulnerabilities
+USN-1-1: PNG library vulnerabilities
+

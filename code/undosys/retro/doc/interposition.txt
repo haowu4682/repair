@@ -1,0 +1,35 @@
+Interposition
+=============
+
+This documentation describes the technical details of interposition in
+the `retro' module.
+
+System calls
+============
+
+The `retro' module intercepts system calls in the kernel, in two ways.
+
+Most system calls are implemented as C functions. Simply overwrite
+the function pointers in sys_call_table.
+
+Seven ptregscalls, namely clone, execve, fork, iopl, rt_sigreturn,
+sigaltstack, and vfork, are implemented as assembly code stubs. They
+require a different mechanism. Search for instruction
+	callq sys_*
+in each stub_*, and overwrite the relative address in callq.
+
+Note that those pages containing sys_call_table and the stubs are
+mapped as read-only. Our workaround is to create writable shadow pages
+mapping of the same code range.
+
+Kprobes
+=======
+
+In addition, `retro' records the deletion of every inode by intercepting
+the `generic_drop_inode' function, using kprobes/jprobe. This is used to
+compute inode generation numbers, especially for filesystems like
+/dev/pts and special files like sockets.
+
+A jprobe only modifies the start of a function, which can be optimized
+as a simple jmp instruction. Thus it should not incur a notable
+performance penalty.

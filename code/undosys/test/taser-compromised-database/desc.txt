@@ -1,0 +1,33 @@
+Compromised database
+
+Scenario: 
+
+#
+# ? how to mimick?
+#
+1. Authenticated MySQL clients update a MySQL database running on a
+remote server.
+
+2. An attacker launches a remote attack on the Samba daemon running on
+the target system, gets a root shell (=>root login) and creates an SSH
+backdoor by writing his public key to root’s authorized_keys2 file. (yep)
+
+3. Later, other (?) remote legitimate clients insert transactions into
+the database. 
+
+4. After six hours, the attacker uses the ssh backdoor to
+log back into the machine. He issues a local MySQL query to remove
+some transactions from the database. 
+
+5. After that, more legitimate clients update the database. 
+
+Correct recovery actions: 
+
+1. removing his public key from the authorized_keys2 
+2. recover two files associated with a MySQL table in the compromised database. 
+
+Detection point: 
+
+Use the Snort [20] network IDS to detect the Samba attack. Since Snort
+does not give us enough host related information about the attack, we
+then use Forensix tools [8] to de-

@@ -1,0 +1,37 @@
+Code that deals with Linux syscalls
+
+    linux/kernel/trace/trace_syscalls.c
+    valgrind/coregrind/m_syswrap/syswrap-generic.c, syswrap-linux.c
+
+Notes about current code
+
+    file representation of saved syscalls: strace-4.5.19/record.x
+    saved syscalls get written into and read from /tmp/record.log
+
+"Hello world" record/replay:
+
+    ( cd test && sudo ./setup.sh )
+    cp /tmp/record.log graph/record.log
+    ( cd graph && make )
+
+Old code:
+
+    replay/replay: re-execute syscalls
+
+Btrfs:
+
+    http://btrfs.wiki.kernel.org/index.php/Btrfs_source_repositories
+
+Graphing test app with python undo manager:
+
+    cd libundo
+    make		## might need to install python-dev or python2.6-dev
+    rm -f /tmp/record.log
+    ../strace-4.5.19/strace -f ./undotest.py
+
+    cd ../graph
+    mv /tmp/record.log record.log
+    make trace.ascii
+    ./graph.py -e trace.dot record.log && make trace.png
+    open trace.png
+

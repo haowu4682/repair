@@ -1,0 +1,7 @@
+
+Third party libraries from the web.
+
+* md5.js: Javascript MD5 library from http://www.webtoolkit.info/
+
+* io.js : Library for file/dir IO from a FF JS extension. From:
+  http://kb.mozillazine.org/Dev_:_Extensions_:_Example_Code_:_File_IO_:_jsio

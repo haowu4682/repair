@@ -1,0 +1,5 @@
+*
+!.gitignore
+!config.m4
+!undo.c
+!NOTES

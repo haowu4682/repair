@@ -1,0 +1,10 @@
+*.o
+*.ko
+*.cmd
+*.order
+*.symvers
+*.mod.*
+.tmp*
+nm.h
+hook_syscalls.inc
+trace_syscalls.inc

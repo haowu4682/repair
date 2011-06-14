@@ -1,0 +1,40 @@
+#!/usr/bin/expect
+
+# run ./setup-ssh.sh first
+
+set timeout -1
+spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "root\n"
+
+expect ":~# "
+send "echo foo > /attack.txt\n"
+
+expect ":~# "
+send "echo blah >> /var/log/boot\n"
+
+expect ":~# "
+send "logout\n"
+wait
+
+
+sleep 1
+
+
+spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "root\n"
+
+expect ":~# "
+send "echo save > /save.txt\n"
+
+expect ":~# "
+send "cat /var/log/boot\n"
+
+expect ":~# "
+send "rm /restart-sshd\n"
+
+expect ":~# "
+send "logout\n"
+wait
+

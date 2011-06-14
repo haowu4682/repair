@@ -1,0 +1,29 @@
+#!/usr/bin/expect
+
+# run ./setup-ssh.sh first
+
+set timeout -1
+spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "root\n"
+
+expect ":~# "
+send "cd /tmp\n"
+
+expect ":/tmp# "
+send "tar zxvf apr-1.3.3.tar.gz\n"
+
+expect ":/tmp# "
+send "cd apr-1.3.3\n"
+
+expect ":/tmp/apr-1.3.3# "
+send "./configure\n"
+
+expect ":/tmp/apr-1.3.3# "
+send "time make\n"
+
+expect ":/tmp/apr-1.3.3# "
+send "logout\n"
+
+wait
+

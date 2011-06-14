@@ -1,0 +1,29 @@
+Syscall
+=======
+
+This document describes how syscall logs are generated and processed.
+
+Log
+===
+
+The `retro' records each syscall at its enter and exit. For performance
+reasons, `retro' does _not_ buffer any data but directly streams data
+into relayfs. Therefore, there are two records corresponding to each
+syscall in the raw log.
+
+Merge
+=====
+
+To simplify processing, the repair script merges the two records into
+one record object, where `tic' and `tac' refer to the timestamps of
+enter and exit, respectively.
+
+Mapping
+=======
+
+TODO
+
+Database
+========
+
+TODO

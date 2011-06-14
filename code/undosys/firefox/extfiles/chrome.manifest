@@ -1,0 +1,4 @@
+content %EXT_NAME%                              chrome/content/
+overlay chrome://browser/content/browser.xul    chrome://%EXT_NAME%/content/browserOverlay.xul
+locale  %EXT_NAME%                              en-US           chrome/locale/en-US/
+skin    %EXT_NAME%                              classic/1.0     chrome/skin/

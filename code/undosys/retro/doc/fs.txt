@@ -1,0 +1,30 @@
+Filesystem
+==========
+
+The `retro' module exports information using the debugfs filesystem.
+You can find the following files inside the `retro' directory, usually
+under /sys/kernel/debug.
+
+  enabled:
+
+	This is used to turn on/off tracing. By default `retro' traces
+	the whole system.
+
+  process:
+
+	This is used to support per-process tracing. If set, `retro'
+	only traces processes with ptrace enabled.
+
+  ctl:
+
+	This is used to specify the pid of the controller (retroctl),
+	the syscalls of which `retro' will ignore.
+
+  syscallN:
+
+	Syscall data, using relayfs.
+
+  kprobesN:
+
+	Kprobes data (e.g., inode deletion), using relayfs.
+

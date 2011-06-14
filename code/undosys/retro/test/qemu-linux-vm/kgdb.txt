@@ -1,0 +1,25 @@
+In kernel configuration, enable kgdb and kdb
+
+Start qemu with:
+    -append "... console=ttyS0 kgdboc=ttyS0" -serial telnet:localhost:12345,server
+    (already in qemu.sh)
+
+Run qemu.sh, then telnet localhost 12345
+
+When you want to attach with kgdb, break into kgdb/kdb in the telnet session:
+    ^]
+    telnet> send break
+    kdb> kgdb
+    kgdb> g
+
+    ^]
+    telnet> close
+
+    $ gdb vmlinux
+    (gdb) target remote localhost:12345
+
+refs:
+  http://blog.scottt.tw/2010/01/kgdb-tutorial.html
+  http://linux-hacks.blogspot.com/2008/05/setting-up-kgdb-using-kvmqemu.html
+  http://pierre.palats.com/scratch/index.php?post/2008/10/22/Using-Qemu-in-screen2
+

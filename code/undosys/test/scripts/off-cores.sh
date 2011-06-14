@@ -1,0 +1,12 @@
+#!/bin/sh -x
+
+if id | grep -qv uid=0; then
+    echo "Must run setup as root"
+    exit 1
+fi
+
+for i in `seq 1 7`; do
+    echo 0 > "/sys/devices/system/cpu/cpu${i}/online"
+done
+
+cat /sys/devices/system/cpu/online

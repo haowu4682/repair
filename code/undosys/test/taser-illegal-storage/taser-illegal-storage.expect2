@@ -1,0 +1,17 @@
+#!/usr/bin/expect
+
+set timeout -1
+
+# 5. login as root user
+spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "root\n"
+
+# 5'. execute ls
+expect ":~# "
+send "ls\n"
+
+expect ":~# "
+send "logout\n"
+wait
+

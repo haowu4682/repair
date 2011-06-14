@@ -1,0 +1,7 @@
+327232 fetches, 10 max parallel, 3.35086e+08 bytes, in 60 seconds
+1024 mean bytes/connection
+5453.87 fetches/sec, 5.58476e+06 bytes/sec
+msecs/connect: 0.133123 mean, 10.631 max, 0.016 min
+msecs/first-response: 1.3484 mean, 1660.84 max, 0.078 min
+HTTP response codes:
+  code 200 -- 327232

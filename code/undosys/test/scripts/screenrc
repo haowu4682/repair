@@ -1,0 +1,18 @@
+startup_message off
+
+escape ``
+
+vbell off
+
+defnonblock 5
+
+hardstatus on
+hardstatus alwayslastline
+hardstatus string "%{.bW}%-w%{.rW}%n %t%{-}%+w %=%{..G} %H %{..Y} %m/%d %C%a "
+
+screen bash
+screen sudo ../syslogs/example/snapmgr/snapmgr.py
+screen sudo ../syslogs/example/daemon/daemon.py
+screen bash
+
+defscrollback 5000

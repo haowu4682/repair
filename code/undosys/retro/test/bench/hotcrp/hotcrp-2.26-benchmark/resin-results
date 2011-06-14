@@ -1,0 +1,44 @@
+
+--- paper.php experiment ---
+
+On request in hotcrp-resin makes:
+ - 151 calls to echo
+ - 13 DB queries (2 of which are for the policy).
+   - DB queries: one gets 20 fields at once, the rest get 5 or fewer.
+ - Output 8.5K of HTML
+ - Roughly 92ms with -g -O0
+
+Using php -N instead of Apache:
+ - Latencies of about 92ms running with php -N (with -g -O0) match Web
+   client visible latencies.  Also, when running throughput with 30
+   clients via Apache, throughput is about 1/.092 (11req/sec,
+   22req/sec with two cores).
+
+------------------------------
+Mar 2:
+
+NCHAIR=2
+NPC=33
+NAUTH=300
+PAPERSIZE=100000
+
+Results for paper.php, 1000 reps:
+
+4 cores:
+hotcrp-2.26-orig paper.php 1000 0.066590
+hotcrp-2.26-resin paper.php 1000 0.094790
+
+1 core:
+hotcrp-2.26-orig paper.php 1000 0.066930
+hotcrp-2.26-resin paper.php 1000 0.088110
+
+hotcrp-2.26-orig paper.php 1000 0.065190
+hotcrp-2.26-resin paper.php 1000 0.088090
+
+Avg over 2000 reps: 66ms vs 88ms
+
+
+difference 22ms
+ - ~20ms for general slowness
+ - ~2ms for echo
+ - ~2ms for DB queries

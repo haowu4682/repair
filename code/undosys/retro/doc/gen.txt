@@ -1,0 +1,42 @@
+File generation number
+========================
+
+It is straightforward to use <dev, ino> to identify files. However, ino
+may be reused, which leads to ambiguity. Therefore, we add one more
+component, generation number, for a unique identity <dev, ino, gen>.
+
+Problems
+========
+
+Some filesystems like ext2/3/4 and reiserfs do support file versions,
+which can retrieved using ioctl from user space.
+	ioctl(fd, FS_IOC_GETVERSION, ...)
+However, their version numbers are usually 32 bit, which can easily
+overflow. Besides, the version numbers may also be altered using ioctl.
+	ioctl(fd, FS_IOC_SETVERSION, ...)
+
+Some filesystems like ext4 record creation time for each file, which may
+be used as gen, assuming that the system time cannot be tampered. Note
+that ctime cannot be used as gen, because it is updated every time the
+inode data is modified.
+
+A more serious problem is that there is no version number nor creation
+time for special files, such as sockets, because they are not part of
+the on-disk filesystem.
+
+This is also true for filesystems like devpts. For example, Alice first
+logs in and then logs out. So does Bob later. For the two logins, the
+system creates the same file /dev/pts/N twice, with the same values of
+dev, ino (N+3), and rdev (136, N), which are indistinguishable.
+
+Tracking inode deletion
+=======================
+
+Our approach is to track the deletion of each inode, by intercepting
+calls to `generic_drop_inode' using kprobes/jprobe. Each record is in
+the format of <time, dev, ino>. Thus, given <dev, ino> at t1, a naive
+way to compute gen is counting the number of records with the same
+<dev, ino> earlier than t1.
+
+Special care has to be taken for /dev/ptmx. Its gen should be that of
+the linked slave, not the master itself.

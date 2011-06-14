@@ -1,0 +1,17 @@
+#!/usr/bin/expect
+
+set timeout -1
+
+# 1. login as root
+spawn ssh root@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "root\n"
+
+# 2. delete project.c & p2.h
+expect ":~# "
+send "rm src/project.c hfiles/p2.h\n"
+
+expect ":~# "
+send "logout\n"
+wait
+

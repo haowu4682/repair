@@ -1,0 +1,39 @@
+misc interesting ideas -- done
+    sometimes we don't need to repair an object -- it's either removed later,
+    or completely overwritten before it's read by anyone.  how to detect this?
+
+    sometimes it might be OK to replay system calls verbatim (e.g. write to
+    file) if there were, infact, no preceding dependencies from that process;
+    i.e., if that process were to execute, all of its inputs would stay the
+    same, and thus it would issue the same exact write system call.  this
+    might be the case for something like lastlog, if not for the pesky read!
+
+    make redo of O_APPEND writes work well without having to re-execute a
+    process just to append to the end of a file.  (should fix wtmp)
+
+    annotate pty's with users; in the pty undo manager, coalesce all output
+    and send a diff of pty output to the user if anything changed (instead
+    of having to re-run sshd which is on the other end of the pty).
+
+misc interesting ideas -- not done yet
+    for some file types, it's possible to associate sub-objects with file
+    offsets.  exploit this fact to implement secure delegation for lastlog,
+    utmp, etc.  need an additional "dealloc" call that will allow subsequent
+    callers to reuse offsets for a different purpose.
+
+    modify sshd to expose lastlog information flowing through sshd, and
+    eventually flowing to the pty (and changing, since last-logged-in will
+    be different).
+
+    re-execute under strace and monitor any dependency edges coming in/out
+    of the process as it runs.  undo edges that don't appear in re-execution,
+    add in any new edges that weren't in the graph before, potentially roll
+    back files to appropriate versions when they're read in, and don't
+    re-execute child processes or functions unless necessary.
+	==> This might actually save us in case of a compromised httpd or sshd!
+	    All we need to do is to verify that the bulk of the operations were
+	    executed the same way.  So, we re-issue the same HTTP requests to
+	    Apache, and see that it spawns the same CGI scripts or generates
+	    the same exact output.  Don't actually run the CGI scripts, but
+	    just check that the arguments are the same.
+

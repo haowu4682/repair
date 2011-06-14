@@ -1,0 +1,28 @@
+new bench summary
+
+1. kernel build
+
+  w/o retro : 1-core = 295.40 s
+  w/  retro : 1-core = 505.74 s
+  w/  retro : 2-core = 351.69 s
+
+   log size : 2.7G -> 869M (xxx sec)
+   snapshot : 4095412 - 3787172 = 308240
+
+2. hotcrp
+
+  w/o retro : 1-core = 48.33 s
+  w/  retro : 1-core = 61.51 s
+  w/  retro : 2-core = 49.83 s
+
+   log size : 204M -> 68M (4.46 sec)
+   snapshot : 2612676 - 2612356 = 320
+
+3. apache
+
+  w/o retro : 1-core = 7260.38 req/s
+  w/  retro : 1-core = 3195.99 req/s
+  w/  retro : 2-core = 5453.87 req/s
+
+   log size : 273M -> 98 M (6.37 sec)
+   snapshot : 2535052 - 2534780 = 272

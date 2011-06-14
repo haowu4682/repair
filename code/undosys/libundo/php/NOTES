@@ -1,0 +1,4 @@
+1. run phpize
+2. configure --enable-undo
+3. make and get undo.so in the "module" directory
+4. add "extension=undo.so" (and its parent directory to extension_dir) in php.ini

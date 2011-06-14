@@ -1,0 +1,28 @@
+To support multiple repair operations, we need two things:
+
+ - Record new graph structure.  One possibility is to simply serialize
+   all graph nodes using Python's pickle to disk, and when loading the
+   graph a second time, load a pickled object with a given name instead
+   of loading the same object from the original retro log.
+
+ - Update checkpoints.  One possibility is to augment the node manager
+   API, adding a method node::save_checkpoint(cp), which saves the current
+   state of the node, overwriting existing checkpoint cp.  The repair
+   controller should call save_checkpoint() for each checkpoint it
+   encounters for a node being repaired, to update the checkpoint.
+
+Furthermore, to undo past repairs, we need to explicitly represent the
+repair operation in the graph.  One idea is to represent the repair
+controller as an actor, with a single action -- the repair action.
+The repair action has a dependency to the objects that were initially
+passed to repair() [e.g., an HTTP request object], and on redo, the
+repair action modifies these objects accordingly [e.g., write a new
+HTTP request that doesn't contain malware].
+
+The repair action also has a dependency from a repair arguments node.
+The repair arguments node contains the list of nodes and corresponding
+values to write to those (e.g., the HTTP request object and the fixed
+HTTP request for it).  The repair arguments node can be used to undo
+the repair, by creating a second repair action that modifies the repair
+arguments node of the first repair action.
+

@@ -1,0 +1,25 @@
+
+Stuxnet Worm
+
+- one of the latet, most powerful: described as "super weapon", "Pandora's Box"
+- industrial impact: SIMATIC WinCC SCADA system of Siemens
+  => great target & motivation (current virus scanner & IDS are not doing well)
+  
+- 13 variations, and 600+ samples with different hash values
+  => if one of clusters detect one of variations, we can resolve all of entangled variants
+
+- local behavior
+  1) hook ntdll
+  2) hide files
+  => retro can deal with all
+  
+- spread method
+  1) Shortcut file parsing Vulnerability
+    => this one is particularly interesting! as Meelap said it spread through flash disk!
+  2) RPC remote execution Vulnerability
+  3) Print Spooler Service Vulnerability
+  => distributed one should connect these method to resolve the intermingled behaviors
+  
+ref.
+ http://www.antiy.net/en/analysts/Report_On_the_Attacking_of_Worm_Struxnet_by_antiy_labs.pdf
+ http://www.antiy.net/en/analysts/Report_On_the_Attacking_of_Worm_Struxnet_by_antiy_labs.html

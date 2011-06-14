@@ -1,0 +1,81 @@
+//
+// undosys, kernel module
+//
+
+1) components
+
+ * hooking syscall on linux
+   - syslogs.c : main module
+   - hooks.h   : hook macro (complicated, sorry)
+   - syscall_hooks.h : syscall generators (choose which syscall you want to hook)
+   - syscall_hooks_min.h : minimal syscall to test (without distroying system)
+
+ * accessing un-exported functions/variables
+   - config.py : see how to use
+   - config*.h : symbol's address table
+
+ * xdr in kernel space
+   - krn_xdr.h	  : general xdr packing routines (mimic by reversing)
+   - record_xdr.c : generated from record.x
+   - cache.h      : cache framework for xdr data structures
+   - convert_xdr.py & convert_record.py
+   - !modeprobe nfs
+  
+ * system call definitions/prototype
+   - syscall_proto.h : prototype declarations
+   - sysarg.h & sysarg.c : infra-structure to lookup syscall arguments
+   - ia32_syscall_def.h & ia32_sys_table.h : 32bit compatibility syscall table
+
+ * obsolete
+   - btrfsctl & btrfs_ioctl.h : btrfs interface workaround in kernel
+
+ * example
+   - example/daemon  : compressing record logs regularly
+   - example/snapmgr : compressing snapshot regularly
+   - example/loader  : loader to trace child process
+
+2) design
+
+   +-------------+ +--------------+ +------------+
+   | daemon      | | snapmgr      | | loader     |
+   |  -> record  | |  -> snapshot | |            |
+   +-------------+ +--------------+ +----/-------+
+   -------------------------------------/-----------------
+   /proc/undosys <---------------------/
+     /tracing  : pid to trace
+     /stat     : size record buffer
+     /record   : xdr log
+     /mask     : undo system call interfaces
+   +---------------------------+
+   | syslogs                   |
+   +---------------------------+
+
+3) compilation options
+
+ * policy: flush memory right after 30M (margin is 30M for safty)
+ * options
+ 
+   #define RECORD_BUF_SIZE   (60000000)
+   #define RECORD_BUF_MARGIN (30000000)
+   #define RECORD_ARCHIVE "/tmp/record"
+
+   // test with re-loadable system calls
+   #define TEST_WITH_MINIMAL_SYSCALL
+   
+   // depress the dbg outputs
+   #define BEST_PERFORMANCE
+
+4) execution
+
+ * modprobe nfs
+ * insmod syslogs.ko
+ * syslogs/example/loader/loader [bin]
+
+5) note
+
+ * tracing processes: modify process flag bit in task_struct & inherit to children
+ * not using btrfs anymore
+ * using splice to copy
+ * please, carefully adjust cache size
+ 
+ 

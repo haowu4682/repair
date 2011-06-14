@@ -1,0 +1,146 @@
+
+Webapp data is typically stored in a database and webapp repair
+necessarily has to deal with DB repair. There are several challenges
+in getting DB repair to work well.
+
+One approach to support DB repair is to have the DB be a single data
+node in the action graph, with query actions having input/output
+dependencies on it. The DB is periodically snapshotted, using DB's
+native mechanisms if it supports snapshotting, or doing it at the FS
+level using btrfs. However, this adds many false dependencies and
+makes for very inefficient repair -- the redo of any one query causes
+the DB to rollback to state before that query and all subsequent
+queries need to be redone. Even worse, if multiple HTTP requests are
+being processsed concurrently, and a redo of a query causes a redo of
+the entire HTTP request, this could cause a domino effect, rolling
+back the DB further back in time and causing redo of more queries.
+This argues for having data nodes that are portions of the DB rather
+than the entire DB itself. 
+
+Another approach is to model each row in the DB as an individual data
+node, and add dependencies between query actions and the rows that
+were input/output to the query action during recording. However, this
+is not sufficient since it doesn't capture a query's potential
+dependencies on extra row insertions or deletions that happened during
+redo, either because of new INSERT / DELETE actions or because
+cancelled actions.
+
+The solution then is to use query expressions as the source of the
+dependencies and also use them to determine DB partitions. Tables are
+one level of DB partitions. Each table itself can further be
+partitioned along a single column, chosen based on what is used by
+most queries (eg: primary key). For example, in a Users table, each
+uid (or a range of uids) can be DB partition, and a SELECT with
+Name='alice' has a dependency on DB partiton Users:Name:'alice'. The
+same table cannot be partitioned along multiple columns, since that
+interacts poorly with rollback -- rolling back a DB partition on one
+column can cause many DB partitions on the other column to rollback,
+and so on. If we determine that a query cannot be restrict on the
+column by which a DB table is partitioned, then dependency is added to
+the entire table (ie., all the partitions of that table).
+
+The above approach works if all queries are well partitioned. However,
+if there is a redo of even one query Q that depends on an entire
+table, that causes a roll back of the entire table, and can result in
+re-execution of a lot of queries, even though only one row may have
+changed in the redo of Q. To avoid this, we propose a "query
+splitting" trick. The idea is to have the Q.equiv() dry-run the query
+and get the diff between result of original execution and redo. It can
+then add a new 'split query' Q2 to the graph that only depends on the
+DB partitions containing the rows in the diff, feed it Q's original
+result, and attach Q's outputs to Q2. Q.equiv() returns True, so it
+doesn't re-execute, but Q2 re-executes and merges its results with Q's
+results and the right result is returned.
+
+Putting this all together, the design for db repair is as follows:
+
++ Timetravel for fine-grained DB checkpointing and rollback
+  + Each table has extra columns for start_ts, start_pid, end_ts,
+    end_pid. These cols can be added to existing tables by ALTERing
+    the table schema (manually for now)
+  + During recording, on INSERT, DELETE, or UPDATE, a trigger updates
+    these timestamps and pids, and also keeps around old versions of
+    modified rows
+  + SELECT queries are rewriten to only return the current version of
+    a row (ie., end_ts = infinity)
+    + Also, ts and pid fields may need to be stripped out of the
+      results
+  + pid is the pid of the server process that performed the
+    query. ts:pid can be used to uniquely identify the rows that were
+    affected by a query (eg: end_ts:end_pid identifies the old values
+    of rows affected by an UPDATE query)
+  + Rollback to any past timestamp ts translates to deleting all rows
+    with start_ts >= ts
+  + A query can be run on a particular table as of time ts by
+    restricting it with (start_ts < ts and ts < end_ts)
+
++ Wrapper to record all DB function calls in the language runtime
+  + eg: all pg_* postgres calls in php can be wrapped with pg2_* calls
+  + Requires modifying app to replace orig API calls with calls to wrapper
+  + Wrapper calls also record server pid so that update queries can be
+    matched with the rows that were affected by them
+
++ Attack graph construction: DB partitioning and static dependencies
+  between queries and partitions to reduce rollback and re-execution
+  + Each table has a single partitioning scheme, with the partitioning
+    key being a set of one or more columns. This key is determined by
+    analyzing the queries on the table, and picking the set of columns
+    that are used to restrict the largest number of queries (eg:
+    FirstName, LastName). The primary key on a table is a good
+    candidate for the partitioning key. The DB partition values are
+    also determined as part of this analysis. This analysis can be
+    done as queries are being recorded.
+  + Each table partition is a separate data node in the graph, and the
+    checkpoints are all the updates that affected this partition. The
+    checkpoint information can be obtained from the timetravel DB.
+  + Each DB function call becomes an action node. Query inputs in
+    query function calls (eg: pg_query) are analyzed and input/output
+    dependencies are added to the right set of DB partitions. SELECT,
+    UPDATE, and DELETE have input deps, while INSERT, UPDATE, and
+    DELETE have output deps. 
+  + For complex queries where it is not possible to statically
+    determine the set of DB partitions (eg: Username='alice' OR
+    Phone='1234'), deps are added to all the partitions (ie., entire
+    table).
+  + Since the attack graph can be quite large, the construction of the
+    graph is incremental and on demand.
+
++ Re-execution: fine-tune dependencies to further reduce re-execution
+  + DB wrapper in the language runtime forwards function invocations
+    to the repair mgr and gets back results from the repair mgr.
+  + The repair mgr matches DB function calls during repair with the
+    recorded ones. If it is the same function, it feeds the new args
+    to that action. Otherwise, it creates a new action.
+  + During re-execution of INSERT/DELETE/UPDATE queries, the
+    timetravel trigger does not use the current time; instead it gets
+    timestamp and pid from the action node.
+  + To avoid rolling back the entire table when the result changes of
+    a complex query that statically depends on the full table, we use
+    the 'query splitting' trick described above.
+
+Design Limitations:
+
++ No hierarchical partitions, so if a query action depends on the
+  entire table, need to add dependencies to all the individual
+  partitions.
++ Ordering of concurrent transactions
++ Transactions and serializability
+
+Current prototype:
+
++ Implemented for postgres / php
++ DB partitions are specified manually for each table and are ranges
+  of values for a particular column of the table
++ Wraps all postgres calls in php (pg_*) with pg2_*
++ Query analysis for static dependencies only works for very simple
+  queries that do equality matching. All other queries have dependency
+  on all the partitions.
++ If one DB function call needs to get re-executed, the entire php
+  process is re-executed.
++ Simple function call matching during repair -- checks whether the
+  next function call is the same as the one being asked to repair
++ Does not implement query splitting -- equiv always returns false
++ Loads the entire graph -- no incremental loading
++ Only tested for a simple workload where each php process does only a
+  single DB query.
+

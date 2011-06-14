@@ -1,0 +1,21 @@
+#!/usr/bin/expect
+
+set timeout -1
+
+# 6. login as root100 user
+spawn ssh root100@localhost -p 2022 -o "PreferredAuthentications password" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+expect "password:"
+send "root\n"
+
+# 6-1. download two more pictures to hidden
+expect ":~# "
+send "cd hidden\n"
+expect "# "
+send "wget http://pdos.csail.mit.edu/img/pdostab.gif\n"
+expect "# "
+send "wget http://pdos.csail.mit.edu/img/pdostab.gif\n"
+
+expect "# "
+send "logout\n"
+wait
+

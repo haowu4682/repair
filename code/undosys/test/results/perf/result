@@ -1,0 +1,52 @@
+undosys
+
+1.
+
+real    16m9.722s
+user    10m43.180s
+sys     1m39.390s
+root@taesoo-lab:/tmp/linux-2.6.31# taesoo@taesoo-lab:~/Working/undosys/undosys/test :)$ ./stat
+981M    /tmp/record
+981M    total
+20K     /tmp/snap
+20K     total
+
+2.
+
+real    16m17.551s
+user    10m46.080s
+sys     1m38.580s
+root@taesoo-lab:/tmp/linux-2.6.31# taesoo@taesoo-lab:~/Working/undosys/undosys/test :)$ ./stat
+981M    /tmp/record
+981M    total
+20K     /tmp/snap
+20K     total
+
+3.
+
+real    15m58.214s
+user    10m46.840s
+sys     1m39.400s
+root@taesoo-lab:/tmp/linux-2.6.31# taesoo@taesoo-lab:~/Working/undosys/undosys/test :)$ ./stat
+981M    /tmp/record
+981M    total
+20K     /tmp/snap
+20K     total
+
+1. 
+
+real    11m43.810s
+user    10m20.930s
+sys     0m57.350s
+
+2.
+
+real    11m32.859s
+user    10m22.960s
+sys     0m57.120s
+
+3.
+
+real    11m33.283s
+user    10m24.320s
+sys     0m55.840s

@@ -1,0 +1,38 @@
+
+Illegal Storage
+
+Scenario:
+
+ 1. A user logs into the system and launches the pwck local
+ escalation exploit. (just login as root)
+
+ 2. creates a new root account root100 by directly
+ writing to the /etc/passwd and the /etc/shadow files.
+
+ 3. creates a directory under another user’s directory (as root) and
+ downloads 500 illegal pictures
+
+ 4. downloads a binary ls program from the userlevel Ambient’s Rootkit
+ (ARK) in the user’s bin directory to hide the existence of the
+ illegal directory. 
+
+ 5. the victim user logs in, uses the trojaned ls program and creates
+ two files in his home directory. (=> rootkit ls -> root100/log1, root100/log2)
+
+ 6. The attacker logs back in as root100 after two days and downloads
+ two more pictures into the hidden directory.  (=> login as root100,
+ download two more)
+
+Correct recovery actions:
+
+ - Remove all the 1) illegal pictures and the 2) hidden directory,
+ the 3) trojaned ls binary, and the 4) home directory of the attacker’s
+ root100 account.
+
+ - the legitimate versions of the /etc/passwd and /etc/shadow files
+ need to be recovered.
+
+Detection point: 
+
+ The trojaned ls program is detected by the victim and given to the
+ trace phase (=> attacker's first/second login)

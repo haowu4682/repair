@@ -1,0 +1,16 @@
+2core without
+hotcrp-2.26-orig paper.php 1000 reps:1000	elapsed:59.940000
+hotcrp-2.26-orig paper.php 1000 reps:1000	elapsed:60.500000
+
+1 core without
+hotcrp-2.26-orig paper.php 1000 reps:1000	elapsed:60.610000
+hotcrp-2.26-orig paper.php 1000 reps:1000	 elapsed:60.170000
+
+1 core with
+hotcrp-2.26-orig paper.php 1000 reps:1000      elapsed:57.160000 => 50M, 3K
+hotcrp-2.26-orig paper.php 1000 reps:1000	elapsed:57.260000
+hotcrp-2.26-orig paper.php 1000 reps:1000	elapsed:56.000000
+
+2 core with
+hotcrp-2.26-orig paper.php 1000 reps:1000	elapsed:43.090000
+hotcrp-2.26-orig paper.php 1000 reps:1000	elapsed:43.080000 => 50M, 3K

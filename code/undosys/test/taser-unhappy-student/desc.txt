@@ -1,0 +1,22 @@
+Unhappy Student
+
+Scenario:
+
+1. exploit wu-ftp (=> login as root)
+2. change the permission of grades file in prof's home directory (o+w) (chmod +o P/grades)
+3. A modifies the grade file (=> A logins, echo A=A+ >> P/grades)
+4. A copies the prof's home dir to own dir (=> cp P/grades ~/grades)
+5. B login & copy modified grades file to his home directory (=> B logins, cp P/grades ~/grades)
+6. create two other files (=> touch B1, B2)
+
+Correct recovery actions: 
+
+1. Recover the original grades file in the professor’s directory
+2. restore the attributes of this file
+3. remove all copied files in both student A’s and student B’s home directories
+
+Detection point: 
+
+1. The grades file that the professor finds is writable by others.
+  (A, B, root(attacker) are considered to be attackers)
+

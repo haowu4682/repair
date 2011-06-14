@@ -1,0 +1,77 @@
+#  -*- mode: org -*-
+
+Applications / Eval
+-------------------
+
++ [ ] Decide on a set of real apps
++ [ ] Construct representative example attacks
++ [ ] Workload for performance evaluation:
+  + Carlo's wikipedia workload could be helpful in evaluating perf
+    overhead for a real workload
+  + How about SOSP submission workload in HotCRP?
+  + On the browser-side, test with daily browsing of real sites?
+
+Database repair
+---------------
+
++ [ ] integrate simple DB repair with zoobar
++ [ ] Generate DB partitions from recorded queries
++ [ ] Static analysis of more complex queries
++ [ ] Query splitting during re-execution
++ [ ] Incremental loading of the graph
+
++ MINOR:
+  + [ ] Strip ts and pid fields from SELECT queries (if needed by app)
+
+Language runtime
+----------------
+
++ [ ] Better support for non-deterministic data (eg: random numbers,
+      cookies etc.,). To reduce false conflicts, matching between the
+      HTTP requests during normal execution and re-execution should
+      be good. 
++ [ ] Record function calls (helps in reducing re-exec if retro
+      patching is a target application)
++ [ ] Match browser pages, sub-frames, HTTP requests and DB queries in
+      the face of re-ordering. Cancel old actions that don't match up.
+
+Httpd
+-----
+
++ [ ] Support recording and re-execution for a real httpd like apache
+      (depends on the apps we choose) 
+
+Browser repair
+--------------
+
++ [ ] Use JS events for UI replay instead of Robot
+  + Record ids/X-PATH/server-generated-ids for DOM elements so that
+    they can be located even if the DOM structure changes a bit
++ Check for UI conflicts during repair
+  + [ ] Standard heuristics: eg: DOM element didn't change or the
+        visible page didn't change
+  + [ ] Application developer can specify conflict checks to eliminate
+        conflicts (eg: date displayed on a page)
++ [ ] Dealing with UI conflicts:
+  + Assume equiv for the rest of the page, mark the page as conflict
+    so user can check it later, and continue
+  + For some type of HTML elements, use operational transforms
+  + App developer can specify conflict resolution callbacks 
++ [ ] Remove log processing step before repair
++ [ ] Support repair with multiple clients
++ [ ] Support repair with multiple clients and multiple interacting
+      servers 
+  + partition the logs based on the origin domain
++ [ ] add browser-side JS/UI actions to the action history graph (to
+  browser page actor)
+
+Design
+------
+
++ [ ] Story for dealing with transactions in DB repair
++ [ ] Story for repair conflicts
++ [ ] How does the user/admin interact with the system?
+  + especially since not all users may be participating
++ [ ] Story for security during repair
+  + Graphs supplied by browsers should be legitimate
+  + User should not be able to undo certain actions
