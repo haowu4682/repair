@@ -3,13 +3,13 @@ CFLAGS          := -Isrc/ -Isrc/common/
 
 COMMONHDR       := $(wildcard src/common/*.h)
 COMMONSRC       := $(wildcard src/common/*.cc)
-COMMONOBJ       := $(patsubst src/common/%.o, bin/common/%.cc, $(COMMONSRC))
+COMMONOBJ       := $(patsubst bin/common/%.o, src/common/%.cc, $(COMMONSRC))
 REPLAYHDR       := $(wildcard src/replay/*.h)
 REPLAYSRC       := $(wildcard src/replay/*.cc)
-REPLAYOBJ       := $(patsubst src/replay/%.o, bin/syscall/%.cc, $(REPLAYSRC))
+REPLAYOBJ       := $(patsubst bin/replay/%.o, src/syscall/%.cc, $(REPLAYSRC))
 SYSCALLHDR      := $(wildcard src/syscall/*.h)
 SYSCALLSRC      := $(wildcard src/syscall/*.cc)
-SYSCALLOBJ      := $(patsubst src/syscall/%.o, bin/syscall/%.cc, $(SYSCALLSRC))
+SYSCALLOBJ      := $(patsubst bin/syscall/%.o, src/syscall/%.cc, $(SYSCALLSRC))
 
 REPLAYBIN       := bin/ProcessManager
 
@@ -31,7 +31,7 @@ bin/replay/%.o: src/replay/%.cc src/replay/*.h src/syscall/*.h src/common/*.h
 	mkdir -p bin; mkdir -p bin/replay;
 	$(CPP) $(CFLAGS) -c $< -o $@
 
-bin/common/%.o: src/common/%.cc src/syscall/*.h src/common/*.h
+bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h
 	mkdir -p bin; mkdir -p bin/replay;
 	$(CPP) $(CFLAGS) -c $< -o $@
 
