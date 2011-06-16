@@ -1,5 +1,6 @@
 CPP             := g++
 CFLAGS          := -Isrc/ -Isrc/common/
+LDFLAGS         := -lrt
 
 COMMONHDR       := $(wildcard src/common/*.h)
 COMMONSRC       := $(wildcard src/common/*.cc)
@@ -19,7 +20,7 @@ bin: $(REPLAYBIN)
 
 $(REPLAYBIN): $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ)
 	mkdir -p bin;
-	$(CPP) $(CFLAGS) -o $@ $^
+	$(CPP) $(LDFLAGS) -o $@ $^
 
 obj: $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ)
 
@@ -36,4 +37,4 @@ bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h
 	$(CPP) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ)
+	rm -f $(REPLAYBIN) $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ)

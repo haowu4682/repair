@@ -3,9 +3,16 @@
 #ifndef __COMMON_COMMON_H__
 #define __COMMON_COMMON_H__
 
+#include <stdio.h>
+#include <cerrno>
+#include <ctime>
+
 // Type definition
 #define String std::string
 #define Vector std::vector
+
+// Constant definition
+#define kNanosecondsToSeconds 1e-9
 
 // Debugging tools
 #define LOG(fmt,args...) do { \
@@ -18,6 +25,15 @@
 } while (0);
 
 #define LOG1(x) LOG("%s",x)
+
+// Returns the realtime in seconds
+inline double
+GetRealTime() {
+    struct timespec time;
+    clock_gettime(CLOCK_REALTIME, &time);
+    return time.tv_sec + kNanosecondsToSeconds * time.tv_nsec;
+}
+
 
 #endif //__COMMON_COMMON_H__
 

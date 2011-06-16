@@ -21,12 +21,17 @@ class ProcessManager
         // Start replaying the process
         // @author haowu
         int replay();
+
+        // Output all the infomation as a string.
+        // The function is used for debugging and logging.
+        // @author haowu
+        String toString();
     private:
         // Start a process with Ptrace
         // @author haowu
         int StartProcess();
         // The command line
-        Vector<String> &command;
+        Vector<String> &commandList;
         // The system call list used when replaying
         SystemCallList &syscallList;
 };

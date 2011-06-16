@@ -1,7 +1,6 @@
 //Author: Hao Wu <haowu@cs.utexas.edu>
 
 #include <cstring>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -9,10 +8,9 @@
 #include "ProcessManager.h"
 using namespace std;
 
-ProcessManager(Vector<String> &command, SystemCallList &list)
+ProcessManager::ProcessManager(Vector<String> &command, SystemCallList &list)
+    : commandList(command), syscallList(list)
 {
-    this->command = command;
-    this->syscallList = list;
 }
 
 // The main function is used for development and debugging only.
