@@ -3,13 +3,13 @@ CFLAGS          := -Isrc/ -Isrc/common/
 
 COMMONHDR       := $(wildcard src/common/*.h)
 COMMONSRC       := $(wildcard src/common/*.cc)
-COMMONOBJ       := $(patsubst bin/common/%.o, src/common/%.cc, $(COMMONSRC))
+COMMONOBJ       := $(patsubst src/common/%.cc, bin/common/%.o, $(COMMONSRC))
 REPLAYHDR       := $(wildcard src/replay/*.h)
 REPLAYSRC       := $(wildcard src/replay/*.cc)
-REPLAYOBJ       := $(patsubst bin/replay/%.o, src/syscall/%.cc, $(REPLAYSRC))
+REPLAYOBJ       := $(patsubst src/replay/%.cc, bin/replay/%.o, $(REPLAYSRC))
 SYSCALLHDR      := $(wildcard src/syscall/*.h)
 SYSCALLSRC      := $(wildcard src/syscall/*.cc)
-SYSCALLOBJ      := $(patsubst bin/syscall/%.o, src/syscall/%.cc, $(SYSCALLSRC))
+SYSCALLOBJ      := $(patsubst src/syscall/%.cc, bin/syscall/%.o, $(SYSCALLSRC))
 
 REPLAYBIN       := bin/ProcessManager
 
