@@ -3,6 +3,8 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <sstream>
+#include <iostream>
 
 #include <common.h>
 #include "ProcessManager.h"
@@ -11,6 +13,18 @@ using namespace std;
 ProcessManager::ProcessManager(Vector<String> &command, SystemCallList &list)
     : commandList(command), syscallList(list)
 {
+}
+
+String ProcessManager::toString()
+{
+    // XXX: We only output the command line currently.
+    stringstream ss;
+    for (Vector<String>::iterator it = commandList.begin(); it != commandList.end(); it++)
+    {
+        ss << (*it) << ", ";
+    }
+    ss << endl;
+    return ss.str();
 }
 
 // The main function is used for development and debugging only.
@@ -32,6 +46,7 @@ int main(int argc, char **argv)
     SystemCallList list;
 
     ProcessManager manager(commands, list);
+    cout << manager.toString();
     return 0;
 }
 
