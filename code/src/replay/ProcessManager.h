@@ -4,6 +4,7 @@
 #define __REPLAY_PROCESSMANAGER_H__
 
 #include <string>
+#include <vector>
 
 #include <common.h>
 #include <syscall/SystemCallList.h>
@@ -15,7 +16,7 @@ class ProcessManager
     public:
         // The constructor
         // @author haowu
-        ProcessManager(vector<String> &command, SystemCallList &list);
+        ProcessManager(Vector<String> &command, SystemCallList &list);
 
         // Start replaying the process
         // @author haowu
@@ -25,7 +26,7 @@ class ProcessManager
         // @author haowu
         int StartProcess();
         // The command line
-        vector<String> &command;
+        Vector<String> &command;
         // The system call list used when replaying
         SystemCallList &syscallList;
 };

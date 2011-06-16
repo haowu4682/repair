@@ -5,6 +5,7 @@
 
 // Type definition
 #define String std::string
+#define Vector std::vector
 
 // Debugging tools
 #define LOG(fmt,args...) do { \
