@@ -33,7 +33,7 @@ bin/replay/%.o: src/replay/%.cc src/replay/*.h src/syscall/*.h src/common/*.h
 	$(CPP) $(CFLAGS) -c $< -o $@
 
 bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h
-	mkdir -p bin; mkdir -p bin/replay;
+	mkdir -p bin; mkdir -p bin/syscall;
 	$(CPP) $(CFLAGS) -c $< -o $@
 
 clean:
