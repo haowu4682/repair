@@ -27,9 +27,16 @@ class ProcessManager
         // @author haowu
         String toString();
     private:
-        // Start a process with Ptrace
+        // Start to execute and trace a process with Ptrace
         // @author haowu
-        int StartProcess();
+        int startProcess();
+        // Execute a process with Ptrace
+        // @author haowu
+        int executeProcess();
+        // Trace a process with Ptrace
+        // @author haowu
+        // @param pid the pid of the process to be traced
+        int traceProcess(pid_t pid);
         // The command line
         Vector<String> &commandList;
         // The system call list used when replaying

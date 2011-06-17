@@ -3,6 +3,7 @@
 #ifndef __COMMON_COMMON_H__
 #define __COMMON_COMMON_H__
 
+#include <assert.h>
 #include <stdio.h>
 #include <cerrno>
 #include <ctime>
@@ -25,6 +26,8 @@
 } while (0);
 
 #define LOG1(x) LOG("%s",x)
+
+#define ASSERT(x) assert(x)
 
 // Returns the realtime in seconds
 inline double
