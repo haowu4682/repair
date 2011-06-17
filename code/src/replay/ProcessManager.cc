@@ -5,11 +5,14 @@
 #include <sstream>
 #include <string>
 #include <sys/ptrace.h>
+#include <sys/types.h>
+#include <sys/user.h>
 #include <sys/wait.h>
 #include <vector>
 
 #include <common.h>
-#include "ProcessManager.h"
+#include <replay/ProcessManager.h>
+#include <syscall/SystemCall.h>
 using namespace std;
 
 ProcessManager::ProcessManager(Vector<String> &command, SystemCallList &list)
@@ -56,10 +59,10 @@ int ProcessManager::executeProcess()
 {
     // Assert the command is not empty here.
     ASSERT(commandList.size() != 0);
-    char **args = new char *[commandList.size()+1];
     LOG1("This is the child process!");
-    long pret = ptrace(PTRACE_TRACEME, 0, NULL, NULL);
 
+    // Arrange the arguments
+    char **args = new char *[commandList.size()+1];
     for (int i = 0; i < commandList.size(); i++)
     {
         // XXX: This is not very clean. But we have to copy `argv' into a new char array since
@@ -70,9 +73,19 @@ int ProcessManager::executeProcess()
     }
     args[commandList.size()] = NULL;
 
-    // Execute the command
-    int ret = execvp(commandList[0].c_str(), args);
+    // Let the process to be traced
+    long pret = ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+    if (pret < 0)
+    {
+        LOG1("The child process cannot be traced!");
+        return pret;
+    }
 
+    // Execute the command
+    int ret;
+    ret = execvp(commandList[0].c_str(), args);
+
+    // Clean up
     for (int i = 0; i < commandList.size(); i++)
     {
         delete args[i];
@@ -84,11 +97,30 @@ int ProcessManager::traceProcess(pid_t pid)
 {
     LOG1("This is the parent process!");
     int status;
+    long pret;
+    struct user_regs_struct regs;
+
     waitpid(pid, &status, 0);
-    long pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
-    if (pret < 0)
+    // TODO: Use more correct condition here
+    // Current the termination condition is: the child has exited from executing
+    while (!WIFEXITED(status))
     {
-        //do nothing
+        pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+        waitpid(pid, &status, 0);
+        // The child process is at the point **before** a syscall.
+        // TODO: Deal with the syscall here.
+        ptrace(PTRACE_GETREGS, pid, 0, &regs);
+        printf("syscall nr: %lu\n", regs.orig_rax);
+        SystemCall syscall(regs);
+        // XXX: Current we simply do nothing
+        //SystemCall syscallMatch = syscallList.search(syscall);
+
+        pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+        waitpid(pid, &status, 0);
+        // The child process is at the point **after** a syscall.
+        // TODO: Deal with the syscall here.
+        ptrace(PTRACE_GETREGS, pid, 0, &regs);
+        printf("syscall nr: %lu\n", regs.orig_rax);
     }
     LOG1("This is the parent process!");
     return 0;

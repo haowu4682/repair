@@ -7,6 +7,17 @@
 // @author haowu
 class SystemCall
 {
+    public:
+        SystemCall() : valid(false) {}
+        // Construct the system call from registers
+        SystemCall(user_regs_struct regs);
+
+        // Whether the system call is valid.
+        // A valid system call is a system with its code and args provided.
+        // @author haowu
+        bool isValid() { return valid;}
+    private:
+        bool valid;
 };
 
 #endif //__SYSCALL_SYSCALL_H__
