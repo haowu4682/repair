@@ -37,6 +37,10 @@ class ProcessManager
         // @author haowu
         // @param pid the pid of the process to be traced
         int traceProcess(pid_t pid);
+        // Overwrite the return value of a system call
+        // @author haowu
+        // @param syscall The syscall to overwrite
+        static int writeMatchedSyscall(SystemCall syscall, pid_t pid);
         // The command line
         Vector<String> &commandList;
         // The system call list used when replaying

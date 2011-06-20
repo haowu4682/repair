@@ -12,12 +12,17 @@ class SystemCall
     public:
         SystemCall() : valid(false) {}
         // Construct the system call from registers
-        SystemCall(user_regs_struct regs);
+        SystemCall(const user_regs_struct &regs);
 
         // Whether the system call is valid.
         // A valid system call is a system with its code and args provided.
         // @author haowu
         bool isValid() { return valid;}
+
+        // Given the current registers, overwrite the return value in the registers
+        // with current return values of the system call.
+        // @author haowu
+        int overwrite(user_regs_struct &regs);
     private:
         bool valid;
 };

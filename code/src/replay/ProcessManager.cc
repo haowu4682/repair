@@ -110,19 +110,50 @@ int ProcessManager::traceProcess(pid_t pid)
         // The child process is at the point **before** a syscall.
         // TODO: Deal with the syscall here.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        printf("syscall nr: %lu\n", regs.orig_rax);
         SystemCall syscall(regs);
-        // XXX: Current we simply do nothing
-        //SystemCall syscallMatch = syscallList.search(syscall);
+        SystemCall syscallMatch = syscallList.search(syscall);
+        // If no match has been found, we have to go on executing the system call and simply do
+        // nothing else here. However, if a match has been found we must change the return value
+        // accoridngly when the syscall has returned.
+        bool matchFound = syscallMatch.isValid();
 
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
         waitpid(pid, &status, 0);
         // The child process is at the point **after** a syscall.
-        // TODO: Deal with the syscall here.
-        ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        printf("syscall nr: %lu\n", regs.orig_rax);
+        // Deal with the syscall here. If the match has been found previously, we shall
+        // replace the return value with the recorded value in the systemcall list.
+        // Most syscall will have its return value in the register %rax, But there are some
+        // which does not follow the rule and we will need to deal with them seperately.
+        if (matchFound)
+        {
+            writeMatchedSyscall(syscallMatch, pid);
+        }
+        LOG("syscall nr: %lu\n", regs.orig_rax);
     }
     LOG1("This is the parent process!");
+    return 0;
+}
+
+int ProcessManager::writeMatchedSyscall(SystemCall syscall, pid_t pid)
+{
+    // Simply rewrite rax currently
+    long pret;
+    int ret;
+    struct user_regs_struct regs;
+
+    ptrace(PTRACE_GETREGS, pid, 0, &regs);
+    ret = syscall.overwrite(regs);
+    if (ret < 0)
+    {
+        LOG1("Cannot put the return value into registers!");
+        return ret;
+    }
+    pret = ptrace(PTRACE_SETREGS, pid, 0, &regs);
+    if (pret < 0)
+    {
+        LOG1("Cannot overwrite the return value!");
+        return (int) pret;
+    }
     return 0;
 }
 
