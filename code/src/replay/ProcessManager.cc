@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 #include <vector>
 
-#include <common.h>
+#include <common/common.h>
 #include <replay/ProcessManager.h>
 #include <syscall/SystemCall.h>
 using namespace std;

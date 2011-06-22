@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include <common.h>
+#include <common/common.h>
 #include <syscall/SystemCallList.h>
 
 // This class is used to manager the running or a process of class Process

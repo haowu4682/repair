@@ -66,14 +66,25 @@ sysarg_type_t sysarg_type_list[] =
     msghdr_record
 };
 
-// _recordhe class declares a system call argument
+// This class declares a system call argument.
+// Currently we use a **string** to represent the argument.
 class SystemCallArgument
 {
+    public:
+        SystemCallArgument(sysarg_type_t syscallType) : type(syscallType) { }
+        // Create the argument with a given register value
+        void setArg(long argValue, sysarg_type_t syscallType = NULL);
+        // Create the argument from a syscall arg record
+        void setArg(String record, sysarg_type_t syscallType = NULL);
+        // compare if two system call arguments are equal
+        bool operator ==(SystemCallArgument &);
     private:
         // The name
         String name;
-        // The sysarg type
+        // The type
         sysarg_type_t type;
+        // The value
+        String value;
 };
 
 #endif //__SYSCALL_SYSCALLARG_H__
