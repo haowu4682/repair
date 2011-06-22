@@ -1,2 +1,31 @@
-1. implement syscall record
-2. port syscall arg here
+Ultimate Goal:
+A ---(a)----> B
+  |
+   --(b)----> C
+Input: A, (a), (b)
+Output: D: A--->B--->C
+Have a demo for the previous process.
+
+Steps:
+Based on B, re-run every process in (b) in the following way:
+When a syscall occured in (b), do the following:
+// Notice that we *never* skip the execution of the syscall from now
+// on.
+1. Find the matched syscall in the previous execution in (b)
+2. If the output is different:
+    If there is a conflict:
+        report to the user
+    If the syscall is a *shortcut* syscall:
+        Use the stored value for the syscall.
+
+A *shortcut* syscall is a system call interacts with device(e.g. disk, terminal, network, etc.)
+Most syscalls are *not* shortcut syscalls.
+
+TODOs:
+(1) Find a matched syscall (done).
+(2) Define and detect a conflict.
+(3) Detect *shortcut* syscalls.
+(4) Change values into the stored value (done).
+(5) Do (1)~(4) for *all* processes.
+
+
