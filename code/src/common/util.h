@@ -4,14 +4,21 @@
 #define __COMMON_UTIL_H__
 
 #include <string>
+//#include <sys/ptrace.h>
 
-#include <common.h>
+#include <common/common.h>
 
 // Split a string and append it to the given vector of string
 // @author haowu
 // @param dstStringList The destination of the splitted string
 // @param srcString The source string
-int splitString(vector<String> &dstStringList, String &srcString);
+// int splitString(vector<String> &dstStringList, String &srcString);
+
+// write some data to a user's memory using ptrace
+long writeToProcess(void *buf, long addr, size_t len);
+
+// read some data from a user's memory using ptrace
+long readFromProcess(void *buf, long addr, size_t len);
 
 #endif //__COMMON_UTIL_H__
 

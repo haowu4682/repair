@@ -10,8 +10,14 @@ class SystemCallArgument;
 // XXX: Here we use C-style definition, since the author (haowu) don't know how to implement them
 // in C++-style.
 // The type for a sysarg record
-typedef void (*sysarg_type_t) (long argValue, SystemCallArgument &syscallArg);
-#define SYSARG_(type) void type##_record(long argValue, SystemCallArgument &arg)
+class SysargType
+{
+    public:
+        // from regValue to string
+        String toString(long argValue);
+};
+typedef String (*sysarg_type_t) (long argValue);
+#define SYSARG_(type) String type##_record(long argValue)
 
 SYSARG_(void);
 SYSARG_(sint);
