@@ -20,6 +20,7 @@ struct SyscallType
     String name;
     size_t numArgs;
     SyscallArgType args[6];
+    bool operator ==(SyscallType &another) { return nr == another.nr && name == another.name; }
 };
 
 extern SyscallType syscallTypeList[];
