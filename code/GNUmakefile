@@ -1,5 +1,5 @@
 CPP             := g++
-CFLAGS          := -Isrc/ -Isrc/common/
+CFLAGS          := -Isrc/
 LDFLAGS         := -lrt
 
 COMMONHDR       := $(wildcard src/common/*.h)
