@@ -8,6 +8,7 @@
 #include <ctime>
 #include <stdio.h>
 #include <string>
+#include <sys/user.h>
 #include <vector>
 
 // Type definition

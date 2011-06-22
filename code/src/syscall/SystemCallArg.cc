@@ -1,10 +1,13 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <cstring>
 #include <sstream>
 
 #include <common/util.h>
 #include <syscall/SystemCallArg.h>
 using namespace std;
+
+#define MAX_ARG_STRLEN  (PAGE_SIZE * 32)
 
 sysarg_type_t sysarg_type_list[] =
 {
@@ -110,18 +113,25 @@ String buf_record(long argValue, SystemCallArgumentAuxilation *argAux)
 String sha1_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     String str;
+    //TODO: Implement this
     return str;
 }
 
 String string_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
-    String str;
-    return str;
+    long len;
+    char buf[MAX_ARG_STRLEN];
+    readFromProcess(&buf, argValue, MAX_ARG_STRLEN);
+    if ( !buf || !(len = strlen(buf))) {
+        return "None";
+    }
+    return buf;
 }
 
 String strings_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     String str;
+    //TODO: implement
     return str;
 }
 
@@ -148,7 +158,7 @@ String name_record(long argValue, SystemCallArgumentAuxilation *argAux)
     String str;
     return str;
 }
- 
+
 String path_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     String str;

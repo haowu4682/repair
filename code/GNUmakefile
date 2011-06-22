@@ -26,15 +26,15 @@ obj: $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ)
 
 bin/common/%.o: src/common/%.cc src/common/*.h
 	mkdir -p bin; mkdir -p bin/common;
-	$(CPP) $(CFLAGS) -c $< -o $@
+	$(CPP) $(CFLAGS) -o $@ -c $<
 
 bin/replay/%.o: src/replay/%.cc src/replay/*.h src/syscall/*.h src/common/*.h
 	mkdir -p bin; mkdir -p bin/replay;
-	$(CPP) $(CFLAGS) -c $< -o $@
+	$(CPP) $(CFLAGS) -o $@ -c $<
 
 bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h src/syscall/trace_syscalls.inc
 	mkdir -p bin; mkdir -p bin/syscall;
-	$(CPP) $(CFLAGS) -c $< -o $@
+	$(CPP) $(CFLAGS) -o $@ -c $<
 
 src/syscall/%.inc: src/syscall/%.py
 	$< > $@
