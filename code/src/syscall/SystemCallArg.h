@@ -50,7 +50,7 @@ SYSARG_(buf_det);
 SYSARG_(struct);
 SYSARG_(psize_t);
 SYSARG_(msghdr);
-#define sysarg_dirfd    sysarg_fd
+#define dirfd_record    fd_record
 SYSARG_(execve);
 
 extern sysarg_type_t sysarg_type_list[];
