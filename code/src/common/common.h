@@ -18,6 +18,7 @@
 #define kNanosecondsToSeconds 1e-9
 // The length of the max 64bit-int represented in decimals must not exceed the value
 #define int64_MAX_LENGTH 25
+#define FASTBUF PAGE_SIZE
 
 // Debugging tools
 #define LOG(fmt,args...) do { \

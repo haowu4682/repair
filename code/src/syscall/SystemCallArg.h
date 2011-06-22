@@ -7,6 +7,13 @@
 
 class SystemCallArgument;
 
+// This struct declares some helpful information in recording a system call argument.
+struct SystemCallArgumentAuxilation
+{
+    pid_t pid;
+    long aux;
+};
+
 // XXX: Here we use C-style definition, since the author (haowu) don't know how to implement them
 // in C++-style.
 // The type for a sysarg record
@@ -16,8 +23,8 @@ class SysargType
         // from regValue to string
         String toString(long argValue);
 };
-typedef String (*sysarg_type_t) (long argValue);
-#define SYSARG_(type) String type##_record(long argValue)
+typedef String (*sysarg_type_t) (long argValue, SystemCallArgumentAuxilation *argAux);
+#define SYSARG_(type) String type##_record(long argValue, SystemCallArgumentAuxilation *argAux)
 
 SYSARG_(void);
 SYSARG_(sint);
@@ -79,7 +86,8 @@ class SystemCallArgument
     public:
         SystemCallArgument(sysarg_type_t syscallType) : type(syscallType) { }
         // Create the argument with a given register value
-        void setArg(long argValue, sysarg_type_t syscallType = NULL);
+        void setArg(long argValue, SystemCallArgumentAuxilation *aux,
+                sysarg_type_t syscallType = NULL);
         // Create the argument from a syscall arg record
         void setArg(String record, sysarg_type_t syscallType = NULL);
         // compare if two system call arguments are equal
