@@ -6,6 +6,23 @@
 #include <sys/user.h>
 
 #include <common/common.h>
+#include <syscall/SystemCallArg.h>
+
+// The max number of system call arguments in a system call
+#define SYSCALL_MAX_ARGS 6
+
+// The **type** of a syscall describes which syscall it is
+// e.g. "read", "fork", etc.
+// It does not contain the **value** of the syscall
+struct SyscallType
+{
+    int nr;
+    String name;
+    size_t numArgs;
+    SyscallArgType args[6];
+};
+
+extern SyscallType syscallTypeList[];
 
 // The class is used to represent the **record** of a system call
 // @author haowu
@@ -34,11 +51,11 @@ class SystemCall
     private:
         // If the system call is valid
         bool valid;
-        // The system call code
-        long code;
+        // The system call type
+        const SyscallType *type;
         // The system call args
-        // `6' is hard-coded here
-        long args[6];
+        // `6' is not hard-coded here now.
+        SystemCallArgument args[SYSCALL_MAX_ARGS];
         // The return value of the system call
         long ret;
 };

@@ -6,6 +6,33 @@
 #include <syscall/SystemCallArg.h>
 using namespace std;
 
+sysarg_type_t sysarg_type_list[] =
+{
+    void_record,
+    sint_record,
+    uint_record,
+    sint32_record,
+    uint32_record,
+    intp_record,
+    pid_t_record,
+    buf_record,
+    sha1_record,
+    string_record,
+    strings_record,
+    iovec_record,
+    fd_record,
+    fd2_record,
+    name_record, 
+    path_record,
+    path_at_record,
+    rpath_record,
+    rpath_at_record,
+    buf_det_record, 
+    struct_record,
+    psize_t_record,
+    msghdr_record
+};
+
 // TODO: Give more precise description here.
 String void_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
@@ -171,16 +198,16 @@ String msghdr_record(long argValue, SystemCallArgumentAuxilation *argAux)
 }
 
 void SystemCallArgument::setArg(long regValue, SystemCallArgumentAuxilation *aux,
-        sysarg_type_t syscallType /* = NULL */)
+        const SyscallArgType *syscallType /* = NULL */)
 {
     if (syscallType != NULL)
     {
         type = syscallType;
     }
-    value = type(regValue, aux);
+    value = type->record(regValue, aux);
 }
 
-void SystemCallArgument::setArg(String record, sysarg_type_t syscallType /*=NULL*/)
+void SystemCallArgument::setArg(String record, const SyscallArgType *syscallType /*=NULL*/)
 {
     if (syscallType != NULL)
     {
