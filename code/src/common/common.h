@@ -4,9 +4,11 @@
 #define __COMMON_COMMON_H__
 
 #include <assert.h>
-#include <stdio.h>
 #include <cerrno>
 #include <ctime>
+#include <stdio.h>
+#include <string>
+#include <vector>
 
 // Type definition
 #define String std::string
