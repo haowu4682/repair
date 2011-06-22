@@ -32,9 +32,12 @@ bin/replay/%.o: src/replay/%.cc src/replay/*.h src/syscall/*.h src/common/*.h
 	mkdir -p bin; mkdir -p bin/replay;
 	$(CPP) $(CFLAGS) -c $< -o $@
 
-bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h
+bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h src/syscall/*.inc
 	mkdir -p bin; mkdir -p bin/syscall;
 	$(CPP) $(CFLAGS) -c $< -o $@
+
+bin/syscall/%.inc: src/syscall/%.py
+	$< > $@
 
 clean:
 	rm -f $(REPLAYBIN) $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ)

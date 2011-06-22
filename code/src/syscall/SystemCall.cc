@@ -8,6 +8,7 @@ using namespace std;
 
 SyscallType syscallTypeList[] =
 {
+    #include "trace_syscalls.inc"
 };
 
 #define syscallTypeListSize (sizeof(syscallTypeList) / sizeof(SyscallType))
