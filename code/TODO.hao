@@ -28,4 +28,15 @@ TODOs:
 (4) Change values into the stored value (done).
 (5) Do (1)~(4) for *all* processes.
 
+Conflict:
+(1) If the return value of a system call is *different* from its previous system call, the system
+call is called a "conflicted" system call.
 
+(2) If a system call in (b) is conflicted, and one of its input is the output of a system call in
+(a), the conflict is called a *first-degree* conflict.
+
+(3) If a system call in (b) is conflicted, and the reason is the change of some environmental variable
+which is not influenced by the output of (a)(for example, time()), the conflict is called a
+*second-degree* conflict.
+
+(4) We shall report all the first-degree conflicts to the user.
