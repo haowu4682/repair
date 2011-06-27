@@ -11,7 +11,7 @@ SystemCall SystemCallList::search(SystemCall &syscall)
     return matchedSyscall;
 }
 
-void SystemCallList::init(istream in)
+void SystemCallList::init(istream &in)
 {
     // '\n' is used as a delimeter between syscall's
     string syscallString;

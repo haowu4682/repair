@@ -1,6 +1,7 @@
 //Author: Hao Wu <haowu@cs.utexas.edu>
 
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -83,7 +84,7 @@ int ProcessManager::executeProcess()
     }
     // Assert the command is not empty here.
     ASSERT(commandList->size() != 0);
-    LOG1("This is the child process!");
+//    LOG1("This is the child process!");
 
     // Arrange the arguments
     char **args = new char *[commandList->size()+1];
@@ -150,12 +151,14 @@ int ProcessManager::traceProcess(pid_t pid)
     // Current the termination condition is: the child has exited from executing
     while (!WIFEXITED(status))
     {
+        LOG("before syscall");
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
         waitpid(pid, &status, 0);
         // The child process is at the point **before** a syscall.
         // TODO: Deal with the syscall here.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
         SystemCall syscall(regs);
+        LOG("before searching match");
         SystemCall syscallMatch = syscallList->search(syscall);
         // If no match has been found, we have to go on executing the system call and simply do
         // nothing else here. However, if a match has been found we must change the return value
@@ -163,6 +166,7 @@ int ProcessManager::traceProcess(pid_t pid)
         bool matchFound = syscallMatch.isValid();
 
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+        LOG("inside syscall");
         waitpid(pid, &status, 0);
         // The child process is at the point **after** a syscall.
         // Deal with the syscall here. If the match has been found previously, we shall
@@ -184,6 +188,7 @@ int ProcessManager::traceProcess(pid_t pid)
                 break;
             }
         }
+        LOG("after syscall");
     }
     LOG1("This is the parent process!");
     return 0;
@@ -241,7 +246,9 @@ int main(int argc, char **argv)
     {
         commands.push_back(string(argv[i]));
     }
+    ifstream fin("/home/haowu/repair/repair_data/dumb.txt");
     SystemCallList list;
+    list.init(fin);
 
     ProcessManager manager(&commands, &list);
     //cout << manager.toString();

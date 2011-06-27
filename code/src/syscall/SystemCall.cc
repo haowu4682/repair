@@ -43,22 +43,91 @@ const SyscallType *getSyscallType(String name)
 
 SystemCall::SystemCall(const user_regs_struct &regs)
 {
-    // The code here might be architecture-dependent.
+    // XXX: The code here might be architecture-dependent for x86_64 only.
     int code = regs.orig_rax;
     type = getSyscallType(code);
-    args[0].setArg(regs.rdi, NULL);
-    args[0].setArg(regs.rsi, NULL);
-    args[0].setArg(regs.rdx, NULL);
-    args[0].setArg(regs.r10, NULL);
-    args[0].setArg(regs.r8, NULL);
-    args[0].setArg(regs.r9, NULL);
+    args[0].setArg(regs.rdi, NULL, &type->args[0]);
+    args[1].setArg(regs.rsi, NULL, &type->args[1]);
+    args[2].setArg(regs.rdx, NULL, &type->args[2]);
+    args[3].setArg(regs.r10, NULL, &type->args[3]);
+    args[4].setArg(regs.r8, NULL, &type->args[4]);
+    args[5].setArg(regs.r9, NULL, &type->args[5]);
     ret = regs.rax;
+}
+
+long getAux(long args[])
+{
+    struct sysarg a = *arg;
+    if (a.usage != usage || used[i])
+        continue;
+    if (a.ty == sysarg_iovec) {
+        if (a.usage) {
+            if (ret > 0) {
+                a.aux = args[i+1];
+                a.ret = ret;
+            }
+        } else {
+            /* very vulnerable from user inputs */
+            used[i+1] = 1;
+            a.aux = args[i+1];
+            a.ret = UIO_MAXIOV*PAGE_SIZE;
+        }
+    }
+    if (a.ty == sysarg_buf || a.ty == sysarg_buf_det) {
+        if (a.usage) {
+            // Length of the buffer depends on the kernel.
+            if (ret > 0) {
+                used[6] = 1;
+                a.aux = ret;
+            } else
+                a.aux = 0;
+        } else {
+            // Length of the buffer is passed in by the user.
+            used[i+1] = 1;
+            a.aux = args[i+1];
+        }
+    } else if (a.ty == sysarg_struct) {
+        if (a.usage) {
+            a.aux = 0;
+            if (ret == 0) {
+                if (sc->args[i+1].ty == sysarg_psize_t) {
+                    int size = 0;
+                    get_user(size, (int *)args[i+1]);
+                    a.aux = size;
+                }
+            }
+        } else {
+            if (sc->args[i+1].ty == sysarg_uint) {
+                used[i+1] = 1;
+                a.aux = args[i+1];
+            }
+        }
+    } else if (a.ty == sysarg_sha1) {
+        // Akin to the case of sysarg_buf.
+        if (a.usage) {
+            a.aux = ret;
+        } else {
+            a.aux = args[i+1];
+        }
+    } else if (a.ty == sysarg_path_at || a.ty == sysarg_rpath_at) {
+        /* test AT_SYMLINK_(NO)FOLLOW, always the last argument */
+        if (a.aux && (a.aux & args[sc->nargs - 1])) {
+            /* toggle */
+            if (a.ty == sysarg_path_at)
+                a.ty = sysarg_rpath_at;
+            else
+                a.ty = sysarg_path_at;
+        }
+        a.aux = args[i-1];
+    }
 }
 
 // XXX: This may not apply to some system calls. It needs to be reviewed.
 int SystemCall::overwrite(user_regs_struct &regs)
 {
-    regs.rax = ret;
+    // TODO: Do the overwrite stuff
+    // regs.rax = ret;
+    return 0;
 }
 
 // Tell whether the syscall is a ``fork'' or ``vfork''
