@@ -4,6 +4,7 @@
 #define __COMMON_COMMON_H__
 
 #include <assert.h>
+#include <bits/wordsize.h>
 #include <cerrno>
 #include <ctime>
 #include <stdio.h>
@@ -22,6 +23,12 @@
 #define UIO_MAXIOV 1024
 #endif
 
+#define WORD_SIZE __WORDSIZE
+#define BYTE_SIZE 8
+#define WORD_BYTES (WORD_SIZE / BYTE_SIZE)
+// Hard code it here
+#define WORD_BYTE_LOG 3
+#define WORD_ALIGN (WORD_BYTES - 1)
 #define int64_MAX_LENGTH 25
 #define FASTBUF PAGE_SIZE
 
