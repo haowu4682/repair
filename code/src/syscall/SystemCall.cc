@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include <common/common.h>
+#include <common/util.h>
 #include <syscall/SystemCall.h>
 using namespace std;
 
@@ -46,22 +47,40 @@ SystemCall::SystemCall(const user_regs_struct &regs)
     // XXX: The code here might be architecture-dependent for x86_64 only.
     int code = regs.orig_rax;
     type = getSyscallType(code);
-    args[0].setArg(regs.rdi, NULL, &type->args[0]);
-    args[1].setArg(regs.rsi, NULL, &type->args[1]);
-    args[2].setArg(regs.rdx, NULL, &type->args[2]);
-    args[3].setArg(regs.r10, NULL, &type->args[3]);
-    args[4].setArg(regs.r8, NULL, &type->args[4]);
-    args[5].setArg(regs.r9, NULL, &type->args[5]);
+    long argsList[SYSCALL_MAX_ARGS];
+    getRegsList(regs, argsList);
+    //args[0].setArg(regs.rdi, NULL, &type->args[0]);
+    //args[1].setArg(regs.rsi, NULL, &type->args[1]);
+    //args[2].setArg(regs.rdx, NULL, &type->args[2]);
+    //args[3].setArg(regs.r10, NULL, &type->args[3]);
+    //args[4].setArg(regs.r8, NULL, &type->args[4]);
+    //args[5].setArg(regs.r9, NULL, &type->args[5]);
     ret = regs.rax;
 }
 
-long getAux(long args[])
+// This is a utility function to get a args list from sets of regs
+void SystemCall::getRegsList(const user_regs_struct &regs, long args[])
 {
-    struct sysarg a = *arg;
-    if (a.usage != usage || used[i])
-        continue;
-    if (a.ty == sysarg_iovec) {
-        if (a.usage) {
+    // XXX: x86_64 specific code
+    args[0] = regs.rdi;
+    args[1] = regs.rsi;
+    args[2] = regs.rdx;
+    args[3] = regs.r10;
+    args[4] = regs.r8;
+    args[5] = regs.r9;
+}
+
+// This is an adpation of similar kernel-mode code in retro. But this one is in user-mode.
+SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &type, int i,
+        long ret, int nargs, pid_t pid)
+{
+    SystemCallArgumentAuxilation a;
+    // TODO: Implement the following arguments
+    bool usage = false;
+    int used[SYSCALL_MAX_ARGS + 1] = {0};
+
+    if (type.record == iovec_record) {
+        if (usage) {
             if (ret > 0) {
                 a.aux = args[i+1];
                 a.ret = ret;
@@ -73,8 +92,8 @@ long getAux(long args[])
             a.ret = UIO_MAXIOV*PAGE_SIZE;
         }
     }
-    if (a.ty == sysarg_buf || a.ty == sysarg_buf_det) {
-        if (a.usage) {
+    if (type.record == buf_record || type.record == buf_det_record) {
+        if (usage) {
             // Length of the buffer depends on the kernel.
             if (ret > 0) {
                 used[6] = 1;
@@ -86,37 +105,38 @@ long getAux(long args[])
             used[i+1] = 1;
             a.aux = args[i+1];
         }
-    } else if (a.ty == sysarg_struct) {
-        if (a.usage) {
+    } else if (type.record == struct_record) {
+        if (usage) {
             a.aux = 0;
             if (ret == 0) {
-                if (sc->args[i+1].ty == sysarg_psize_t) {
-                    int size = 0;
-                    get_user(size, (int *)args[i+1]);
-                    a.aux = size;
-                }
+                //if (sc->args[i+1].ty == sysarg_psize_t) {
+                int size = 0;
+                //get_user(size, (int *)args[i+1]);
+                readFromProcess((void *)size, args[i+1], sizeof(int), pid);
+                a.aux = size;
+                //}
             }
         } else {
-            if (sc->args[i+1].ty == sysarg_uint) {
-                used[i+1] = 1;
-                a.aux = args[i+1];
-            }
+            //if (sc->args[i+1].ty == sysarg_uint) {
+            used[i+1] = 1;
+            a.aux = args[i+1];
+            //}
         }
-    } else if (a.ty == sysarg_sha1) {
+    } else if (type.record == sha1_record) {
         // Akin to the case of sysarg_buf.
-        if (a.usage) {
+        if (usage) {
             a.aux = ret;
         } else {
             a.aux = args[i+1];
         }
-    } else if (a.ty == sysarg_path_at || a.ty == sysarg_rpath_at) {
+    } else if (type.record == path_at_record || type.record == rpath_at_record) {
         /* test AT_SYMLINK_(NO)FOLLOW, always the last argument */
-        if (a.aux && (a.aux & args[sc->nargs - 1])) {
+        if (a.aux && (a.aux & args[nargs - 1])) {
             /* toggle */
-            if (a.ty == sysarg_path_at)
-                a.ty = sysarg_rpath_at;
+            if (type.record == path_at_record)
+                type.record = rpath_at_record;
             else
-                a.ty = sysarg_path_at;
+                type.record = path_at_record;
         }
         a.aux = args[i-1];
     }

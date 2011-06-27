@@ -18,6 +18,10 @@
 // Constant definition
 #define kNanosecondsToSeconds 1e-9
 // The length of the max 64bit-int represented in decimals must not exceed the value
+#ifndef UIO_MAXIOV
+#define UIO_MAXIOV 1024
+#endif
+
 #define int64_MAX_LENGTH 25
 #define FASTBUF PAGE_SIZE
 

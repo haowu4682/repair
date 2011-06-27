@@ -44,7 +44,7 @@ String void_record(long argValue, SystemCallArgumentAuxilation *argAux)
 
 String sint_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
-    ostringstream os;
+    stringstream os;
     os << argValue;
     return os.str();
 }
@@ -77,7 +77,7 @@ String intp_record(long argValue, SystemCallArgumentAuxilation *argAux)
     long pret;
     int buf;
     ostringstream os;
-    pret = readFromProcess(&buf, argValue, sizeof(int));
+    pret = readFromProcess(&buf, argValue, sizeof(int), argAux->pid);
     if (pret < 0)
     {
         LOG("Error recording syscallarg: intp %ld", argValue);
@@ -99,7 +99,7 @@ String buf_record(long argValue, SystemCallArgumentAuxilation *argAux)
     char *buf = new char[len];
     if (len > 0)
     {
-        pret = readFromProcess(&buf, argValue, len);
+        pret = readFromProcess(&buf, argValue, len, argAux->pid);
         String str(buf, len);
         delete buf;
         return str;
@@ -121,7 +121,7 @@ String string_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     long len;
     char buf[MAX_ARG_STRLEN];
-    readFromProcess(&buf, argValue, MAX_ARG_STRLEN);
+    readFromProcess(&buf, argValue, MAX_ARG_STRLEN, argAux->pid);
     if ( !buf || !(len = strlen(buf))) {
         return "None";
     }

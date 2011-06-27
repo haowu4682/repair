@@ -15,10 +15,10 @@
 // int splitString(vector<String> &dstStringList, String &srcString);
 
 // write some data to a user's memory using ptrace
-long writeToProcess(void *buf, long addr, size_t len);
+long writeToProcess(void *buf, long addr, size_t len, pid_t pid);
 
 // read some data from a user's memory using ptrace
-long readFromProcess(void *buf, long addr, size_t len);
+long readFromProcess(void *buf, long addr, size_t len, pid_t pid);
 
 #endif //__COMMON_UTIL_H__
 

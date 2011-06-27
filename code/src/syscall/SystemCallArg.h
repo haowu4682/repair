@@ -12,6 +12,7 @@ struct SystemCallArgumentAuxilation
 {
     pid_t pid;
     long aux;
+    long ret;
 };
 
 typedef String (*sysarg_type_t) (long argValue, SystemCallArgumentAuxilation *argAux);

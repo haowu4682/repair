@@ -3,12 +3,12 @@
 #include <common/util.h>
 
 //TODO: implement
-long writeToProcess(void *buf, long addr, size_t len)
+long writeToProcess(void *buf, long addr, size_t len, pid_t pid)
 {
     return 0;
 }
 
-long readFromProcess(void *buf, long addr, size_t len)
+long readFromProcess(void *buf, long addr, size_t len, pid_t pid)
 {
     return 0;
 }
