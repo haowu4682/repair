@@ -15,8 +15,13 @@
 #include <syscall/SystemCall.h>
 using namespace std;
 
-ProcessManager::ProcessManager(Vector<String> &command, SystemCallList &list)
+ProcessManager::ProcessManager(Vector<String> *command, SystemCallList *list)
     : commandList(command), syscallList(list)
+{
+}
+
+ProcessManager::ProcessManager(SystemCallList *list)
+    : syscallList(list), commandList(NULL)
 {
 }
 
@@ -26,10 +31,24 @@ int ProcessManager::replay()
     return startProcess();
 }
 
+int ProcessManager::trace(pid_t pid)
+{
+    long pret;
+    pret = ptrace(PTRACE_ATTACH, pid, NULL, NULL);
+    if (pret < 0)
+    {
+        LOG("Cannot attach to process with pid: %d", pid);
+        return -1;
+    }
+    traceProcess(pid);
+    // XXX: Maybe this is not necessary, or should be removed
+    ptrace(PTRACE_DETACH, pid, NULL, NULL);
+}
+
 int ProcessManager::startProcess()
 {
     // If the command line is empty, we cannot do anything
-    if (commandList.empty())
+    if (commandList->empty())
     {
         LOG1("Command is empty, refrain from executing nothing.");
         return -1;
@@ -57,21 +76,26 @@ int ProcessManager::startProcess()
 
 int ProcessManager::executeProcess()
 {
+    if (commandList == NULL)
+    {
+        LOG1("command list is empty!");
+        return -1;
+    }
     // Assert the command is not empty here.
-    ASSERT(commandList.size() != 0);
+    ASSERT(commandList->size() != 0);
     LOG1("This is the child process!");
 
     // Arrange the arguments
-    char **args = new char *[commandList.size()+1];
-    for (int i = 0; i < commandList.size(); i++)
+    char **args = new char *[commandList->size()+1];
+    for (int i = 0; i < commandList->size(); i++)
     {
         // XXX: This is not very clean. But we have to copy `argv' into a new char array since
         // `char *' is required in execvp, but the type of `argv' is `const char *'.
-        const char *argv = commandList[i].c_str();
+        const char *argv = (*commandList)[i].c_str();
         args[i] = new char[strlen(argv)];
         strcpy(args[i], argv);
     }
-    args[commandList.size()] = NULL;
+    args[commandList->size()] = NULL;
 
     // Let the process to be traced
     long pret = ptrace(PTRACE_TRACEME, 0, NULL, NULL);
@@ -83,20 +107,41 @@ int ProcessManager::executeProcess()
 
     // Execute the command
     int ret;
-    ret = execvp(commandList[0].c_str(), args);
+    ret = execvp((*commandList)[0].c_str(), args);
 
     // Clean up
-    for (int i = 0; i < commandList.size(); i++)
+    for (int i = 0; i < commandList->size(); i++)
     {
         delete args[i];
     }
     return ret;
 }
 
+// Deal with ``fork'' or ``vfork'' in tracing a process.
+// @ret 0 when it's the manager of the original process.
+//      1 when it's the manager of the new process.
+//      <0 when there is an error.
+int dealWithFork(SystemCall &syscall, SystemCallList *list)
+{
+    // TODO: deal with fork
+    // XXX: Hard code features for x86_64 here.
+    pid_t newManagerPid = fork();
+    if (newManagerPid == 0)
+    {
+        pid_t processPid = (pid_t) syscall.getReturn();
+        // Child process, manage the new process;
+        ProcessManager manager(list);
+        manager.trace(processPid);
+        return 1;
+    }
+    return 0;
+}
+
 int ProcessManager::traceProcess(pid_t pid)
 {
     LOG1("This is the parent process!");
     int status;
+    int ret;
     long pret;
     struct user_regs_struct regs;
 
@@ -111,7 +156,7 @@ int ProcessManager::traceProcess(pid_t pid)
         // TODO: Deal with the syscall here.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
         SystemCall syscall(regs);
-        SystemCall syscallMatch = syscallList.search(syscall);
+        SystemCall syscallMatch = syscallList->search(syscall);
         // If no match has been found, we have to go on executing the system call and simply do
         // nothing else here. However, if a match has been found we must change the return value
         // accoridngly when the syscall has returned.
@@ -129,6 +174,16 @@ int ProcessManager::traceProcess(pid_t pid)
             writeMatchedSyscall(syscallMatch, pid);
         }
         LOG("syscall nr: %lu\n", regs.orig_rax);
+
+        // If the system call is fork/vfork, we must create a new process manager for it.
+        if (syscall.isFork())
+        {
+            ret = dealWithFork(syscall, syscallList);
+            if (ret != 0)
+            {
+                break;
+            }
+        }
     }
     LOG1("This is the parent process!");
     return 0;
@@ -161,7 +216,7 @@ String ProcessManager::toString()
 {
     // XXX: We only output the command line currently.
     stringstream ss;
-    for (Vector<String>::iterator it = commandList.begin(); it != commandList.end(); it++)
+    for (Vector<String>::iterator it = commandList->begin(); it != commandList->end(); it++)
     {
         ss << (*it) << ", ";
     }
@@ -188,7 +243,7 @@ int main(int argc, char **argv)
     }
     SystemCallList list;
 
-    ProcessManager manager(commands, list);
+    ProcessManager manager(&commands, &list);
     //cout << manager.toString();
     manager.replay();
     return 0;

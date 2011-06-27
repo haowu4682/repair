@@ -61,6 +61,13 @@ int SystemCall::overwrite(user_regs_struct &regs)
     regs.rax = ret;
 }
 
+// Tell whether the syscall is a ``fork'' or ``vfork''
+bool SystemCall::isFork()
+{
+    // XXX: Hard code the syscall number for x86_64 here now.
+    return type->nr == 57 || type->nr == 58;
+}
+
 // An aux function to parse a syscall arg.
 void parseSyscallArg(String str, String *name, String *value)
 {

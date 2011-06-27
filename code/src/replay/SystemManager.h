@@ -15,7 +15,7 @@ class SystemManager
         // All the commands in the system manager
         Vector<Vector<String> > commands;
         // The system call list;
-        SystemCallList syscallList;
+        SystemCallList *syscallList;
 };
 
 #endif //__REPLAY_SYSTEMMANAGER_H__

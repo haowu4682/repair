@@ -49,6 +49,15 @@ class SystemCall
         // Init a system call from a record
         // @param record The record
         int init(String record);
+
+        // Tell whether the system call is a ``fork'' or ``vfork''
+        bool isFork();
+
+        // Get return value
+        long getReturn() { return ret; }
+
+        // Get arguments;
+        const SystemCallArgument *getArgs() { return args;}
     private:
         // If the system call is valid
         bool valid;

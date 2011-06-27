@@ -16,11 +16,16 @@ class ProcessManager
     public:
         // The constructor
         // @author haowu
-        ProcessManager(Vector<String> &command, SystemCallList &list);
+        ProcessManager(Vector<String> *command, SystemCallList *list);
+        ProcessManager(SystemCallList *list);
 
         // Start replaying the process
         // @author haowu
         int replay();
+
+        // Trace the process without running ``exec''
+        // The function is used when the process to be replayed has already started.
+        int trace(pid_t);
 
         // Output all the infomation as a string.
         // The function is used for debugging and logging.
@@ -42,9 +47,9 @@ class ProcessManager
         // @param syscall The syscall to overwrite
         static int writeMatchedSyscall(SystemCall syscall, pid_t pid);
         // The command line
-        Vector<String> &commandList;
+        Vector<String> *commandList;
         // The system call list used when replaying
-        SystemCallList &syscallList;
+        SystemCallList *syscallList;
 };
 
 #endif //__REPLAY_PROCESSMANAGER_H__

@@ -21,7 +21,7 @@ int SystemManager::execAll()
         // If it is the child process
         if (pid == 0)
         {
-            ProcessManager manager(*command_pt, syscallList);
+            ProcessManager manager(&(*command_pt), syscallList);
             manager.replay();
         }
     }
