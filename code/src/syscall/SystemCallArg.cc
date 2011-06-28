@@ -1,6 +1,7 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
 
 #include <cstring>
+#include <iostream>
 #include <sstream>
 
 #include <common/util.h>
@@ -99,9 +100,10 @@ String buf_record(long argValue, SystemCallArgumentAuxilation *argAux)
     if (len > 0)
     {
         char *buf = new char[len];
-        pret = readFromProcess(&buf, argValue, len, argAux->pid);
+        pret = readFromProcess(buf, argValue, len, argAux->pid);
         String str(buf, len);
         delete buf;
+        //LOG1(str.c_str());
         return str;
     }
     else
@@ -121,7 +123,7 @@ String string_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     long len;
     char buf[MAX_ARG_STRLEN];
-    readFromProcess(&buf, argValue, MAX_ARG_STRLEN, argAux->pid);
+    readFromProcess(buf, argValue, MAX_ARG_STRLEN, argAux->pid);
     if ( !buf || !(len = strlen(buf))) {
         return "None";
     }

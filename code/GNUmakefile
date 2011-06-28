@@ -36,7 +36,7 @@ bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h src/syscall/tra
 	mkdir -p bin; mkdir -p bin/syscall;
 	$(CPP) $(CFLAGS) -o $@ -c $<
 
-src/syscall/%.inc: src/syscall/%.py
+src/syscall/trace_syscalls.inc: src/syscall/trace_syscalls.py
 	$< > $@
 
 clean:
