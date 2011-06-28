@@ -24,6 +24,7 @@ struct SyscallType
 };
 
 extern SyscallType syscallTypeList[];
+#define syscallTypeListSize (sizeof(syscallTypeList) / sizeof(SyscallType))
 
 // The class is used to represent the **record** of a system call
 // @author haowu
@@ -66,7 +67,7 @@ class SystemCall
     private:
         // Get an aux value for determing an argument
         static SystemCallArgumentAuxilation getAux(long args[], SyscallArgType &argType, int i,
-                long ret, int nargs, pid_t pid);
+                long ret, int nargs, pid_t pid, bool usage);
         // If the system call is valid
         bool valid;
         // When the syscall is taken *before* at a syscall entry, it is false. Else it is true

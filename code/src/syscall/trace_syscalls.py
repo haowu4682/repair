@@ -20,7 +20,7 @@ def print_syscalls():
             if isinstance(aux, type):
                 assert issubclass(aux, Structure)
                 aux = sizeof(aux)
-            print('\t\t{ "%s", %s, %s },' % (arg.name, new_ty, arg.usage & 1))
+            print('\t\t{ "%s", %s, %s, %s },' % (arg.name, new_ty, arg.usage & 1, aux))
         print("\t} },")
 
 if __name__ == "__main__":

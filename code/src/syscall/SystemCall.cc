@@ -71,7 +71,8 @@ SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage)
         }
         else
         {
-            SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid);
+            SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid, usage);
+            LOG("%d %d %ld", usage, argType.usage, aux.aux);
             args[i].setArg(argsList[i], &aux, &argType);
             LOG1(argType.record(argsList[i], &aux).c_str());
         }
@@ -92,12 +93,12 @@ void SystemCall::getRegsList(const user_regs_struct &regs, long args[])
 
 // This is an adpation of similar kernel-mode code in retro. But this one is in user-mode.
 SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &type, int i,
-        long ret, int nargs, pid_t pid)
+        long ret, int nargs, pid_t pid, bool usage)
 {
     SystemCallArgumentAuxilation a;
     a.pid = pid;
+    a.usage = usage;
     // TODO: Implement the following arguments
-    bool usage = false;
     int used[SYSCALL_MAX_ARGS + 1] = {0};
 
     if (type.record == iovec_record) {

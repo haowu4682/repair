@@ -23,6 +23,7 @@ struct SyscallArgType
     String name;
     sysarg_type_t record;
     bool usage;
+    long aux;
     bool operator == (SyscallArgType &another) { return name == another.name; }
 };
 
