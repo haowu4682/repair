@@ -42,20 +42,27 @@ const SyscallType *getSyscallType(String name)
     return NULL;
 }
 
-SystemCall::SystemCall(const user_regs_struct &regs)
+SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid)
 {
     // XXX: The code here might be architecture-dependent for x86_64 only.
     int code = regs.orig_rax;
     type = getSyscallType(code);
     long argsList[SYSCALL_MAX_ARGS];
     getRegsList(regs, argsList);
+    int numArgs = type->numArgs;
+    ret = regs.rax;
+    for (int i = 0; i < numArgs; i++)
+    {
+        SyscallArgType argType = type->args[i];
+        SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid);
+        args[i].setArg(argsList[i], &aux, &argType);
+    }
     //args[0].setArg(regs.rdi, NULL, &type->args[0]);
     //args[1].setArg(regs.rsi, NULL, &type->args[1]);
     //args[2].setArg(regs.rdx, NULL, &type->args[2]);
     //args[3].setArg(regs.r10, NULL, &type->args[3]);
     //args[4].setArg(regs.r8, NULL, &type->args[4]);
     //args[5].setArg(regs.r9, NULL, &type->args[5]);
-    ret = regs.rax;
 }
 
 // This is a utility function to get a args list from sets of regs
@@ -75,6 +82,7 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
         long ret, int nargs, pid_t pid)
 {
     SystemCallArgumentAuxilation a;
+    a.pid = pid;
     // TODO: Implement the following arguments
     bool usage = false;
     int used[SYSCALL_MAX_ARGS + 1] = {0};

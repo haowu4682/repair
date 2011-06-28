@@ -157,7 +157,8 @@ int ProcessManager::traceProcess(pid_t pid)
         // The child process is at the point **before** a syscall.
         // TODO: Deal with the syscall here.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        SystemCall syscall(regs);
+        LOG("before creating systemcall");
+        SystemCall syscall(regs, pid);
         LOG("before searching match");
         SystemCall syscallMatch = syscallList->search(syscall);
         // If no match has been found, we have to go on executing the system call and simply do

@@ -32,7 +32,7 @@ class SystemCall
     public:
         SystemCall() : valid(false) {}
         // Construct the system call from registers
-        SystemCall(const user_regs_struct &regs);
+        SystemCall(const user_regs_struct &regs, pid_t pid);
         SystemCall(String record) { this->init(record); }
 
         // Whether the system call is valid.
