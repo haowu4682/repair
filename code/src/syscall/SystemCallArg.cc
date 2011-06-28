@@ -96,9 +96,9 @@ String buf_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     long pret;
     size_t len = argAux->aux;
-    char *buf = new char[len];
     if (len > 0)
     {
+        char *buf = new char[len];
         pret = readFromProcess(&buf, argValue, len, argAux->pid);
         String str(buf, len);
         delete buf;
