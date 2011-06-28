@@ -77,8 +77,10 @@ long readFromProcess(void *buf, long addr, size_t len, pid_t pid)
     }
     startAddr = addr & (~WORD_ALIGN);
     endAddr = (addr + len - 1) & (~WORD_ALIGN);
-    for (int alignAddr = startAddr; alignAddr <= endAddr; alignAddr += WORD_BYTES)
+    LOG("%lu %lu %lu", startAddr, endAddr, len);
+    for (long alignAddr = startAddr; alignAddr <= endAddr; alignAddr += WORD_BYTES)
     {
+        LOG("%lu", alignAddr);
         long wordBuf;
         wordBuf = ptrace(PTRACE_PEEKDATA, pid, alignAddr, NULL);
         char *byteBuf = (char *) &wordBuf;

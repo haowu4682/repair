@@ -70,7 +70,7 @@ SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage)
         else
         {
             SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid, usage);
-            LOG("%d %ld %ld", i, aux.aux, argsList[2]);
+            LOG("%d %ld %ld", i, argsList[i], aux.aux);
             args[i].setArg(argsList[i], &aux, &argType);
             LOG1(argType.record(argsList[i], &aux).c_str());
         }
