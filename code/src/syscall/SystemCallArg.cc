@@ -229,6 +229,11 @@ void SystemCallArgument::setArg(String record, const SyscallArgType *syscallType
     this->value = record;
 }
 
+void SystemCallArgument::setArg()
+{
+    this->value = "None";
+}
+
 bool SystemCallArgument::operator == (SystemCallArgument &another)
 {
     // TODO: Implement it

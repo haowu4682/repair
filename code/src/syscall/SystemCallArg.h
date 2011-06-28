@@ -11,6 +11,7 @@ class SystemCallArgument;
 struct SystemCallArgumentAuxilation
 {
     pid_t pid;
+    bool usage;
     long aux;
     long ret;
 };
@@ -21,6 +22,7 @@ struct SyscallArgType
 {
     String name;
     sysarg_type_t record;
+    bool usage;
     bool operator == (SyscallArgType &another) { return name == another.name; }
 };
 
@@ -68,6 +70,8 @@ class SystemCallArgument
                 const SyscallArgType *syscallType = NULL);
         // Create the argument from a syscall arg record
         void setArg(String record, const SyscallArgType *syscallType = NULL);
+        // Set the argument to "None".
+        void setArg();
         // Set up the sysarg name
         void setName(String newName) { name = newName; }
         // compare if two system call arguments are equal

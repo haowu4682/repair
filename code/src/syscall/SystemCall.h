@@ -32,8 +32,8 @@ class SystemCall
     public:
         SystemCall() : valid(false) {}
         // Construct the system call from registers
-        SystemCall(const user_regs_struct &regs, pid_t pid);
-        SystemCall(String record) { this->init(record); }
+        SystemCall(const user_regs_struct &regs, pid_t pid, bool usage);
+        SystemCall(String record, bool usage) { this->usage = usage; this->init(record); }
 
         // Whether the system call is valid.
         // A valid system call is a system with its code and args provided.
@@ -69,6 +69,8 @@ class SystemCall
                 long ret, int nargs, pid_t pid);
         // If the system call is valid
         bool valid;
+        // When the syscall is taken *before* at a syscall entry, it is false. Else it is true
+        bool usage;
         // The system call type
         const SyscallType *type;
         // The system call args

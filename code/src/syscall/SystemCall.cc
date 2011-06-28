@@ -42,8 +42,9 @@ const SyscallType *getSyscallType(String name)
     return NULL;
 }
 
-SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid)
+SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage)
 {
+    this->usage = usage;
     // XXX: The code here might be architecture-dependent for x86_64 only.
     int code = regs.orig_rax;
     type = getSyscallType(code);
@@ -66,7 +67,7 @@ SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid)
         SyscallArgType argType = type->args[i];
         SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid);
         args[i].setArg(argsList[i], &aux, &argType);
-        //LOG1(argType.record(argsList[i], &aux).c_str());
+        LOG1(argType.record(argsList[i], &aux).c_str());
     }
 }
 

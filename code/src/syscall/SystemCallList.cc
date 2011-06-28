@@ -16,9 +16,11 @@ void SystemCallList::init(istream &in)
     // '\n' is used as a delimeter between syscall's
     string syscallString;
     SystemCall syscall;
+    bool usage = false;
     while (getline(in, syscallString) == 0)
     {
-        SystemCall syscall(syscallString);
+        SystemCall syscall(syscallString, usage);
         syscallVector.push_back(syscall);
+        usage = !usage;
     }
 }
