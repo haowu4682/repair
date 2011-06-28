@@ -8,7 +8,7 @@
 #include <syscall/SystemCallArg.h>
 using namespace std;
 
-#define MAX_ARG_STRLEN  (PAGE_SIZE * 32)
+#define MAX_ARG_STRLEN  (PAGE_SIZE)
 
 sysarg_type_t sysarg_type_list[] =
 {
@@ -152,7 +152,8 @@ String buf_record(long argValue, SystemCallArgumentAuxilation *argAux)
 String sha1_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     String str;
-    //TODO: Implement this
+    // XXX: there might be a bug here.
+    str = buf_record(argValue, argAux);
     return str;
 }
 
@@ -211,6 +212,7 @@ String path_record(long argValue, SystemCallArgumentAuxilation *argAux)
 String path_at_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     String str;
+    return string_record(argValue, argAux);
     return str;
 }
 

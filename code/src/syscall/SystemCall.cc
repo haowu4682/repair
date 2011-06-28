@@ -54,7 +54,7 @@ SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage)
     else
     {
         valid = true;
-        //LOG("before sysargs code = %d", code);
+        LOG("SYSCALL is %s", type->name.c_str());
     }
     long argsList[SYSCALL_MAX_ARGS];
     getRegsList(regs, argsList);
