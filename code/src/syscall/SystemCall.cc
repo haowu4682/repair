@@ -47,6 +47,16 @@ SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid)
     // XXX: The code here might be architecture-dependent for x86_64 only.
     int code = regs.orig_rax;
     type = getSyscallType(code);
+    if (type == NULL)
+    {
+        valid = false;
+        return;
+    }
+    else
+    {
+        valid = true;
+        LOG("before sysargs code = %d", code);
+    }
     long argsList[SYSCALL_MAX_ARGS];
     getRegsList(regs, argsList);
     int numArgs = type->numArgs;
@@ -57,12 +67,6 @@ SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid)
         SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid);
         args[i].setArg(argsList[i], &aux, &argType);
     }
-    //args[0].setArg(regs.rdi, NULL, &type->args[0]);
-    //args[1].setArg(regs.rsi, NULL, &type->args[1]);
-    //args[2].setArg(regs.rdx, NULL, &type->args[2]);
-    //args[3].setArg(regs.r10, NULL, &type->args[3]);
-    //args[4].setArg(regs.r8, NULL, &type->args[4]);
-    //args[5].setArg(regs.r9, NULL, &type->args[5]);
 }
 
 // This is a utility function to get a args list from sets of regs
@@ -162,7 +166,7 @@ int SystemCall::overwrite(user_regs_struct &regs)
 bool SystemCall::isFork()
 {
     // XXX: Hard code the syscall number for x86_64 here now.
-    return type->nr == 57 || type->nr == 58;
+    return valid && (type->nr == 57 || type->nr == 58);
 }
 
 // An aux function to parse a syscall arg.

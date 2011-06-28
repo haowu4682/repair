@@ -41,3 +41,4 @@ src/syscall/%.inc: src/syscall/%.py
 
 clean:
 	rm -f $(REPLAYBIN) $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ) src/syscall/trace_syscalls.inc
+
