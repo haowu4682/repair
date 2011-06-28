@@ -265,3 +265,20 @@ int SystemCall::init(String record)
     // ret has been assigned
 }
 
+bool SystemCall::operator ==(SystemCall &another)
+{
+    if (!valid || !another.valid)
+        return false;
+    if (usage != another.usage)
+        return false;
+    if (type != another.type)
+        return false;
+    for (int i = 0; i < type->numArgs; i++)
+    {
+        if (usage == type->args[i].usage && usage == another.type->args[i].usage)
+            if (args[i] != another.args[i])
+                return false;
+    }
+    return true;
+}
+

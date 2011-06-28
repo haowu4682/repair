@@ -286,3 +286,7 @@ bool SystemCallArgument::operator == (SystemCallArgument &another)
     return ((type == another.type) && (value == another.value));
 }
 
+bool SystemCallArgument::operator != (SystemCallArgument &another)
+{
+    return !operator ==(another);
+}

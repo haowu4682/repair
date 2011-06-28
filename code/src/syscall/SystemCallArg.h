@@ -77,6 +77,7 @@ class SystemCallArgument
         void setName(String newName) { name = newName; }
         // compare if two system call arguments are equal
         bool operator ==(SystemCallArgument &);
+        bool operator !=(SystemCallArgument &);
     private:
         // The name
         String name;

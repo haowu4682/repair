@@ -36,6 +36,10 @@ class SystemCall
         SystemCall(const user_regs_struct &regs, pid_t pid, bool usage);
         SystemCall(String record, bool usage) { this->usage = usage; this->init(record); }
 
+        // Whether two syscalls are equal. Two syscalls are equal if their usages are equal, and
+        // each available arguments and return value(if usage==true) are equal
+        bool operator == (SystemCall &);
+
         // Whether the system call is valid.
         // A valid system call is a system with its code and args provided.
         // @author haowu

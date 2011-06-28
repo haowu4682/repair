@@ -6,9 +6,17 @@ using namespace std;
 
 SystemCall SystemCallList::search(SystemCall &syscall)
 {
-    // TODO: Fill in the function
-    SystemCall matchedSyscall;
-    return matchedSyscall;
+    // TODO: devide by pid
+    SystemCall emptySyscall;
+    Vector<SystemCall>::iterator it;
+    for (it = syscallVector.begin(); it < syscallVector.end(); ++it)
+    {
+        if (*it == syscall)
+        {
+            return *it;
+        }
+    }
+    return emptySyscall;
 }
 
 void SystemCallList::init(istream &in)
@@ -24,3 +32,4 @@ void SystemCallList::init(istream &in)
         usage = !usage;
     }
 }
+
