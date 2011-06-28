@@ -12,8 +12,6 @@ SyscallType syscallTypeList[] =
     #include "trace_syscalls.inc"
 };
 
-#define syscallTypeListSize (sizeof(syscallTypeList) / sizeof(SyscallType))
-
 // Search for the syscall type in syscallTypeList
 const SyscallType *getSyscallType(int nr)
 {
@@ -72,7 +70,7 @@ SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage)
         else
         {
             SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid, usage);
-            LOG("%d %d %ld", usage, argType.usage, aux.aux);
+            LOG("%d %ld %ld", i, aux.aux, argsList[2]);
             args[i].setArg(argsList[i], &aux, &argType);
             LOG1(argType.record(argsList[i], &aux).c_str());
         }
@@ -126,6 +124,7 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
             // Length of the buffer is passed in by the user.
             used[i+1] = 1;
             a.aux = args[i+1];
+            //LOG("%ld", a.aux);
         }
     } else if (type.record == struct_record) {
         if (usage) {
@@ -162,6 +161,7 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
         }
         a.aux = args[i-1];
     }
+    return a;
 }
 
 // XXX: This may not apply to some system calls. It needs to be reviewed.

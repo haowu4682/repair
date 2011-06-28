@@ -255,7 +255,8 @@ int main(int argc, char **argv)
 
     ProcessManager manager(&commands, &list);
     //cout << manager.toString();
-    //manager.replay();
+    manager.replay();
+    /*
     for (int i = 0; i < 294; i++)
     {
         SyscallType type = syscallTypeList[i];
@@ -265,6 +266,7 @@ int main(int argc, char **argv)
             cout << type.args[i].usage << endl;
         }
     }
+    */
     return 0;
 }
 
