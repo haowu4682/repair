@@ -219,12 +219,16 @@ String path_at_record(long argValue, SystemCallArgumentAuxilation *argAux)
 String rpath_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     String str;
+    //TODO: implement
+    return string_record(argValue, argAux);
     return str;
 }
 
 String rpath_at_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     String str;
+    //TODO: implement
+    return string_record(argValue, argAux);
     return str;
 }
 
