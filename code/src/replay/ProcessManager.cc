@@ -140,7 +140,7 @@ int dealWithFork(SystemCall &syscall, SystemCallList *list)
 
 int ProcessManager::traceProcess(pid_t pid)
 {
-    LOG1("This is the parent process!");
+    //LOG1("This is the parent process!");
     int status;
     int ret;
     long pret;
@@ -151,15 +151,15 @@ int ProcessManager::traceProcess(pid_t pid)
     // Current the termination condition is: the child has exited from executing
     while (!WIFEXITED(status))
     {
-        LOG("before syscall");
+        //LOG("before syscall");
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
         waitpid(pid, &status, 0);
         // The child process is at the point **before** a syscall.
         // TODO: Deal with the syscall here.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        LOG("before creating systemcall");
+        //LOG("before creating systemcall");
         SystemCall syscall(regs, pid);
-        LOG("before searching match");
+        //LOG("before searching match");
         SystemCall syscallMatch = syscallList->search(syscall);
         // If no match has been found, we have to go on executing the system call and simply do
         // nothing else here. However, if a match has been found we must change the return value
@@ -167,18 +167,20 @@ int ProcessManager::traceProcess(pid_t pid)
         bool matchFound = syscallMatch.isValid();
 
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
-        LOG("inside syscall");
+        //LOG("inside syscall");
+        LOG("syscall nr: %lu\n", regs.orig_rax);
         waitpid(pid, &status, 0);
         // The child process is at the point **after** a syscall.
         // Deal with the syscall here. If the match has been found previously, we shall
         // replace the return value with the recorded value in the systemcall list.
         // Most syscall will have its return value in the register %rax, But there are some
         // which does not follow the rule and we will need to deal with them seperately.
+        ptrace(PTRACE_GETREGS, pid, 0, &regs);
+        SystemCall syscallReturn(regs, pid);
         if (matchFound)
         {
             writeMatchedSyscall(syscallMatch, pid);
         }
-        LOG("syscall nr: %lu\n", regs.orig_rax);
 
         // If the system call is fork/vfork, we must create a new process manager for it.
         if (syscall.isFork())
@@ -189,9 +191,9 @@ int ProcessManager::traceProcess(pid_t pid)
                 break;
             }
         }
-        LOG("after syscall");
+        //LOG("after syscall");
     }
-    LOG1("This is the parent process!");
+    //LOG1("This is the parent process!");
     return 0;
 }
 

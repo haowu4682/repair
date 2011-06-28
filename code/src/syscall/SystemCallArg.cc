@@ -162,6 +162,9 @@ String name_record(long argValue, SystemCallArgumentAuxilation *argAux)
 String path_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     String str;
+    SystemCallArgumentAuxilation aux = *argAux;
+    //aux.aux = AT_FDCWD;
+    str = path_at_record(argValue, &aux);
     return str;
 }
 

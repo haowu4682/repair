@@ -66,6 +66,7 @@ SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid)
         SyscallArgType argType = type->args[i];
         SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid);
         args[i].setArg(argsList[i], &aux, &argType);
+        //LOG1(argType.record(argsList[i], &aux).c_str());
     }
 }
 
