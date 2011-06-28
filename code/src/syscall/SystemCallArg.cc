@@ -37,6 +37,43 @@ sysarg_type_t sysarg_type_list[] =
     msghdr_record
 };
 
+/* This function and the next serialize a variable-length
+   (long) integer ABCDEFGHIJ....XYZ as
+   (observe the 1's and 0's)
+   1ABCDEFG ... 1MNOPQRS 0TUVWXYZ
+
+ */
+static inline size_t svarint(long v, char *buf)
+{
+    size_t nbits = 1 + ((v && v != -1)? (64 - __builtin_clzll((v < 0)? ~v: v)): 0);
+    size_t nbytes = (nbits / 7) + ((nbits % 7)? 1: 0);
+    size_t n = nbytes - 1;
+    char *p = buf + n;
+    *p = v & 0x7f;
+    for (; n; --n) {
+        v >>= 7;
+        --p;
+        *p = (v & 0x7f) | 0x80;
+    }
+    return nbytes;
+}
+
+/* See comment above */
+static inline size_t uvarint(unsigned long v, char *buf)
+{
+    size_t nbits = (v)? (64 - __builtin_clzll(v)): 1;
+    size_t nbytes = (nbits / 7) + ((nbits % 7)? 1: 0);
+    size_t n = nbytes - 1;
+    char *p = buf + n;
+    *p = v & 0x7f;
+    for (; n; --n) {
+        v >>= 7;
+        --p;
+        *p = (v & 0x7f) | 0x80;
+    }
+    return nbytes;
+}
+
 // TODO: Give more precise description here.
 String void_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
@@ -145,8 +182,9 @@ String iovec_record(long argValue, SystemCallArgumentAuxilation *argAux)
 
 String fd_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
-    String str;
-    return str;
+    // XXX: We will use the way like STRACE here. However, we need code to deal with fd
+    // when we compare two syscalls anyway.
+    return uint32_record(argValue, argAux);
 }
 
 String fd2_record(long argValue, SystemCallArgumentAuxilation *argAux)
