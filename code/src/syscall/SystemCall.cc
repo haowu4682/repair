@@ -190,7 +190,8 @@ void parseSyscallArg(String str, String *name, String *value)
     }
     *name = str.substr(0, pos);
     // remove the trailing ','
-    *value = str.substr(pos+1, str.length() - 1);
+    // [pos+1, str.length() - 1), len = str.length() - pos - 2
+    *value = str.substr(pos+1, str.length() - pos - 2);
 }
 
 // TODO: Combine the state **BEFORE** a syscall and the state **AFTER** a syscall.
@@ -297,3 +298,4 @@ String SystemCall::toString()
     ss << "ret=" << ret;
     return ss.str();
 }
+
