@@ -1,5 +1,7 @@
 //Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <sstream>
+
 #include <replay/FDManager.h>
 using namespace std;
 
@@ -58,5 +60,21 @@ bool FDManager::equals(int oldFd, int newFd)
     if (oldPath != newPath)
         return false;
     return true;
+}
+
+String FDManager::toString()
+{
+    ostringstream sout;
+    sout << "Old FDs" << endl;
+    for (mapType::iterator it = oldFDMap.begin(); it != oldFDMap.end(); ++it)
+    {
+        sout << it->first << "\t" << it->second << endl;
+    }
+    sout << "New FDs" << endl;
+    for (mapType::iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
+    {
+        sout << it->first << "\t" << it->second << endl;
+    }
+    return sout.str();
 }
 

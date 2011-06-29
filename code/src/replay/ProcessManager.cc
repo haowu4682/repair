@@ -157,7 +157,7 @@ int ProcessManager::traceProcess(pid_t pid)
         // The child process is at the point **before** a syscall.
         // TODO: Deal with the syscall here.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        SystemCall syscall(regs, pid, false);
+        SystemCall syscall(regs, pid, false, &fdManager);
         SystemCall syscallMatch = syscallList->search(syscall);
 
         // If no match has been found, we have to go on executing the system call and simply do
@@ -175,7 +175,7 @@ int ProcessManager::traceProcess(pid_t pid)
         // Most syscall will have its return value in the register %rax, But there are some
         // which does not follow the rule and we will need to deal with them seperately.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        SystemCall syscallReturn(regs, pid, true);
+        SystemCall syscallReturn(regs, pid, true, &fdManager);
 
         //if (matchFound)
         //{
@@ -193,6 +193,7 @@ int ProcessManager::traceProcess(pid_t pid)
         }
     }
     //LOG1("This is the parent process!");
+    cout << fdManager.toString();
     return 0;
 }
 

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <common/common.h>
+#include <replay/FDManager.h>
 #include <syscall/SystemCallList.h>
 
 // This class is used to manager the running or a process of class Process
@@ -50,6 +51,8 @@ class ProcessManager
         Vector<String> *commandList;
         // The system call list used when replaying
         SystemCallList *syscallList;
+        // The fd manager
+        FDManager fdManager;
 };
 
 #endif //__REPLAY_PROCESSMANAGER_H__

@@ -18,6 +18,7 @@ class FDManager
         String searchOld(int fd);
         String searchNew(int fd);
         bool equals(int oldFd, int newFd);
+        String toString();
     private:
         typedef std::pair<int, String> valueType;
         typedef std::map<int, String> mapType;
