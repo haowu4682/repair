@@ -1,0 +1,76 @@
+Ultimate Goal:
+A ---(a)----> B
+  |
+   --(b)----> C
+Input: A, (a), (b)
+Output: D: A--->B--->C
+Have a demo for the previous process.
+
+Rough idea:
+Based on B, re-run every process in (b) in the following way:
+When a syscall occured in (b), do the following:
+// Notice that we *never* skip the execution of the syscall from now
+// on.
+1. Find the matched syscall in the previous execution in (b)
+2. If the output is different:
+    If there is a conflict:
+        report to the user
+
+A *shortcut* syscall is a system call interacts with device(e.g. disk, terminal, network, etc.)
+Most syscalls are *not* shortcut syscalls.
+
+Pseudo code(rough):
+manageProcess(process):
+    Stop at each syscall using ptrace
+    matched = find_matchedsyscall(syscall) // use pid mapping and fd mapping
+    if syscall is fork:
+        manageProcess(childProcess)
+    if syscall concerns pid:
+        handlePID(matched, syscall)
+    if syscall concerns file operation:
+        handleFD(matched, syscall)
+    if there is a conflict:
+        handleConflict
+
+handlePID:
+    oldpid = matched.pid
+    newpid = syscall.pid
+    create a map between them
+
+handleFD:
+    oldfd = matched.fd
+    newfd = syscall.fd
+    create a map between them
+
+find_matchedsyscall(syscall):
+    static pointer = list.start
+    for all oldsyscall in list start from pointer:
+        if oldsyscall.code == syscall.code
+            AND all input variables are the same (with mappings)
+            return oldsyscall
+    return none
+
+TODOs:
+(1) Find a matched syscall (done).
+(2) Define and detect a conflict.
+(3) Detect *shortcut* syscalls. (canceled)
+(4) Change values into the stored value (done).
+(5) pid mapping
+(6) env handling. (canceled)
+(7) fd mapping (almost done)
+Some finished TODO items are not listed.
+
+Conflict: // This needs to be reviewed.
+(1) If the return value of a system call is *different* from its previous system call, the system
+call is called a "conflicted" system call.
+
+(2) If a system call in (b) is conflicted, and one of its input is the output of a system call in
+(a), the conflict is called a *first-degree* conflict.
+
+(3) If a system call in (b) is conflicted, and the reason is the change of some environmental variable
+which is not influenced by the output of (a)(for example, time()), the conflict is called a
+*second-degree* conflict.
+
+(4) We shall report all the first-degree conflicts to the user.
+
+Others:
