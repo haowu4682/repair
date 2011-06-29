@@ -24,9 +24,10 @@ Most syscalls are *not* shortcut syscalls.
 TODOs:
 (1) Find a matched syscall (done).
 (2) Define and detect a conflict.
-(3) Detect *shortcut* syscalls.
+(3) Detect *shortcut* syscalls. (canceled)
 (4) Change values into the stored value (done).
-(5) Do (1)~(4) for *all* processes.
+(5) pid mapping
+(7) fd mapping
 
 Conflict:
 (1) If the return value of a system call is *different* from its previous system call, the system
@@ -42,5 +43,3 @@ which is not influenced by the output of (a)(for example, time()), the conflict 
 (4) We shall report all the first-degree conflicts to the user.
 
 Others:
-(1) pid mapping
-(2) fd mapping

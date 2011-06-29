@@ -12,15 +12,17 @@ class FDManager
 {
     public:
         int addOld(int fd, String path);
-        int removeOld(int fd, String path);
+        int removeOld(int fd);
         int addNew(int fd, String path);
-        int removeNew(int fd, String path);
+        int removeNew(int fd);
         String searchOld(int fd);
         String searchNew(int fd);
-        bool equals(int fd1, int fd2);
+        bool equals(int oldFd, int newFd);
     private:
-        std::map<int, String> oldFDMap;
-        std::map<int, String> newFDMap;
+        typedef std::pair<int, String> valueType;
+        typedef std::map<int, String> mapType;
+        mapType oldFDMap;
+        mapType newFDMap;
 };
 
 #endif // __REPLAY_FDMANAGER_H__
