@@ -152,7 +152,13 @@ String buf_record(long argValue, SystemCallArgumentAuxilation *argAux)
 String sha1_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     String str;
+    long len = argAux->aux;
     // XXX: there might be a bug here.
+    // 128 is hard-coded in syscall record function
+    if (len <= 128)
+    {
+        return buf_record(argValue, argAux);
+    }
     str = buf_record(argValue, argAux);
     return str;
 }
