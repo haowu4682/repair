@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include <common/util.h>
+#include <syscall/sha1.h>
 #include <syscall/SystemCallArg.h>
 using namespace std;
 
@@ -159,7 +160,13 @@ String sha1_record(long argValue, SystemCallArgumentAuxilation *argAux)
     {
         return buf_record(argValue, argAux);
     }
-    str = buf_record(argValue, argAux);
+    char *buf = new char[len];
+    unsigned char shaRes[SHA1_SIZE];
+    long pret;
+    pret = readFromProcess(buf, argValue, len, argAux->pid);
+    hmac_sha1(buf, len, shaRes);
+    str = String("sha1:") + (char *)shaRes;
+    delete buf;
     return str;
 }
 
