@@ -193,7 +193,7 @@ void parseSyscallArg(String str, String *name, String *value)
     *name = str.substr(0, pos);
     // remove the trailing ','
     // [pos+1, str.length() - 1), len = str.length() - pos - 2
-    *value = str.substr(pos+1, str.length() - pos - 2);
+    *value = str.substr(pos+1, str.length() - pos - 1);
 }
 
 // An aux function to parse a syscall arg.
@@ -203,7 +203,7 @@ size_t findPosForNextArg(String &str, int pos)
     bool strMod = false;
     for (res = pos; res < str.length(); ++res)
     {
-        if (str[res] == '\"')
+        if (str[res] == '\"' && str[res-1] != '\\')
         {
             strMod = !strMod;
             continue;
@@ -240,9 +240,16 @@ int SystemCall::init(String record)
 
     // Read the first part of the record.
     is >> addr >> number >> statusChar >> pid;
+    usage = ((statusChar == '<') ? true : false);
     // Now we are going to parse the args, we need some string operations here.
     // is >> auxStr;
+    //char buffer[4096];
+    //is.read(buffer, 4096);
+    // LOG("%d", is.get());
+    is.get();
     getline(is, auxStr);
+    //LOG("%d %s", usage, auxStr.c_str());
+    //auxStr = buffer;
     size_t pos = 0;
     // `6' is not hard-coded here now. The same as the max number of args hard-coded in `SystemCall.h'.
     for (i = 0; i < SYSCALL_MAX_ARGS; i++)
@@ -272,21 +279,28 @@ int SystemCall::init(String record)
         parseSyscallArg(sysargStr, &sysargName, &sysargValue);
         args[i].setName(sysargName);
         args[i].setArg(sysargValue, &type->args[i]);
-        pos = endPos + 2;
-        if (auxStr[pos] == '=')
+        if (auxStr[endPos] == ')')
         {
             // The args part has finished
-            pos = pos + 2;
+            if (usage)
+            {
+                //LOG1(auxStr.substr(endPos).c_str());
+                pos = endPos + 2;
+                pos = pos + 2;
+                if (pos < auxStr.length())
+                {
+                    retStr = auxStr.substr(pos);
+                    //LOG1(retStr.c_str());
+                }
+            }
             break;
         }
+        pos = endPos + 2;
     }
-
-    retStr = auxStr.substr(pos);
 
     // Everything has been read. We now need to change the values in the SystemCall according
     // to the values here.
     valid = true;
-    usage = ((statusChar == '<') ? false : true);
     // type has been assigned
     // args has been assigned
     // ret has been assigned

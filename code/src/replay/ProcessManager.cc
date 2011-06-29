@@ -252,7 +252,7 @@ int main(int argc, char **argv)
     ifstream fin("/home/haowu/repair_data/dumb.txt");
     SystemCallList list;
     list.init(fin);
-    //cout << list.toString();
+    cout << list.toString();
 
     ProcessManager manager(&commands, &list);
     //cout << manager.toString();
