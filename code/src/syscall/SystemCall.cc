@@ -1,5 +1,7 @@
 // Original Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <cstdlib>
+#include <cstring>
 #include <sstream>
 
 #include <common/common.h>
@@ -194,6 +196,29 @@ void parseSyscallArg(String str, String *name, String *value)
     *value = str.substr(pos+1, str.length() - pos - 2);
 }
 
+// An aux function to parse a syscall arg.
+size_t findPosForNextArg(String &str, int pos)
+{
+    size_t res;
+    bool strMod = false;
+    for (res = pos; res < str.length(); ++res)
+    {
+        if (str[res] == '\"')
+        {
+            strMod = !strMod;
+            continue;
+        }
+        if (!strMod)
+        {
+            if (str[res] == ')')
+                break;
+            if (res != str.length() - 1 && str[res] == ',' && str[res+1] == ' ')
+                break;
+        }
+    }
+    return res;
+}
+
 // TODO: Combine the state **BEFORE** a syscall and the state **AFTER** a syscall.
 int SystemCall::init(String record)
 {
@@ -210,12 +235,15 @@ int SystemCall::init(String record)
     String syscallName;
     String sysargName;
     String sysargValue;
+    String retStr;
     int i;
 
     // Read the first part of the record.
     is >> addr >> number >> statusChar >> pid;
     // Now we are going to parse the args, we need some string operations here.
-    is >> auxStr;
+    // is >> auxStr;
+    getline(is, auxStr);
+    size_t pos = 0;
     // `6' is not hard-coded here now. The same as the max number of args hard-coded in `SystemCall.h'.
     for (i = 0; i < SYSCALL_MAX_ARGS; i++)
     {
@@ -237,33 +265,32 @@ int SystemCall::init(String record)
                 break;
             }
             type = syscallType;
-            String sysargStr = auxStr.substr(index+1);
-            parseSyscallArg(sysargStr, &sysargName, &sysargValue);
-            args[i].setName(sysargName);
-            args[i].setArg(sysargValue, &type->args[i]);
+            pos = index + 1;
         }
-        else
-        {
-            parseSyscallArg(auxStr, &sysargName, &sysargValue);
-            args[i].setName(sysargName);
-            args[i].setArg(sysargValue, &type->args[i]);
-        }
-        is >> auxStr;
-        if (auxStr == "=")
+        size_t endPos = findPosForNextArg(auxStr, pos);
+        String sysargStr = auxStr.substr(pos, endPos - pos);
+        parseSyscallArg(sysargStr, &sysargName, &sysargValue);
+        args[i].setName(sysargName);
+        args[i].setArg(sysargValue, &type->args[i]);
+        pos = endPos + 2;
+        if (auxStr[pos] == '=')
         {
             // The args part has finished
+            pos = pos + 2;
             break;
         }
     }
 
-    is >> ret;
+    retStr = auxStr.substr(pos);
 
     // Everything has been read. We now need to change the values in the SystemCall according
     // to the values here.
     valid = true;
+    usage = ((statusChar == '<') ? false : true);
     // type has been assigned
     // args has been assigned
     // ret has been assigned
+    ret = atol(retStr.c_str());
 }
 
 bool SystemCall::operator ==(SystemCall &another)
