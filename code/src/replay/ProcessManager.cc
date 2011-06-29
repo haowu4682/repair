@@ -249,13 +249,14 @@ int main(int argc, char **argv)
     {
         commands.push_back(string(argv[i]));
     }
-    ifstream fin("/home/haowu/repair/repair_data/dumb.txt");
+    ifstream fin("/home/haowu/repair_data/dumb.txt");
     SystemCallList list;
     list.init(fin);
+    cout << list.toString();
 
     ProcessManager manager(&commands, &list);
     //cout << manager.toString();
-    manager.replay();
+    //manager.replay();
     /*
     for (int i = 0; i < 294; i++)
     {

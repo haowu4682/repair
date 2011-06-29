@@ -1,5 +1,7 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <sstream>
+
 #include <syscall/SystemCall.h>
 #include <syscall/SystemCallList.h>
 using namespace std;
@@ -25,11 +27,23 @@ void SystemCallList::init(istream &in)
     string syscallString;
     SystemCall syscall;
     bool usage = false;
-    while (getline(in, syscallString) == 0)
+    while (!getline(in, syscallString).eof())
     {
         SystemCall syscall(syscallString, usage);
         syscallVector.push_back(syscall);
         usage = !usage;
     }
+}
+
+String SystemCallList::toString()
+{
+    ostringstream ss;
+    ss << "SystemCallList:" << endl;
+    Vector<SystemCall>::iterator it;
+    for (it = syscallVector.begin(); it != syscallVector.end(); ++it)
+    {
+        ss << it->toString() << endl;
+    }
+    return ss.str();
 }
 

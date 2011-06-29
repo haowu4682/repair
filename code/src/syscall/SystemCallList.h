@@ -22,6 +22,8 @@ class SystemCallList
         // Init the system call list from an input stream.
         // @param in the input stream
         void init(std::istream &in);
+        // to string
+        String toString();
     private:
         // A vector which stores all the system call list
         Vector<SystemCall> syscallVector;

@@ -290,3 +290,11 @@ bool SystemCallArgument::operator != (SystemCallArgument &another)
 {
     return !operator ==(another);
 }
+
+String SystemCallArgument::toString()
+{
+    String str;
+    str = name + "=" + value;
+    return str;
+}
+

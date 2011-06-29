@@ -68,6 +68,9 @@ class SystemCall
         // Warning: The size of the given list must be at least SYSCALL_MAX_ARGS!
         // We do not check it here.
         static void getRegsList(const user_regs_struct &regs, long args[]);
+
+        // to string
+        String toString();
     private:
         // Get an aux value for determing an argument
         static SystemCallArgumentAuxilation getAux(long args[], SyscallArgType &argType, int i,

@@ -282,3 +282,18 @@ bool SystemCall::operator ==(SystemCall &another)
     return true;
 }
 
+String SystemCall::toString()
+{
+    ostringstream ss;
+    ss << "name=" << type->name << ", ";
+    ss << "valid=" << valid << ", ";
+    ss << "usage=" << usage << ", ";
+    ss << "args=(";
+    for (int i = 0; i < type->numArgs; i++)
+    {
+        ss << args[i].toString() << ", ";
+    }
+    ss << "), ";
+    ss << "ret=" << ret;
+    return ss.str();
+}

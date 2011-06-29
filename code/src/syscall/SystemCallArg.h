@@ -78,6 +78,8 @@ class SystemCallArgument
         // compare if two system call arguments are equal
         bool operator ==(SystemCallArgument &);
         bool operator !=(SystemCallArgument &);
+        // to string
+        String toString();
     private:
         // The name
         String name;
@@ -88,5 +90,4 @@ class SystemCallArgument
 };
 
 #endif //__SYSCALL_SYSCALLARG_H__
-
 
