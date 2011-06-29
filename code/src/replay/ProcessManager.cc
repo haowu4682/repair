@@ -168,7 +168,7 @@ int ProcessManager::traceProcess(pid_t pid)
 
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
         //LOG("inside syscall");
-        LOG("syscall nr: %lu", regs.orig_rax);
+        LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
         waitpid(pid, &status, 0);
         // The child process is at the point **after** a syscall.
         // Deal with the syscall here. If the match has been found previously, we shall
