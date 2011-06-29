@@ -283,12 +283,25 @@ void SystemCallArgument::setArg()
 bool SystemCallArgument::operator == (SystemCallArgument &another)
 {
     // TODO: Implement it
-    return ((type == another.type) && (value == another.value));
+    if (type != another.type)
+        return false;
+    if (value != another.value)
+        return false;
+    return true;
 }
 
 bool SystemCallArgument::operator != (SystemCallArgument &another)
 {
     return !operator ==(another);
+}
+
+bool SystemCallArgument::operator < (SystemCallArgument &another)
+{
+    if (type != another.type)
+        return false;
+    if (another.value.find(value) != 0)
+        return false;
+    return true;
 }
 
 String SystemCallArgument::toString()

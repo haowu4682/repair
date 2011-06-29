@@ -318,7 +318,7 @@ bool SystemCall::operator ==(SystemCall &another)
     for (int i = 0; i < type->numArgs; i++)
     {
         if (usage == type->args[i].usage && usage == another.type->args[i].usage)
-            if (args[i] != another.args[i])
+            if (!((args[i] < another.args[i]) || (another.args[i] < args[i])))
                 return false;
     }
     return true;
