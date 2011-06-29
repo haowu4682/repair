@@ -56,7 +56,7 @@ SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage)
     else
     {
         valid = true;
-        LOG("SYSCALL is %s", type->name.c_str());
+        //LOG("SYSCALL is %s", type->name.c_str());
     }
     long argsList[SYSCALL_MAX_ARGS];
     getRegsList(regs, argsList);
@@ -65,7 +65,7 @@ SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage)
     for (int i = 0; i < numArgs; i++)
     {
         SyscallArgType argType = type->args[i];
-        LOG("%d %ld %s", i, argsList[i], argType.name.c_str());
+        //LOG("%d %ld %s", i, argsList[i], argType.name.c_str());
         if (argType.usage != usage)
         {
             args[i].setArg();
@@ -74,7 +74,7 @@ SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage)
         {
             SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid, usage);
             args[i].setArg(argsList[i], &aux, &argType);
-            LOG1(argType.record(argsList[i], &aux).c_str());
+            //LOG1(argType.record(argsList[i], &aux).c_str());
         }
     }
 }
