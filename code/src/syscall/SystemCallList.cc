@@ -21,7 +21,7 @@ SystemCall SystemCallList::search(SystemCall &syscall)
     return emptySyscall;
 }
 
-void SystemCallList::init(istream &in)
+void SystemCallList::init(istream &in, FDManager *fdManager)
 {
     // '\n' is used as a delimeter between syscall's
     string syscallString;
@@ -29,7 +29,7 @@ void SystemCallList::init(istream &in)
     bool usage = false;
     while (!getline(in, syscallString).eof())
     {
-        SystemCall syscall(syscallString, usage);
+        SystemCall syscall(syscallString, usage, fdManager);
         syscallVector.push_back(syscall);
         usage = !usage;
     }

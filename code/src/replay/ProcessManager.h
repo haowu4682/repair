@@ -32,6 +32,9 @@ class ProcessManager
         // The function is used for debugging and logging.
         // @author haowu
         String toString();
+        
+        // Get the fd manager
+        FDManager *getFDManager() { return &fdManager; }
     private:
         // Start to execute and trace a process with Ptrace
         // @author haowu

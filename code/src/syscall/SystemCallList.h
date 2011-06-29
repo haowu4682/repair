@@ -6,6 +6,7 @@
 #include <istream>
 
 #include <common/common.h>
+#include <replay/FDManager.h>
 #include <syscall/SystemCall.h>
 
 // The class is used to represent the **record** of a system call list
@@ -21,7 +22,7 @@ class SystemCallList
         SystemCall search(SystemCall &syscall);
         // Init the system call list from an input stream.
         // @param in the input stream
-        void init(std::istream &in);
+        void init(std::istream &in, FDManager *fdManager = NULL);
         // to string
         String toString();
     private:
