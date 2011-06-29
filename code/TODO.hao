@@ -40,3 +40,7 @@ which is not influenced by the output of (a)(for example, time()), the conflict 
 *second-degree* conflict.
 
 (4) We shall report all the first-degree conflicts to the user.
+
+Others:
+(1) pid mapping
+(2) fd mapping
