@@ -94,7 +94,7 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
         {
             if (usage)
             {
-                LOG("%d=%s", ret, lastOpenFilePath.c_str());
+                LOG("%ld=%s", ret, lastOpenFilePath.c_str());
                 fdManager->addNew(ret, lastOpenFilePath);
             }
             else
@@ -236,6 +236,7 @@ size_t findPosForNextArg(String &str, int pos)
 {
     size_t res;
     bool strMod = false;
+    int arrayCount = 0;
     for (res = pos; res < str.length(); ++res)
     {
         if (str[res] == '\"' && str[res-1] != '\\')
@@ -243,7 +244,17 @@ size_t findPosForNextArg(String &str, int pos)
             strMod = !strMod;
             continue;
         }
-        if (!strMod)
+        if (!strMod && str[res] == '[' && str[res-1] != '\\')
+        {
+            arrayCount++;
+            continue;
+        }
+        if (!strMod && str[res] == ']' && str[res-1] != '\\')
+        {
+            arrayCount--;
+            continue;
+        }
+        if (!strMod && !arrayCount)
         {
             if (str[res] == ')')
                 break;
@@ -300,6 +311,7 @@ int SystemCall::init(String record, FDManager *fdManager)
                 LOG("System call record is corrupted: %s", record.c_str());
                 break;
             }
+            //LOG("%ld %ld", pos, auxStr.length());
             syscallName = auxStr.substr(0, index);
             const SyscallType *syscallType = getSyscallType(syscallName);
             if (syscallType == NULL)
@@ -311,6 +323,11 @@ int SystemCall::init(String record, FDManager *fdManager)
             pos = index + 1;
         }
         size_t endPos = findPosForNextArg(auxStr, pos);
+        if (pos > auxStr.length())
+        {
+            LOG("System call record is corrupted: %s", record.c_str());
+            //LOG("%ld %ld", pos, auxStr.length());
+        }
         String sysargStr = auxStr.substr(pos, endPos - pos);
         parseSyscallArg(sysargStr, &sysargName, &sysargValue);
         args[i].setName(sysargName);
@@ -325,6 +342,7 @@ int SystemCall::init(String record, FDManager *fdManager)
                 pos = pos + 2;
                 if (pos < auxStr.length())
                 {
+                    //LOG("%ld %ld", pos, auxStr.length());
                     retStr = auxStr.substr(pos);
                     //LOG1(retStr.c_str());
                 }
