@@ -37,8 +37,8 @@ iget.ko retro.ko: $(RETRO_KSRCS) $(IGET_KSRCS) $(RETRO_KHDRS)
 khook.ko: $(HOOKS_KSRCS) $(HOOKS_KHDRS)
 	make -C $(KDIR) M=$(PWD) modules
 
-trace_syscalls.inc: trace_syscalls.py ../repair/syscall.py
-	PYTHONPATH=../repair ./$< > $@
+#trace_syscalls.inc: trace_syscalls.py ../repair/syscall.py
+#	PYTHONPATH=../repair ./$< > $@
 
 hook_syscalls.inc: hook_syscalls.py ../repair/syscall.py
 	PYTHONPATH=../repair ./$< > $@
