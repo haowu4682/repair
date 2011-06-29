@@ -15,8 +15,8 @@ When a syscall occured in (b), do the following:
 2. If the output is different:
     If there is a conflict:
         report to the user
-    If the syscall is a *shortcut* syscall:
-        Use the stored value for the syscall.
+    //If the syscall is a *shortcut* syscall:
+    //    Use the stored value for the syscall.
 
 A *shortcut* syscall is a system call interacts with device(e.g. disk, terminal, network, etc.)
 Most syscalls are *not* shortcut syscalls.
