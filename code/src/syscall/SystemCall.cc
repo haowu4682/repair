@@ -94,11 +94,13 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
         {
             if (usage)
             {
+                LOG("%d=%s", ret, lastOpenFilePath.c_str());
                 fdManager->addNew(ret, lastOpenFilePath);
             }
             else
             {
-                lastOpenFilePath = args[1].getValue();
+                lastOpenFilePath = args[0].getValue();
+                LOG1(lastOpenFilePath.c_str());
             }
         }
         // close
@@ -352,7 +354,7 @@ int SystemCall::init(String record, FDManager *fdManager)
             }
             else
             {
-                lastOpenFilePath = args[1].getValue();
+                lastOpenFilePath = args[0].getValue();
             }
         }
         // close

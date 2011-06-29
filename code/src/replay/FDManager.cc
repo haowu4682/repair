@@ -13,16 +13,17 @@ int FDManager::addOld(int fd, String path)
 int FDManager::addNew(int fd, String path)
 {
     newFDMap.insert(valueType(fd, path));
+    //LOG("%d=%s", fd, newFDMap[fd].c_str());
 }
 
 int FDManager::removeOld(int fd)
 {
-    oldFDMap.erase(fd);
+    //oldFDMap.erase(fd);
 }
 
 int FDManager::removeNew(int fd)
 {
-    newFDMap.erase(fd);
+    //newFDMap.erase(fd);
 }
 
 String FDManager::searchOld(int fd)
