@@ -81,6 +81,8 @@ class SystemCallArgument
         bool operator <(SystemCallArgument &);
         // to string
         String toString();
+        // get value
+        String getValue() { return value;}
     private:
         // The name
         String name;

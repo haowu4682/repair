@@ -6,6 +6,7 @@
 #include <sys/user.h>
 
 #include <common/common.h>
+#include <replay/FDManager.h>
 #include <syscall/SystemCallArg.h>
 
 // The max number of system call arguments in a system call
@@ -31,10 +32,10 @@ extern SyscallType syscallTypeList[];
 class SystemCall
 {
     public:
-        SystemCall() : valid(false) {}
+        SystemCall() : valid(false), fdManager(NULL) {}
         // Construct the system call from registers
-        SystemCall(const user_regs_struct &regs, pid_t pid, bool usage);
-        SystemCall(String record, bool usage) { this->usage = usage; this->init(record); }
+        SystemCall(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager = NULL);
+        SystemCall(String record, bool usage, FDManager *fdManager = NULL) { this->usage = usage; this->init(record, fdManager); }
 
         // Whether two syscalls are equal. Two syscalls are equal if their usages are equal, and
         // each available arguments and return value(if usage==true) are equal
@@ -53,7 +54,8 @@ class SystemCall
 
         // Init a system call from a record
         // @param record The record
-        int init(String record);
+        int init(String record, FDManager *fdManager = NULL);
+        void init(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager = NULL);
 
         // Tell whether the system call is a ``fork'' or ``vfork''
         bool isFork();
@@ -86,6 +88,8 @@ class SystemCall
         SystemCallArgument args[SYSCALL_MAX_ARGS];
         // The return value of the system call
         long ret;
+        // The fd manager
+        FDManager *fdManager;
 };
 
 #endif //__SYSCALL_SYSCALL_H__

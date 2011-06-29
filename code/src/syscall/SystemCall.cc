@@ -14,6 +14,8 @@ SyscallType syscallTypeList[] =
     #include "trace_syscalls.inc"
 };
 
+String lastOpenFilePath;
+
 // Search for the syscall type in syscallTypeList
 const SyscallType *getSyscallType(int nr)
 {
@@ -42,8 +44,14 @@ const SyscallType *getSyscallType(String name)
     return NULL;
 }
 
-SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage)
+SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager)
 {
+    init(regs, pid, usage, fdManager);
+}
+
+void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager)
+{
+    this->fdManager = fdManager;
     this->usage = usage;
     // XXX: The code here might be architecture-dependent for x86_64 only.
     int code = regs.orig_rax;
@@ -75,6 +83,31 @@ SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage)
             SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid, usage);
             args[i].setArg(argsList[i], &aux, &argType);
             //LOG1(argType.record(argsList[i], &aux).c_str());
+        }
+    }
+
+    // Manager fd's
+    if (fdManager != NULL)
+    {
+        // open
+        if (type->nr == 2)
+        {
+            if (usage)
+            {
+                fdManager->addNew(ret, lastOpenFilePath);
+            }
+            else
+            {
+                lastOpenFilePath = args[1].getValue();
+            }
+        }
+        // close
+        if (type->nr == 3)
+        {
+            if (!usage)
+            {
+                fdManager->removeNew(atoi(args[0].getValue().c_str()));
+            }
         }
     }
 }
@@ -220,8 +253,9 @@ size_t findPosForNextArg(String &str, int pos)
 }
 
 // TODO: Combine the state **BEFORE** a syscall and the state **AFTER** a syscall.
-int SystemCall::init(String record)
+int SystemCall::init(String record, FDManager *fdManager)
 {
+    this->fdManager = fdManager;
     // The format is:
     // ADDRESS NUMBER <|> PID syscallname(arg1, arg2, ..., argN) = ret
     istringstream is(record);
@@ -305,6 +339,31 @@ int SystemCall::init(String record)
     // args has been assigned
     // ret has been assigned
     ret = atol(retStr.c_str());
+
+    // Manager fd's
+    if (fdManager != NULL)
+    {
+        // open
+        if (type->nr == 2)
+        {
+            if (usage)
+            {
+                fdManager->addOld(ret, lastOpenFilePath);
+            }
+            else
+            {
+                lastOpenFilePath = args[1].getValue();
+            }
+        }
+        // close
+        if (type->nr == 3)
+        {
+            if (!usage)
+            {
+                fdManager->removeOld(atoi(args[0].getValue().c_str()));
+            }
+        }
+    }
 }
 
 bool SystemCall::operator ==(SystemCall &another)

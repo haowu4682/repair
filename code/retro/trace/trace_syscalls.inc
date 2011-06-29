@@ -1,20 +1,20 @@
 	{ 0, "read", sysarg_sint, 3, {
-		{ "fd", sysarg_uint32, 0, 1 },
-		{ "buf", sysarg_buf, 1, 0 },
+		{ "fd", sysarg_fd, 0, 1 },
+		{ "buf", sysarg_sha1, 1, 0 },
 		{ "count", sysarg_uint, 0, 0 },
 	} },
 	{ 1, "write", sysarg_sint, 3, {
-		{ "fd", sysarg_uint32, 0, 1 },
+		{ "fd", sysarg_fd, 0, 1 },
 		{ "buf", sysarg_buf_det, 0, 0 },
 		{ "count", sysarg_uint, 0, 0 },
 	} },
-	{ 2, "open", sysarg_uint32, 3, {
-		{ "path", sysarg_string, 0, 0 },
+	{ 2, "open", sysarg_fd, 3, {
+		{ "path", sysarg_path, 0, 0 },
 		{ "flags", sysarg_sint32, 0, 0 },
 		{ "mode", sysarg_uint32, 0, 0 },
 	} },
 	{ 3, "close", sysarg_sint32, 1, {
-		{ "fd", sysarg_uint32, 0, 0 },
+		{ "fd", sysarg_fd, 0, 0 },
 	} },
 	{ 4 },
 	{ 5 },
@@ -30,7 +30,7 @@
 		{ "length", sysarg_uint, 0, 0 },
 		{ "prot", sysarg_sint32, 0, 0 },
 		{ "flags", sysarg_sint32, 0, 0 },
-		{ "fd", sysarg_uint32, 0, 0 },
+		{ "fd", sysarg_fd, 0, 0 },
 		{ "offset", sysarg_sint, 0, 0 },
 	} },
 	{ 10 },
@@ -43,38 +43,38 @@
 	{ 14 },
 	{ 15 },
 	{ 16, "ioctl", sysarg_sint32, 3, {
-		{ "fd", sysarg_uint32, 0, 0 },
+		{ "fd", sysarg_fd, 0, 0 },
 		{ "cmd", sysarg_sint32, 0, 0 },
 		{ "buf", sysarg_sint32, 0, 0 },
 	} },
 	{ 17, "pread", sysarg_sint, 4, {
-		{ "fd", sysarg_uint32, 0, 0 },
-		{ "buf", sysarg_buf, 1, 0 },
+		{ "fd", sysarg_fd, 0, 0 },
+		{ "buf", sysarg_sha1, 1, 0 },
 		{ "count", sysarg_uint, 0, 0 },
 		{ "offset", sysarg_sint, 0, 0 },
 	} },
 	{ 18, "pwrite", sysarg_sint, 4, {
-		{ "fd", sysarg_uint32, 0, 0 },
+		{ "fd", sysarg_fd, 0, 0 },
 		{ "buf", sysarg_buf_det, 0, 0 },
 		{ "count", sysarg_uint, 0, 0 },
 		{ "offset", sysarg_sint, 0, 0 },
 	} },
 	{ 19, "readv", sysarg_sint, 3, {
-		{ "fd", sysarg_uint32, 0, 1 },
+		{ "fd", sysarg_fd, 0, 1 },
 		{ "iov", sysarg_iovec, 1, 0 },
 		{ "iovcnt", sysarg_sint32, 0, 0 },
 	} },
 	{ 20, "writev", sysarg_sint, 3, {
-		{ "fd", sysarg_uint32, 0, 1 },
+		{ "fd", sysarg_fd, 0, 1 },
 		{ "iov", sysarg_iovec, 0, 0 },
 		{ "iovcnt", sysarg_sint32, 0, 0 },
 	} },
 	{ 21, "access", sysarg_sint32, 2, {
-		{ "path", sysarg_string, 0, 0 },
+		{ "path", sysarg_path, 0, 0 },
 		{ "mode", sysarg_sint32, 0, 0 },
 	} },
 	{ 22, "pipe", sysarg_sint32, 1, {
-		{ "pipefd", sysarg_uint32, 1, 0 },
+		{ "pipefd", sysarg_fd2, 1, 0 },
 	} },
 	{ 23, "select", sysarg_sint32, 5, {
 		{ "nfds", sysarg_sint32, 0, 0 },
@@ -91,12 +91,12 @@
 	{ 29 },
 	{ 30 },
 	{ 31 },
-	{ 32, "dup", sysarg_uint32, 1, {
-		{ "oldfd", sysarg_uint32, 0, 0 },
+	{ 32, "dup", sysarg_fd, 1, {
+		{ "oldfd", sysarg_fd, 0, 0 },
 	} },
-	{ 33, "dup2", sysarg_uint32, 2, {
-		{ "oldfd", sysarg_uint32, 0, 0 },
-		{ "newfd", sysarg_uint32, 0, 0 },
+	{ 33, "dup2", sysarg_fd, 2, {
+		{ "oldfd", sysarg_fd, 0, 0 },
+		{ "newfd", sysarg_fd, 0, 0 },
 	} },
 	{ 34 },
 	{ 35 },
@@ -105,23 +105,23 @@
 	{ 38 },
 	{ 39 },
 	{ 40 },
-	{ 41, "socket", sysarg_uint32, 3, {
+	{ 41, "socket", sysarg_fd, 3, {
 		{ "domain", sysarg_sint32, 0, 0 },
 		{ "type", sysarg_sint32, 0, 0 },
 		{ "protocol", sysarg_sint32, 0, 0 },
 	} },
 	{ 42, "connect", sysarg_sint32, 3, {
-		{ "fd", sysarg_uint32, 0, 0 },
+		{ "fd", sysarg_fd, 0, 0 },
 		{ "addr", sysarg_struct, 0, 16 },
 		{ "len", sysarg_sint32, 0, 0 },
 	} },
-	{ 43, "accept", sysarg_uint32, 3, {
-		{ "socket", sysarg_uint32, 0, 0 },
+	{ 43, "accept", sysarg_fd, 3, {
+		{ "socket", sysarg_fd, 0, 0 },
 		{ "addr", sysarg_struct, 0, 16 },
 		{ "len", sysarg_sint32, 0, 0 },
 	} },
 	{ 44, "sendto", sysarg_sint, 6, {
-		{ "socket", sysarg_uint32, 0, 0 },
+		{ "socket", sysarg_fd, 0, 0 },
 		{ "buf", sysarg_buf, 0, 0 },
 		{ "len", sysarg_uint, 0, 0 },
 		{ "flags", sysarg_sint32, 0, 0 },
@@ -129,7 +129,7 @@
 		{ "len", sysarg_uint, 0, 0 },
 	} },
 	{ 45, "recvfrom", sysarg_sint, 6, {
-		{ "socket", sysarg_uint32, 0, 0 },
+		{ "socket", sysarg_fd, 0, 0 },
 		{ "buf", sysarg_buf, 0, 0 },
 		{ "len", sysarg_uint, 0, 0 },
 		{ "flags", sysarg_sint32, 0, 0 },
@@ -137,35 +137,35 @@
 		{ "len", sysarg_psize_t, 1, 0 },
 	} },
 	{ 46, "sendmsg", sysarg_sint, 3, {
-		{ "socket", sysarg_uint32, 0, 0 },
+		{ "socket", sysarg_fd, 0, 0 },
 		{ "msg", sysarg_msghdr, 0, 56 },
 		{ "flags", sysarg_sint32, 0, 0 },
 	} },
 	{ 47, "recvmsg", sysarg_sint, 3, {
-		{ "socket", sysarg_uint32, 0, 0 },
+		{ "socket", sysarg_fd, 0, 0 },
 		{ "msg", sysarg_msghdr, 0, 56 },
 		{ "flags", sysarg_sint32, 0, 0 },
 	} },
 	{ 48, "shutdown", sysarg_sint32, 2, {
-		{ "socket", sysarg_uint32, 0, 0 },
+		{ "socket", sysarg_fd, 0, 0 },
 		{ "how", sysarg_sint32, 0, 0 },
 	} },
 	{ 49, "bind", sysarg_sint32, 3, {
-		{ "socket", sysarg_uint32, 0, 0 },
+		{ "socket", sysarg_fd, 0, 0 },
 		{ "addr", sysarg_struct, 0, 16 },
 		{ "addr_len", sysarg_uint, 0, 0 },
 	} },
 	{ 50, "listen", sysarg_sint32, 2, {
-		{ "socket", sysarg_uint32, 0, 0 },
+		{ "socket", sysarg_fd, 0, 0 },
 		{ "backlog", sysarg_sint32, 0, 0 },
 	} },
 	{ 51, "getsockname", sysarg_sint32, 3, {
-		{ "socket", sysarg_uint32, 0, 0 },
+		{ "socket", sysarg_fd, 0, 0 },
 		{ "addr", sysarg_struct, 1, 16 },
 		{ "addr_len", sysarg_psize_t, 1, 0 },
 	} },
 	{ 52, "getpeername", sysarg_sint32, 3, {
-		{ "socket", sysarg_uint32, 0, 0 },
+		{ "socket", sysarg_fd, 0, 0 },
 		{ "addr", sysarg_struct, 1, 16 },
 		{ "len", sysarg_psize_t, 1, 0 },
 	} },
@@ -173,17 +173,17 @@
 		{ "domain", sysarg_sint32, 0, 0 },
 		{ "type", sysarg_sint32, 0, 0 },
 		{ "protocol", sysarg_sint32, 0, 0 },
-		{ "sv", sysarg_uint32, 1, 0 },
+		{ "sv", sysarg_fd2, 1, 0 },
 	} },
 	{ 54, "setsockopt", sysarg_sint32, 5, {
-		{ "socket", sysarg_uint32, 0, 0 },
+		{ "socket", sysarg_fd, 0, 0 },
 		{ "level", sysarg_sint32, 0, 0 },
 		{ "opt_name", sysarg_sint32, 0, 0 },
 		{ "opt_value", sysarg_buf, 0, 0 },
 		{ "opt_len", sysarg_uint, 0, 0 },
 	} },
 	{ 55, "getsockopt", sysarg_sint32, 5, {
-		{ "socket", sysarg_uint32, 0, 0 },
+		{ "socket", sysarg_fd, 0, 0 },
 		{ "level", sysarg_sint32, 0, 0 },
 		{ "opt_name", sysarg_sint32, 0, 0 },
 		{ "opt_value", sysarg_struct, 1, 0 },
@@ -198,7 +198,7 @@
 	{ 58, "vfork", sysarg_pid_t, 0, {
 	} },
 	{ 59, "execve", sysarg_execve, 3, {
-		{ "filename", sysarg_string, 0, 0 },
+		{ "filename", sysarg_path, 0, 0 },
 		{ "argv", sysarg_strings, 0, 0 },
 		{ "envp", sysarg_strings, 0, 0 },
 	} },
@@ -222,7 +222,7 @@
 	{ 70 },
 	{ 71 },
 	{ 72, "fcntl", sysarg_sint32, 3, {
-		{ "fd", sysarg_uint32, 0, 0 },
+		{ "fd", sysarg_fd, 0, 0 },
 		{ "cmd", sysarg_sint32, 0, 0 },
 		{ "buf", sysarg_sint32, 0, 0 },
 	} },
@@ -230,39 +230,39 @@
 	{ 74 },
 	{ 75 },
 	{ 76, "truncate", sysarg_sint32, 2, {
-		{ "path", sysarg_string, 0, 0 },
+		{ "path", sysarg_path, 0, 0 },
 		{ "length", sysarg_sint, 0, 0 },
 	} },
 	{ 77, "ftruncate", sysarg_sint32, 2, {
-		{ "fd", sysarg_uint32, 0, 0 },
+		{ "fd", sysarg_fd, 0, 0 },
 		{ "length", sysarg_sint, 0, 0 },
 	} },
 	{ 78 },
 	{ 79 },
 	{ 80, "chdir", sysarg_sint32, 1, {
-		{ "path", sysarg_string, 0, 0 },
+		{ "path", sysarg_path, 0, 0 },
 	} },
 	{ 81, "fchdir", sysarg_sint32, 1, {
-		{ "fd", sysarg_uint32, 0, 0 },
+		{ "fd", sysarg_fd, 0, 0 },
 	} },
 	{ 82, "rename", sysarg_sint32, 2, {
-		{ "oldpath", sysarg_string, 0, 0 },
-		{ "newpath", sysarg_string, 0, 0 },
+		{ "oldpath", sysarg_path, 0, 0 },
+		{ "newpath", sysarg_path, 0, 0 },
 	} },
 	{ 83, "mkdir", sysarg_sint32, 2, {
-		{ "path", sysarg_string, 0, 0 },
+		{ "path", sysarg_path, 0, 0 },
 		{ "mode", sysarg_uint32, 0, 0 },
 	} },
 	{ 84, "rmdir", sysarg_sint32, 1, {
-		{ "path", sysarg_string, 0, 0 },
+		{ "path", sysarg_path, 0, 0 },
 	} },
-	{ 85, "creat", sysarg_uint32, 2, {
-		{ "path", sysarg_string, 0, 0 },
+	{ 85, "creat", sysarg_fd, 2, {
+		{ "path", sysarg_path, 0, 0 },
 		{ "mode", sysarg_uint32, 0, 0 },
 	} },
 	{ 86, "link", sysarg_sint32, 2, {
-		{ "oldpath", sysarg_string, 0, 0 },
-		{ "newpath", sysarg_string, 0, 0 },
+		{ "oldpath", sysarg_path, 0, 0 },
+		{ "newpath", sysarg_path, 0, 0 },
 	} },
 	{ 87, "unlink", sysarg_sint32, 1, {
 		{ "path", sysarg_rpath, 0, 0 },
@@ -320,7 +320,7 @@
 	{ 131 },
 	{ 132 },
 	{ 133, "mknod", sysarg_sint32, 3, {
-		{ "path", sysarg_string, 0, 0 },
+		{ "path", sysarg_path, 0, 0 },
 		{ "mode", sysarg_uint32, 0, 0 },
 		{ "dev", sysarg_uint, 0, 0 },
 	} },
@@ -352,7 +352,7 @@
 	{ 159 },
 	{ 160 },
 	{ 161, "chroot", sysarg_sint32, 1, {
-		{ "path", sysarg_string, 0, 0 },
+		{ "path", sysarg_path, 0, 0 },
 	} },
 	{ 162 },
 	{ 163 },
@@ -367,7 +367,7 @@
 	{ 172 },
 	{ 173 },
 	{ 174, "undo_depend", sysarg_sint32, 5, {
-		{ "fd", sysarg_uint32, 0, 0 },
+		{ "fd", sysarg_fd, 0, 0 },
 		{ "subname", sysarg_string, 0, 0 },
 		{ "mgr", sysarg_string, 0, 0 },
 		{ "proc_to_obj", sysarg_sint32, 0, 0 },
@@ -376,8 +376,8 @@
 	{ 175 },
 	{ 176 },
 	{ 177, "snapshot", sysarg_sint32, 3, {
-		{ "trunk", sysarg_string, 0, 0 },
-		{ "parent", sysarg_string, 0, 0 },
+		{ "trunk", sysarg_path, 0, 0 },
+		{ "parent", sysarg_path, 0, 0 },
 		{ "name", sysarg_string, 0, 0 },
 	} },
 	{ 178 },
@@ -395,10 +395,10 @@
 	} },
 	{ 183 },
 	{ 184, "undo_mask_start", sysarg_sint32, 1, {
-		{ "fd", sysarg_uint32, 0, 0 },
+		{ "fd", sysarg_fd, 0, 0 },
 	} },
 	{ 185, "undo_mask_end", sysarg_sint32, 1, {
-		{ "fd", sysarg_uint32, 0, 0 },
+		{ "fd", sysarg_fd, 0, 0 },
 	} },
 	{ 186 },
 	{ 187 },
@@ -478,20 +478,20 @@
 	{ 254 },
 	{ 255 },
 	{ 256 },
-	{ 257, "openat", sysarg_uint32, 4, {
+	{ 257, "openat", sysarg_fd, 4, {
 		{ "dirfd", sysarg_dirfd, 0, 0 },
-		{ "path", sysarg_string, 0, 0 },
+		{ "path", sysarg_path_at, 0, 0 },
 		{ "flags", sysarg_sint32, 0, 0 },
 		{ "mode", sysarg_uint32, 0, 0 },
 	} },
 	{ 258, "mkdirat", sysarg_sint32, 3, {
 		{ "dirfd", sysarg_dirfd, 0, 0 },
-		{ "path", sysarg_string, 0, 0 },
+		{ "path", sysarg_path_at, 0, 0 },
 		{ "mode", sysarg_uint32, 0, 0 },
 	} },
 	{ 259, "mknodat", sysarg_sint32, 4, {
 		{ "dirfd", sysarg_dirfd, 0, 0 },
-		{ "path", sysarg_string, 0, 0 },
+		{ "path", sysarg_path_at, 0, 0 },
 		{ "mode", sysarg_uint32, 0, 0 },
 		{ "dev", sysarg_uint, 0, 0 },
 	} },
@@ -505,20 +505,20 @@
 	} },
 	{ 264, "renameat", sysarg_sint32, 4, {
 		{ "olddirfd", sysarg_dirfd, 0, 0 },
-		{ "oldpath", sysarg_string, 0, 0 },
+		{ "oldpath", sysarg_path_at, 0, 0 },
 		{ "newdirfd", sysarg_dirfd, 0, 0 },
-		{ "newpath", sysarg_string, 0, 0 },
+		{ "newpath", sysarg_path_at, 0, 0 },
 	} },
 	{ 265, "linkat", sysarg_sint32, 5, {
 		{ "olddirfd", sysarg_dirfd, 0, 0 },
 		{ "oldpath", sysarg_rpath_at, 0, 1024 },
 		{ "newdirfd", sysarg_dirfd, 0, 0 },
-		{ "newpath", sysarg_string, 0, 0 },
+		{ "newpath", sysarg_path_at, 0, 0 },
 		{ "flags", sysarg_sint32, 0, 0 },
 	} },
 	{ 266, "symlinkat", sysarg_sint32, 3, {
 		{ "oldpath", sysarg_name, 0, 0 },
-		{ "newdirfd", sysarg_uint32, 0, 0 },
+		{ "newdirfd", sysarg_fd, 0, 0 },
 		{ "newpath", sysarg_rpath, 0, 0 },
 	} },
 	{ 267, "readlinkat", sysarg_sint, 4, {
@@ -530,7 +530,7 @@
 	{ 268 },
 	{ 269, "faccessat", sysarg_sint32, 4, {
 		{ "dirfd", sysarg_dirfd, 0, 0 },
-		{ "path", sysarg_string, 0, 256 },
+		{ "path", sysarg_path_at, 0, 256 },
 		{ "mode", sysarg_sint32, 0, 0 },
 		{ "flags", sysarg_sint32, 0, 0 },
 	} },
@@ -556,12 +556,12 @@
 	{ 289 },
 	{ 290 },
 	{ 291 },
-	{ 292, "dup3", sysarg_uint32, 3, {
-		{ "oldfd", sysarg_uint32, 0, 0 },
-		{ "newfd", sysarg_uint32, 0, 0 },
+	{ 292, "dup3", sysarg_fd, 3, {
+		{ "oldfd", sysarg_fd, 0, 0 },
+		{ "newfd", sysarg_fd, 0, 0 },
 		{ "flags", sysarg_sint32, 0, 0 },
 	} },
 	{ 293, "pipe2", sysarg_sint32, 2, {
-		{ "pipefd", sysarg_uint32, 1, 0 },
+		{ "pipefd", sysarg_fd2, 1, 0 },
 		{ "flags", sysarg_sint32, 0, 0 },
 	} },
