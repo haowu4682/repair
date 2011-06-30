@@ -8,6 +8,7 @@
 #include <common/common.h>
 
 // The class is used to manage the relation between pid's
+// TODO: add generation numbers
 class PidManager
 {
     public:

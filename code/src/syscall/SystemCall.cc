@@ -44,14 +44,17 @@ const SyscallType *getSyscallType(String name)
     return NULL;
 }
 
-SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager)
+SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager,
+        PidManager *pidManager)
 {
-    init(regs, pid, usage, fdManager);
+    init(regs, pid, usage, fdManager, pidManager);
 }
 
-void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager)
+void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager,
+        PidManager *pidManager)
 {
     this->fdManager = fdManager;
+    this->pidManager = pidManager;
     this->usage = usage;
     // XXX: The code here might be architecture-dependent for x86_64 only.
     int code = regs.orig_rax;
@@ -266,9 +269,10 @@ size_t findPosForNextArg(String &str, int pos)
 }
 
 // TODO: Combine the state **BEFORE** a syscall and the state **AFTER** a syscall.
-int SystemCall::init(String record, FDManager *fdManager)
+int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager)
 {
     this->fdManager = fdManager;
+    this->pidManager = pidManager;
     // The format is:
     // ADDRESS NUMBER <|> PID syscallname(arg1, arg2, ..., argN) = ret
     istringstream is(record);
