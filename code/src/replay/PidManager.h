@@ -12,7 +12,7 @@
 class PidManager
 {
     public:
-        int addPair(int oldPid, int newPid);
+        int add(int oldPid, int newPid);
         bool equals(int oldPid, int newPid);
         String toString();
     private:

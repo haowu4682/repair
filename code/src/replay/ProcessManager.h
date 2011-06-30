@@ -8,6 +8,7 @@
 
 #include <common/common.h>
 #include <replay/FDManager.h>
+#include <syscall/SystemCall.h>
 #include <syscall/SystemCallList.h>
 
 // This class is used to manager the running or a process of class Process
@@ -32,9 +33,11 @@ class ProcessManager
         // The function is used for debugging and logging.
         // @author haowu
         String toString();
-        
+
         // Get the fd manager
         FDManager *getFDManager() { return &fdManager; }
+        // Get the pid manager
+        PidManager *getPidManager() { return &pidManager; }
     private:
         // Start to execute and trace a process with Ptrace
         // @author haowu
@@ -49,13 +52,17 @@ class ProcessManager
         // Overwrite the return value of a system call
         // @author haowu
         // @param syscall The syscall to overwrite
-        static int writeMatchedSyscall(SystemCall syscall, pid_t pid);
+        static int writeMatchedSyscall(SystemCall &syscall, pid_t pid);
+        // Deal with fork (manage pid, add a new proc manager for it.
+        int dealWithFork(SystemCall &syscall, pid_t oldPid);
         // The command line
         Vector<String> *commandList;
         // The system call list used when replaying
         SystemCallList *syscallList;
         // The fd manager
         FDManager fdManager;
+        // The pid manager
+        PidManager pidManager;
 };
 
 #endif //__REPLAY_PROCESSMANAGER_H__

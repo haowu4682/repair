@@ -32,7 +32,7 @@ bin/replay/%.o: src/replay/%.cc src/replay/*.h src/syscall/*.h src/common/*.h
 	mkdir -p bin; mkdir -p bin/replay;
 	$(CPP) $(CFLAGS) -o $@ -c $<
 
-bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h src/syscall/trace_syscalls.inc
+bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h src/syscall/trace_syscalls.inc src/replay/*.h
 	mkdir -p bin; mkdir -p bin/syscall;
 	$(CPP) $(CFLAGS) -o $@ -c $<
 

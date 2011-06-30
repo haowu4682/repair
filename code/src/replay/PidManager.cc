@@ -5,7 +5,7 @@
 #include <replay/PidManager.h>
 using namespace std;
 
-int PidManager::addPair(int oldPid, int newPid)
+int PidManager::add(int oldPid, int newPid)
 {
     pidMap.insert(valueType(oldPid, newPid));
     return 0;

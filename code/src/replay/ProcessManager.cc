@@ -122,19 +122,22 @@ int ProcessManager::executeProcess()
 // @ret 0 when it's the manager of the original process.
 //      1 when it's the manager of the new process.
 //      <0 when there is an error.
-int dealWithFork(SystemCall &syscall, SystemCallList *list)
+int ProcessManager::dealWithFork(SystemCall &syscall, pid_t oldPid)
 {
-    // TODO: deal with fork
     // XXX: Hard code features for x86_64 here.
+    // update pid manager
+    pid_t newPid = (pid_t) syscall.getReturn();
+    pidManager.add(oldPid, newPid);
+    // fork a new manager
     pid_t newManagerPid = fork();
     if (newManagerPid == 0)
     {
-        pid_t processPid = (pid_t) syscall.getReturn();
         // Child process, manage the new process;
-        ProcessManager manager(list);
-        manager.trace(processPid);
+        ProcessManager manager(syscallList);
+        manager.trace(newPid);
         return 1;
     }
+    // We don't need to memorize the pid of the new manager here.
     return 0;
 }
 
@@ -185,7 +188,7 @@ int ProcessManager::traceProcess(pid_t pid)
         // If the system call is fork/vfork, we must create a new process manager for it.
         if (syscall.isFork())
         {
-            ret = dealWithFork(syscall, syscallList);
+            ret = dealWithFork(syscall, pid);
             if (ret != 0)
             {
                 break;
@@ -197,7 +200,7 @@ int ProcessManager::traceProcess(pid_t pid)
     return 0;
 }
 
-int ProcessManager::writeMatchedSyscall(SystemCall syscall, pid_t pid)
+int ProcessManager::writeMatchedSyscall(SystemCall &syscall, pid_t pid)
 {
     // Simply rewrite rax currently
     long pret;
