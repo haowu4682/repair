@@ -55,7 +55,7 @@ TODOs:
 (2) Define and detect a conflict.
 (3) Detect *shortcut* syscalls. (canceled)
 (4) Change values into the stored value (done).
-(5) pid mapping (almost done)
+(5) pid mapping
 (6) env handling. (canceled)
 (7) fd mapping (almost done)
 Some finished TODO items are not listed.
