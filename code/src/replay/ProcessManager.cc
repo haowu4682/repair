@@ -150,7 +150,6 @@ int ProcessManager::traceProcess(pid_t pid)
     struct user_regs_struct regs;
 
     waitpid(pid, &status, 0);
-    // TODO: Use more correct condition here
     // Current the termination condition is: the child has exited from executing
     while (!WIFEXITED(status))
     {
@@ -180,10 +179,8 @@ int ProcessManager::traceProcess(pid_t pid)
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
         SystemCall syscallReturn(regs, pid, true, &fdManager);
 
-        //if (matchFound)
-        //{
-        //    writeMatchedSyscall(syscallMatch, pid);
-        //}
+        // TODO: Deal with conflict
+        // dealWithConflict();
 
         // If the system call is fork/vfork, we must create a new process manager for it.
         if (syscall.isFork())
