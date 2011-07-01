@@ -193,7 +193,8 @@ int ProcessManager::traceProcess(pid_t pid)
         }
     }
     //LOG1("This is the parent process!");
-    cout << fdManager.toString();
+    // cout << fdManager.toString();
+    cout <<pidManager.toString();
     return 0;
 }
 
