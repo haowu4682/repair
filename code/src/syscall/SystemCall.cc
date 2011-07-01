@@ -219,6 +219,12 @@ bool SystemCall::isFork()
     return valid && (type->nr == 57 || type->nr == 58);
 }
 
+bool SystemCall::isExec()
+{
+    // XXX: Hard code the syscall number for x86_64 here now.
+    return valid && (type->nr == 59);
+}
+
 // An aux function to parse a syscall arg.
 void parseSyscallArg(String str, String *name, String *value)
 {

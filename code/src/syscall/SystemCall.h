@@ -64,6 +64,9 @@ class SystemCall
         // Tell whether the system call is a ``fork'' or ``vfork''
         bool isFork();
 
+        // Tell whether the system call is an ``exec'' type syscall
+        bool isExec();
+
         // Get return value
         long getReturn() { return ret; }
 

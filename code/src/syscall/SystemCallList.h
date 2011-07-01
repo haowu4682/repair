@@ -7,6 +7,7 @@
 
 #include <common/common.h>
 #include <replay/FDManager.h>
+#include <replay/PidManager.h>
 #include <syscall/SystemCall.h>
 
 // The class is used to represent the **record** of a system call list
@@ -15,6 +16,8 @@
 class SystemCallList
 {
     public:
+        // The constructor, requires a pid manager
+        SystemCallList(PidManager *pidManager) { this->pidManager = pidManager; }
         // Search for a system call **same** or **similar** with the given system call.
         // @param syscall the given system call
         // @ret the same or similar system call. If no such a system call is found, an **invalid**
@@ -28,6 +31,8 @@ class SystemCallList
     private:
         // A vector which stores all the system call list
         Vector<SystemCall> syscallVector;
+        // A pid manager use to manage processes mapping
+        PidManager *pidManager;
 };
 
 #endif //__SYSCALL_SYSCALLLIST_H__

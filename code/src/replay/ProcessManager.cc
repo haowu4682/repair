@@ -251,7 +251,8 @@ int main(int argc, char **argv)
         commands.push_back(string(argv[i]));
     }
     ifstream fin("/home/haowu/repair_data/dumb.txt");
-    SystemCallList list;
+    PidManager pidManager;
+    SystemCallList list(&pidManager);
     ProcessManager manager(&commands, &list);
 
     //cout << manager.toString();
