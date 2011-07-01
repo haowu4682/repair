@@ -20,6 +20,12 @@ A *shortcut* syscall is a system call interacts with device(e.g. disk, terminal,
 Most syscalls are *not* shortcut syscalls.
 
 Pseudo code(rough):
+readSystemCallList:
+    read each system call in the log.
+    If the system call is an exec syscall and it is not owned by a forked process
+            (i.e. is not in pid manager):
+        create a process manager to manage the process
+
 manageProcess(process):
     Stop at each syscall using ptrace
     matched = find_matchedsyscall(syscall) // use pid mapping and fd mapping
@@ -55,9 +61,10 @@ TODOs:
 (2) Define and detect a conflict.
 (3) Detect *shortcut* syscalls. (canceled)
 (4) Change values into the stored value (done).
-(5) pid mapping
+(5) pid mapping (done)
 (6) env handling. (canceled)
 (7) fd mapping (almost done)
+(8) process manage
 Some finished TODO items are not listed.
 
 Conflict: // This needs to be reviewed.
