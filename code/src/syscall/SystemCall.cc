@@ -56,6 +56,7 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
     this->fdManager = fdManager;
     this->pidManager = pidManager;
     this->usage = usage;
+    this->pid = pid;
     // XXX: The code here might be architecture-dependent for x86_64 only.
     int code = regs.orig_rax;
     type = getSyscallType(code);
@@ -286,7 +287,6 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     long number;
     // Equals '<' when it's **before** a syscall. Equals '>' when it's **after** a syscall.
     char statusChar;
-    pid_t pid;
 
     String auxStr;
     String syscallName;

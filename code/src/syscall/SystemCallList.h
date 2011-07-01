@@ -10,6 +10,14 @@
 #include <replay/PidManager.h>
 #include <syscall/SystemCall.h>
 
+// a vector of system calls which belong to a single process
+struct SystemCallListItem
+{
+    size_t currentPos;
+    Vector<SystemCall> syscalls;
+    SystemCallListItem() : currentPos(0) { }
+};
+
 // The class is used to represent the **record** of a system call list
 //     as well as simple operations like matching.
 // @author haowu
@@ -29,8 +37,9 @@ class SystemCallList
         // to string
         String toString();
     private:
-        // A vector which stores all the system call list
-        Vector<SystemCall> syscallVector;
+        typedef std::map<pid_t, SystemCallListItem> SyscallMapType;
+        // A map from old pid to a syscall list
+        SyscallMapType syscallMap;
         // A pid manager use to manage processes mapping
         PidManager *pidManager;
 };

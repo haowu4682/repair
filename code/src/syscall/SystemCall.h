@@ -37,8 +37,8 @@ class SystemCall
         // Construct the system call from registers
         SystemCall(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager = NULL,
                 PidManager *pidManager = NULL);
-        SystemCall(String record, bool usage, FDManager *fdManager = NULL, PidManager *pidManager = NULL)
-        { this->usage = usage; this->init(record, fdManager, pidManager); }
+        SystemCall(String record, FDManager *fdManager = NULL, PidManager *pidManager = NULL)
+        { this->init(record, fdManager, pidManager); }
 
         // Whether two syscalls are equal. Two syscalls are equal if their usages are equal, and
         // each available arguments and return value(if usage==true) are equal
@@ -70,6 +70,9 @@ class SystemCall
         // Get return value
         long getReturn() { return ret; }
 
+        // Get pid which owns the syscall
+        pid_t getPid() { return pid; }
+
         // Get arguments;
         const SystemCallArgument *getArgs() { return args;}
 
@@ -95,6 +98,8 @@ class SystemCall
         SystemCallArgument args[SYSCALL_MAX_ARGS];
         // The return value of the system call
         long ret;
+        // The old pid which owns the syscall
+        pid_t pid;
         // The fd manager
         FDManager *fdManager;
         // The pid manager

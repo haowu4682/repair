@@ -12,13 +12,16 @@
 class PidManager
 {
     public:
-        int add(int oldPid, int newPid);
-        bool equals(int oldPid, int newPid);
+        int add(pid_t oldPid, pid_t newPid);
+        bool equals(pid_t oldPid, pid_t newPid);
+        pid_t getOld(pid_t newPid);
+        pid_t getNew(pid_t oldPid);
         String toString();
     private:
-        typedef std::pair<int, int> valueType;
-        typedef std::map<int, int> mapType;
-        mapType pidMap;
+        typedef std::pair<pid_t, pid_t> valueType;
+        typedef std::map<pid_t, pid_t> mapType;
+        mapType oldToNew;
+        mapType newToOld;
 };
 
 #endif // __REPLAY_PIDMANAGER_H__
