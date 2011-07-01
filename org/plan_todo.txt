@@ -64,7 +64,7 @@ TODOs:
 (5) pid mapping (done)
 (6) env handling. (canceled)
 (7) fd mapping (almost done)
-(8) process manage
+(8) process manage(use pthread)
 Some finished TODO items are not listed.
 
 Conflict: // This needs to be reviewed.
@@ -80,4 +80,6 @@ which is not influenced by the output of (a)(for example, time()), the conflict 
 
 (4) We shall report all the first-degree conflicts to the user.
 
-Others:
+Comments:
+Use PTHREAD to manage the running of multiple processes.
+

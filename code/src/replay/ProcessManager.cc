@@ -1,5 +1,4 @@
-//Author: Hao Wu <haowu@cs.utexas.edu>
-
+//Author: Hao Wu <haowu@cs.utexas.edu> 
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -30,6 +29,20 @@ int ProcessManager::replay()
 {
     // XXX: Somehow we need to specify some arguments here in the future.
     return startProcess();
+}
+
+// Function for pthread
+void *replayProcess(void *manager)
+{
+    ProcessManager *procManager = (ProcessManager *)manager;
+    procManager->replay();
+}
+
+// Function for pthread
+void *traceProcess(void *process)
+{
+    Process *proc = (Process *)process;
+    proc->manager->trace(proc->pid);
 }
 
 int ProcessManager::trace(pid_t pid)

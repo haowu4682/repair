@@ -65,5 +65,19 @@ class ProcessManager
         PidManager pidManager;
 };
 
+// Replay a process. The function is used as an API for pthread
+// @param manager the process manager used to replay the process
+void *replayProcess(void *manager);
+
+struct Process
+{
+    ProcessManager *manager;
+    pid_t pid;
+};
+
+// Trace a process. The function is used as an API for pthread.
+// @param process the process to be traced.
+void *traceProcess(void *process);
+
 #endif //__REPLAY_PROCESSMANAGER_H__
 
