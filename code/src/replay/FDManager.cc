@@ -79,3 +79,15 @@ String FDManager::toString()
     return sout.str();
 }
 
+void FDManager::clone(FDManager *another)
+{
+    for (mapType::iterator it = another->oldFDMap.begin(); it != another->oldFDMap.end(); ++it)
+    {
+        oldFDMap.insert(*it);
+    }
+    for (mapType::iterator it = another->newFDMap.begin(); it != another->newFDMap.end(); ++it)
+    {
+        newFDMap.insert(*it);
+    }
+}
+

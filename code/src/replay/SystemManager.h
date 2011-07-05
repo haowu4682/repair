@@ -4,6 +4,7 @@
 #define __REPLAY_SYSTEMMANAGER_H__
 
 #include <common/common.h>
+#include <replay/FDManager.h>
 #include <syscall/SystemCall.h>
 #include <syscall/SystemCallList.h>
 
@@ -24,11 +25,18 @@ class SystemManager
         int addCommand(const SystemCall &syscall);
         // to string
         String toString();
+        // set fd manager
+        void setFDManager(FDManager *fdManager) { this->fdManager = fdManager; }
+        // get fd manager
+        FDManager *getFDManager() { return fdManager; }
     private:
         // All the commands in the system manager
         Vector<Vector<String> > commands;
         // The system call list;
         SystemCallList *syscallList;
+        // The original copy of fd manager
+        FDManager *fdManager;
 };
 
 #endif //__REPLAY_SYSTEMMANAGER_H__
+

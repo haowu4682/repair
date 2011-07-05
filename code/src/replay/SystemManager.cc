@@ -21,6 +21,7 @@ int SystemManager::execAll()
 
         LOG1(command_pt[0][0].c_str());
         ProcessManager manager(&(*command_pt), syscallList);
+        manager.getFDManager()->clone(fdManager);
         ret = pthread_create(&thread, NULL, replayProcess, &manager);
         // If the fork fails
         if (ret != 0)
@@ -70,6 +71,7 @@ int main(int argc, char **argv)
     FDManager fdManager;
     SystemCallList list(&pidManager, &sysManager);
     sysManager.setSyscallList(&list);
+    sysManager.setFDManager(&fdManager);
     list.init(fin, &fdManager);
     cout <<sysManager.toString();
     sysManager.execAll();

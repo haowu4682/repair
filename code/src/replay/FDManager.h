@@ -8,6 +8,7 @@
 #include <common/common.h>
 
 // The class is used to manage the relation between fd's and path's
+// XXX: There might be a SHALLOW-COPY problem in this class
 class FDManager
 {
     public:
@@ -19,6 +20,10 @@ class FDManager
         String searchNew(int fd);
         bool equals(int oldFd, int newFd);
         String toString();
+
+        // Clone the FDMap from another FDManager
+        void clone(FDManager *another);
+
     private:
         typedef std::pair<int, String> valueType;
         typedef std::map<int, String> mapType;
