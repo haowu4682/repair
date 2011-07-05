@@ -8,7 +8,6 @@
 #include <common/common.h>
 #include <replay/FDManager.h>
 #include <replay/PidManager.h>
-#include <replay/SystemManager.h>
 #include <syscall/SystemCall.h>
 
 // Not a good coding style here
@@ -50,6 +49,8 @@ class SystemCallList
         // A system manager to store all the process to be directed `exec'-ed in replaying
         SystemManager *systemManager;
 };
+
+#include <replay/SystemManager.h>
 
 #endif //__SYSCALL_SYSCALLLIST_H__
 

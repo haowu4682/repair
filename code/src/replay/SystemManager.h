@@ -5,11 +5,13 @@
 
 #include <common/common.h>
 #include <replay/FDManager.h>
-#include <syscall/SystemCall.h>
 #include <syscall/SystemCallList.h>
+#include <replay/ProcessManager.h>
+#include <syscall/SystemCall.h>
 
 // Not a good coding style here.
 class SystemCallList;
+class ProcessManager;
 
 // This class is used to manager a *system*, specifically, to manage different processes.
 class SystemManager
@@ -36,6 +38,8 @@ class SystemManager
         SystemCallList *syscallList;
         // The original copy of fd manager
         FDManager *fdManager;
+        // All the Process Managers
+        Vector<ProcessManager> processManagerList;
 };
 
 #endif //__REPLAY_SYSTEMMANAGER_H__

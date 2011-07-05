@@ -26,17 +26,29 @@ ProcessManager::ProcessManager(SystemCallList *list)
 {
 }
 
-int ProcessManager::replay()
-{
-    // XXX: Somehow we need to specify some arguments here in the future.
-    return startProcess();
-}
-
 // Function for pthread
 void *replayProcess(void *manager)
 {
     ProcessManager *procManager = (ProcessManager *)manager;
+    LOG("%p", manager);
+    //LOG("%s", procManager->toString().c_str());
     procManager->replay();
+}
+
+/*
+String printArgv(Vector<String> *strs)
+{
+    String str;
+    for (Vector<String>::iterator it = strs->begin(); it != strs->end(); ++it)
+        str += *it;
+    return str;
+}*/
+
+int ProcessManager::replay()
+{
+    // XXX: Somehow we need to specify some arguments here in the future.
+    //LOG1(printArgv(commandList).c_str());
+    return startProcess();
 }
 
 // Function for pthread
@@ -68,6 +80,7 @@ int ProcessManager::startProcess()
         LOG1("Command is empty, refrain from executing nothing.");
         return -1;
     }
+    LOG1("HREE!");
     pid_t pid = fork();
 
     // If the fork fails
