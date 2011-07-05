@@ -117,7 +117,7 @@ long readFromProcess(void *buf, long addr, size_t len, pid_t pid)
     return pret;
 }
 
-Vector<String> parseCommand(int argc, char **argv)
+Vector<String> convertCommand(int argc, char **argv)
 {
     Vector<String> commands;
     for (int i = 0; i < argc; i++)
@@ -125,5 +125,47 @@ Vector<String> parseCommand(int argc, char **argv)
         commands.push_back(String(argv[i]));
     }
     return commands;
+}
+
+// A local function to parse a string within a pair of quotations
+int parseString(String &dst, String &src, size_t &pos)
+{
+    size_t startPos, endPos;
+    startPos = src.find_first_of('"', pos);
+    if (startPos == String::npos)
+        return -1;
+    ++startPos;
+    endPos = src.find_first_of('"', startPos);
+    while (endPos != String::npos && src[endPos-1] == '\\')
+        endPos = src.find_first_of('"', endPos+1);
+    if (endPos == String::npos)
+        return -1;
+    dst = src.substr(startPos, endPos);
+    pos = endPos + 1;
+    return 0;
+}
+
+int parseArgv(Vector<String> &command, String str)
+{
+    int ret;
+    size_t pos;
+
+    pos = str.find_first_of('[');
+    if (pos == String::npos)
+        return -1;
+    String arg;
+    while (parseString(arg, str, pos) == 0)
+    {
+        command.push_back(arg);
+        size_t newPos = str.find_first_of(',', pos);
+        if (newPos != String::npos)
+            pos = newPos;
+    }
+    pos = str.find_first_of(']', pos);
+    if (pos == String::npos)
+    {
+        return -1;
+    }
+    return 0;
 }
 

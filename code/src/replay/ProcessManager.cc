@@ -264,7 +264,7 @@ int main(int argc, char **argv)
     {
         commands.push_back(string(argv[i]));
     }
-    commands = parseCommand(argc-1, argv+1);
+    commands = convertCommand(argc-1, argv+1);
     ifstream fin("/home/haowu/repair_data/dumb.txt");
     PidManager pidManager;
     SystemCallList list(&pidManager);

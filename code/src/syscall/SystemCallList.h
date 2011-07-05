@@ -8,7 +8,11 @@
 #include <common/common.h>
 #include <replay/FDManager.h>
 #include <replay/PidManager.h>
+#include <replay/SystemManager.h>
 #include <syscall/SystemCall.h>
+
+// Not a good coding style here
+class SystemManager;
 
 // a vector of system calls which belong to a single process
 struct SystemCallListItem
@@ -25,7 +29,8 @@ class SystemCallList
 {
     public:
         // The constructor, requires a pid manager
-        SystemCallList(PidManager *pidManager) { this->pidManager = pidManager; }
+        SystemCallList(PidManager *pidManager, SystemManager *systemManager = NULL)
+            { this->pidManager = pidManager; this->systemManager = systemManager;}
         // Search for a system call **same** or **similar** with the given system call.
         // @param syscall the given system call
         // @ret the same or similar system call. If no such a system call is found, an **invalid**
@@ -42,6 +47,9 @@ class SystemCallList
         SyscallMapType syscallMap;
         // A pid manager use to manage processes mapping
         PidManager *pidManager;
+        // A system manager to store all the process to be directed `exec'-ed in replaying
+        SystemManager *systemManager;
 };
 
 #endif //__SYSCALL_SYSCALLLIST_H__
+

@@ -74,7 +74,10 @@ class SystemCall
         pid_t getPid() { return pid; }
 
         // Get arguments;
-        const SystemCallArgument *getArgs() { return args;}
+        const SystemCallArgument *getArgs() const { return args;}
+
+        // Get an argument
+        const SystemCallArgument &getArg(int i) const { return args[i]; }
 
         // Get syscall args list from regs
         // Warning: The size of the given list must be at least SYSCALL_MAX_ARGS!

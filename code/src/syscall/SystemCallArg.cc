@@ -318,7 +318,7 @@ bool SystemCallArgument::operator < (SystemCallArgument &another)
     return true;
 }
 
-String SystemCallArgument::toString()
+String SystemCallArgument::toString() const
 {
     String str;
     str = name + "=" + value;

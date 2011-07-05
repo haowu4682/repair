@@ -80,9 +80,9 @@ class SystemCallArgument
         bool operator !=(SystemCallArgument &);
         bool operator <(SystemCallArgument &);
         // to string
-        String toString();
+        String toString() const;
         // get value
-        String getValue() { return value;}
+        String getValue() const { return value;}
     private:
         // The name
         String name;

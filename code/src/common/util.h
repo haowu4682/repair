@@ -18,7 +18,12 @@
 // @param argc number of arguments
 // @param argv the arguments to be converted
 // @ret the converted command
-Vector<String> parseCommand(int argc, char **argv);
+Vector<String> convertCommand(int argc, char **argv);
+
+// parse a string into argvs
+// @param str the str to be parsed
+// @param command the vector of string to store the argvs
+int parseArgv(Vector<String> &command, String str);
 
 // write some data to a user's memory using ptrace
 // We do NOT check that process `pid' is a child process in ptrace

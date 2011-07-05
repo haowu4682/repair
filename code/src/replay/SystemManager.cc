@@ -1,5 +1,6 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <common/util.h>
 #include <replay/ProcessManager.h>
 #include <replay/SystemManager.h>
 using namespace std;
@@ -26,5 +27,19 @@ int SystemManager::execAll()
         }
     }
     return 0;
+}
+
+int SystemManager::addCommand(const SystemCall &syscall)
+{
+    // XXX: in x86_64, only `execve' can execute a command. So the code is harded-coded for this
+    //   command. It does not support other `exec' commands.
+    Vector<String> command;
+    parseArgv(command, syscall.getArg(1).getValue());
+    addCommand(command);
+}
+
+int SystemManager::addCommand(const Vector<String> &command)
+{
+    commands.push_back(command);
 }
 
