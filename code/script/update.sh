@@ -1,5 +1,5 @@
 #!/bin/sh
-git checkout repair && git pull
+git pull
 make
-cd trace; make -C ctl && make -C trace
+cd retro; make -C ctl && make -C trace
 
