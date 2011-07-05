@@ -250,7 +250,7 @@ String ProcessManager::toString()
 // The main function is used for development and debugging only.
 // It will be removed in the released version
 // @author haowu
-int main(int argc, char **argv)
+int old_main(int argc, char **argv)
 {
     // Init the ProcessManager
     if (argc < 2)
@@ -274,21 +274,7 @@ int main(int argc, char **argv)
     cout <<sysManager.toString();
     sysManager.execAll();
 
-    //cout << manager.toString();
     list.init(fin, manager.getFDManager());
-    //cout << list.toString();
-    //manager.replay();
-    /*
-    for (int i = 0; i < 294; i++)
-    {
-        SyscallType type = syscallTypeList[i];
-        cout << type.name << endl;
-        for (int i = 0; i < type.numArgs; i++)
-        {
-            cout << type.args[i].usage << endl;
-        }
-    }
-    */
     return 0;
 }
 

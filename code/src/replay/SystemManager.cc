@@ -1,5 +1,7 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <fstream>
+#include <iostream>
 #include <pthread.h>
 #include <sstream>
 
@@ -10,7 +12,6 @@ using namespace std;
 
 int SystemManager::execAll()
 {
-    LOG1("1");
     Vector<Vector<String> >::iterator command_pt;
     for (command_pt = commands.begin(); command_pt < commands.end(); ++command_pt)
     {
@@ -18,6 +19,7 @@ int SystemManager::execAll()
         pthread_t thread;
         int ret;
 
+        LOG1(command_pt[0][0].c_str());
         ProcessManager manager(&(*command_pt), syscallList);
         ret = pthread_create(&thread, NULL, replayProcess, &manager);
         // If the fork fails
@@ -27,7 +29,6 @@ int SystemManager::execAll()
             return -1;
         }
     }
-    LOG1("2");
     return 0;
 }
 
@@ -43,7 +44,6 @@ int SystemManager::addCommand(const SystemCall &syscall)
 int SystemManager::addCommand(const Vector<String> &command)
 {
     LOG1(command[0].c_str());
-    commands.push_back(command);
 }
 
 String SystemManager::toString()
@@ -60,5 +60,19 @@ String SystemManager::toString()
         os << endl;
     }
     return os.str();
+}
+
+int main(int argc, char **argv)
+{
+    ifstream fin("/home/haowu/repair_data/dumb.txt");
+    PidManager pidManager;
+    SystemManager sysManager;
+    FDManager fdManager;
+    SystemCallList list(&pidManager, &sysManager);
+    sysManager.setSyscallList(&list);
+    list.init(fin, &fdManager);
+    cout <<sysManager.toString();
+    sysManager.execAll();
+    return 0;
 }
 

@@ -141,7 +141,7 @@ int parseString(String &dst, String &src, size_t &pos)
     if (endPos == String::npos)
         return -1;
     dst = src.substr(startPos, endPos - startPos);
-    LOG("%s %ld %ld", dst.c_str(), startPos, endPos - startPos);
+    //LOG("%s %ld %ld", dst.c_str(), startPos, endPos - startPos);
     pos = endPos + 1;
     return 0;
 }

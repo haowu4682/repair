@@ -12,7 +12,7 @@ SYSCALLHDR      := $(wildcard src/syscall/*.h)
 SYSCALLSRC      := $(wildcard src/syscall/*.cc)
 SYSCALLOBJ      := $(patsubst src/syscall/%.cc, bin/syscall/%.o, $(SYSCALLSRC))
 
-REPLAYBIN       := bin/ProcessManager
+REPLAYBIN       := bin/SystemReplay
 
 all: bin
 
