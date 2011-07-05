@@ -3,6 +3,8 @@
 #ifndef __REPLAY_SYSTEMMANAGER_H__
 #define __REPLAY_SYSTEMMANAGER_H__
 
+#include <pthread.h>
+
 #include <common/common.h>
 #include <replay/FDManager.h>
 #include <syscall/SystemCallList.h>
@@ -40,6 +42,8 @@ class SystemManager
         FDManager *fdManager;
         // All the Process Managers
         Vector<ProcessManager> processManagerList;
+        // All the threads to be executed
+        Vector<pthread_t> threads;
 };
 
 #endif //__REPLAY_SYSTEMMANAGER_H__

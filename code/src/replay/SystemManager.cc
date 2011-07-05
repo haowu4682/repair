@@ -24,14 +24,17 @@ int SystemManager::execAll()
         manager.getFDManager()->clone(fdManager);
         LOG1(command_pt[0][0].c_str());
         ret = pthread_create(&thread, NULL, replayProcess, &processManagerList.back());
-        LOG("%p", &manager);
+        LOG("%p", &processManagerList.back());
         // If pthread creation fails
         if (ret != 0)
         {
             LOG("pthread_create fails when trying to replay %s, errno=%d", (*command_pt)[0].c_str(), ret);
             return -1;
         }
+        threads.push_back(thread);
     }
+    for (Vector<pthread_t>::iterator it = threads.begin(); it != threads.end(); ++it)
+        pthread_join(*it, NULL);
     return 0;
 }
 

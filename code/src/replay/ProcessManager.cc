@@ -29,8 +29,8 @@ ProcessManager::ProcessManager(SystemCallList *list)
 // Function for pthread
 void *replayProcess(void *manager)
 {
-    ProcessManager *procManager = (ProcessManager *)manager;
     LOG("%p", manager);
+    ProcessManager *procManager = (ProcessManager *)manager;
     //LOG("%s", procManager->toString().c_str());
     procManager->replay();
 }
