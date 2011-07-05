@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <common/common.h>
+#include <common/util.h>
 #include <replay/ProcessManager.h>
 #include <syscall/SystemCall.h>
 using namespace std;
@@ -263,6 +264,7 @@ int main(int argc, char **argv)
     {
         commands.push_back(string(argv[i]));
     }
+    commands = parseCommand(argc-1, argv+1);
     ifstream fin("/home/haowu/repair_data/dumb.txt");
     PidManager pidManager;
     SystemCallList list(&pidManager);

@@ -116,3 +116,14 @@ long readFromProcess(void *buf, long addr, size_t len, pid_t pid)
     }
     return pret;
 }
+
+Vector<String> parseCommand(int argc, char **argv)
+{
+    Vector<String> commands;
+    for (int i = 0; i < argc; i++)
+    {
+        commands.push_back(String(argv[i]));
+    }
+    return commands;
+}
+

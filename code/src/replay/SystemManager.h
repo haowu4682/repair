@@ -11,6 +11,10 @@ class SystemManager
     public:
         // Execute all the processes managed by the manager
         int execAll();
+        // Set syscall list
+        void setSyscallList(SystemCallList *syscallList) { this->syscallList = syscallList; }
+        // add a command
+        void addCommand(Vector<String>);
     private:
         // All the commands in the system manager
         Vector<Vector<String> > commands;
