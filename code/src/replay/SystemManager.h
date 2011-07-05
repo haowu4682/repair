@@ -22,6 +22,8 @@ class SystemManager
         int addCommand(const Vector<String> &command);
         // add a command using values from a syscall
         int addCommand(const SystemCall &syscall);
+        // to string
+        String toString();
     private:
         // All the commands in the system manager
         Vector<Vector<String> > commands;

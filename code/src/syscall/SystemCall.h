@@ -73,6 +73,8 @@ class SystemCall
         // Get pid which owns the syscall
         pid_t getPid() { return pid; }
 
+        bool getUsage() const { return usage;}
+
         // Get arguments;
         const SystemCallArgument *getArgs() const { return args;}
 

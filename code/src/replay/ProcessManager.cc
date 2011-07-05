@@ -267,13 +267,17 @@ int main(int argc, char **argv)
     commands = convertCommand(argc-1, argv+1);
     ifstream fin("/home/haowu/repair_data/dumb.txt");
     PidManager pidManager;
-    SystemCallList list(&pidManager);
+    SystemManager sysManager;
+    SystemCallList list(&pidManager, &sysManager);
     ProcessManager manager(&commands, &list);
+    sysManager.setSyscallList(&list);
+    cout <<sysManager.toString();
+    sysManager.execAll();
 
     //cout << manager.toString();
     list.init(fin, manager.getFDManager());
     //cout << list.toString();
-    manager.replay();
+    //manager.replay();
     /*
     for (int i = 0; i < 294; i++)
     {

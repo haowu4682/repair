@@ -140,7 +140,8 @@ int parseString(String &dst, String &src, size_t &pos)
         endPos = src.find_first_of('"', endPos+1);
     if (endPos == String::npos)
         return -1;
-    dst = src.substr(startPos, endPos);
+    dst = src.substr(startPos, endPos - startPos);
+    LOG("%s %ld %ld", dst.c_str(), startPos, endPos - startPos);
     pos = endPos + 1;
     return 0;
 }

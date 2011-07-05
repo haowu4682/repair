@@ -29,7 +29,7 @@ class SystemCallList
 {
     public:
         // The constructor, requires a pid manager
-        SystemCallList(PidManager *pidManager, SystemManager *systemManager = NULL)
+        SystemCallList(PidManager *pidManager, SystemManager *systemManager)
             { this->pidManager = pidManager; this->systemManager = systemManager;}
         // Search for a system call **same** or **similar** with the given system call.
         // @param syscall the given system call

@@ -1,5 +1,8 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <pthread.h>
+#include <sstream>
+
 #include <common/util.h>
 #include <replay/ProcessManager.h>
 #include <replay/SystemManager.h>
@@ -7,25 +10,24 @@ using namespace std;
 
 int SystemManager::execAll()
 {
+    LOG1("1");
     Vector<Vector<String> >::iterator command_pt;
     for (command_pt = commands.begin(); command_pt < commands.end(); ++command_pt)
     {
-        // Fork a process for the process
-        pid_t pid = fork();
+        // TODO: Refrain from using fork here. Use pthread instead
+        pthread_t thread;
+        int ret;
+
+        ProcessManager manager(&(*command_pt), syscallList);
+        ret = pthread_create(&thread, NULL, replayProcess, &manager);
         // If the fork fails
-        if (pid == -1)
+        if (ret != 0)
         {
-            LOG("fork fails when trying to run %s", (*command_pt)[0].c_str());
+            LOG("pthread_create fails when trying to replay %s, errno=%d", (*command_pt)[0].c_str(), ret);
             return -1;
         }
-
-        // If it is the child process
-        if (pid == 0)
-        {
-            ProcessManager manager(&(*command_pt), syscallList);
-            manager.replay();
-        }
     }
+    LOG1("2");
     return 0;
 }
 
@@ -40,6 +42,23 @@ int SystemManager::addCommand(const SystemCall &syscall)
 
 int SystemManager::addCommand(const Vector<String> &command)
 {
+    LOG1(command[0].c_str());
     commands.push_back(command);
+}
+
+String SystemManager::toString()
+{
+    ostringstream os;
+    Vector<Vector<String> >::iterator command_pt;
+    for (command_pt = commands.begin(); command_pt < commands.end(); ++command_pt)
+    {
+        for (Vector<String>::iterator argv_pt = command_pt->begin(); argv_pt != command_pt->end();
+                ++argv_pt)
+        {
+            os << *argv_pt << ' ';
+        }
+        os << endl;
+    }
+    return os.str();
 }
 

@@ -44,7 +44,7 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
         pid_t oldPid = syscall.getPid();
         syscallMap[oldPid].syscalls.push_back(syscall);
         // TODO:If the syscall is exec, do something
-        if (syscall.isExec())
+        if (!syscall.getUsage() && syscall.isExec())
         {
             // TODO:If the exec is executed by a `fork'-ed process, we shall not add it to the list here.
             systemManager->addCommand(syscall);
