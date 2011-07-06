@@ -29,7 +29,7 @@ ProcessManager::ProcessManager(SystemCallList *list)
 // Function for pthread
 void *replayProcess(void *manager)
 {
-    LOG("%p", manager);
+    //LOG("%p", manager);
     ProcessManager *procManager = (ProcessManager *)manager;
     //LOG("%s", procManager->toString().c_str());
     procManager->replay();
@@ -80,7 +80,7 @@ int ProcessManager::startProcess()
         LOG1("Command is empty, refrain from executing nothing.");
         return -1;
     }
-    LOG1("HREE!");
+    //LOG1("HREE!");
     pid_t pid = fork();
 
     // If the fork fails
@@ -195,7 +195,7 @@ int ProcessManager::traceProcess(pid_t pid)
         bool matchFound = syscallMatch.isValid();
 
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
-        LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
+        //LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
         waitpid(pid, &status, 0);
 
         // The child process is at the point **after** a syscall.

@@ -167,7 +167,7 @@ String sha1_record(long argValue, SystemCallArgumentAuxilation *argAux)
     hmac_sha1(buf, len, shaRes);
     str = String("sha1:") + (char *)shaRes;
     delete buf;
-    LOG1(str.c_str());
+    //LOG1(str.c_str());
     return str;
 }
 

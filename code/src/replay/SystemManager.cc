@@ -22,9 +22,9 @@ int SystemManager::execAll()
         ProcessManager manager(&(*command_pt), syscallList);
         processManagerList.push_back(manager);
         manager.getFDManager()->clone(fdManager);
-        LOG1(command_pt[0][0].c_str());
+        //LOG1(command_pt[0][0].c_str());
         ret = pthread_create(&thread, NULL, replayProcess, &processManagerList.back());
-        LOG("%p", &processManagerList.back());
+        //LOG("%p", &processManagerList.back());
         // If pthread creation fails
         if (ret != 0)
         {
@@ -40,8 +40,8 @@ int SystemManager::execAll()
 
 int SystemManager::addCommand(const SystemCall &syscall)
 {
-    // XXX: in x86_64, only `execve' can execute a command. So the code is harded-coded for this
-    //   command. It does not support other `exec' commands.
+    // In x86_64, only `execve' can execute a command. So the code is harded-coded for this
+    // command. It does not support other `exec' commands.
     Vector<String> command;
     parseArgv(command, syscall.getArg(1).getValue());
     addCommand(command);

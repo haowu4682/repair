@@ -98,13 +98,13 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
         {
             if (usage)
             {
-                LOG("%ld=%s", ret, lastOpenFilePath.c_str());
+                //LOG("%ld=%s", ret, lastOpenFilePath.c_str());
                 fdManager->addNew(ret, lastOpenFilePath);
             }
             else
             {
                 lastOpenFilePath = args[0].getValue();
-                LOG1(lastOpenFilePath.c_str());
+                //LOG1(lastOpenFilePath.c_str());
             }
         }
         // close
@@ -247,6 +247,7 @@ size_t findPosForNextArg(String &str, int pos)
     size_t res;
     bool strMod = false;
     int arrayCount = 0;
+    int groupCount = 0;
     for (res = pos; res < str.length(); ++res)
     {
         if (str[res] == '\"' && str[res-1] != '\\')
@@ -264,7 +265,17 @@ size_t findPosForNextArg(String &str, int pos)
             arrayCount--;
             continue;
         }
-        if (!strMod && !arrayCount)
+        if (!strMod && str[res] == '{' && str[res-1] != '\\')
+        {
+            groupCount++;
+            continue;
+        }
+        if (!strMod && str[res] == '}' && str[res-1] != '\\')
+        {
+            groupCount--;
+            continue;
+        }
+        if (!strMod && !arrayCount && !groupCount)
         {
             if (str[res] == ')')
                 break;
