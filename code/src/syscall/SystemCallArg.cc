@@ -182,11 +182,35 @@ String string_record(long argValue, SystemCallArgumentAuxilation *argAux)
     return buf;
 }
 
+// an auxilary function for strings record
+// int countArgv(char **argv)
+// {
+    // The function is obsoleted.
+// }
+
 String strings_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
-    String str;
-    //TODO: implement
-    return str;
+    // XXX: This function has never been tested
+    ostringstream os;
+    char **argv = (char **) argValue;
+
+    os << "[";
+    int i;
+    for (i=0;true;i++)
+    {
+        char *str;
+        readFromProcess(&str, (long)(argv+i), sizeof(char *), argAux->pid);
+        if (str == NULL)
+            break;
+        else if (i)
+            os << ", ";
+        String rec = string_record((long) str, argAux);
+        os << rec;
+    }
+    os << "]";
+    LOG1(os.str().c_str());
+
+    return os.str();
 }
 
 String iovec_record(long argValue, SystemCallArgumentAuxilation *argAux)
@@ -204,8 +228,12 @@ String fd_record(long argValue, SystemCallArgumentAuxilation *argAux)
 
 String fd2_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
-    String str;
-    return str;
+    ostringstream os;
+    // CAUTION: Here we use "int" not "long", which is copied from retro code.
+    int fd[2];
+    readFromProcess(fd, argValue, sizeof(fd), argAux->pid);
+    os << "[" << fd_record(fd[0], argAux) << ", " << fd_record(fd[1], argAux) << "]";
+    return os.str();
 }
 
 String name_record(long argValue, SystemCallArgumentAuxilation *argAux)
