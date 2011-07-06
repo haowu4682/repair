@@ -1,0 +1,56 @@
+1. Is the following sample a conflict?
+Sample: On branch A->B, write(foo.txt, "abcde")
+On branch A->C, write(foo.txt, "edcba")
+When rebase the branch A->C on B, the behavior did not change. (i.e
+write(foo.txt, "edcba") We'll call the result C' in future
+discussions.
+
+Some definitions:
+A user is defined as both the human using a machine and the programs running on
+a machine. Let's use `he' when we mention a user below.
+A system/machine is defined as a set of device. A state of a system is defined
+as the states of every device of the system.
+A device can be a disk, a I/O device for user(monitor, keyboard, etc.) and
+network device. The state of a disk is all the files on the disk. The state of
+a I/O device or a network device is the bits/chars the device has ever processed.
+A conflict in rebase is an output/change operation to a device, which do not
+have a matched operation to the same device with the same change in previous
+execution.
+
+HW: The problem is complicated. I claim it is not a conflict here. The basic
+reason here needs us to go back to the purpose for vm rebase. The goal of
+vm rebase is to provide an environment such that the result of the vm rebase
+will be similar to that the user did the jobs between A and C based on B. As a
+result, it is natural that the following 2 properties should hold:
+
+(Call the state after manually-executed jobs between A and C based on B C'',
+ and the automatically-executed state C'.)
+(1) If there is no conflict, C' should be exactly the same as C''.
+(2) As long as C' is equal to C'' after replaying, there shall be no conflict.
+
+This does not provide a definition of a conflict, but it's a good way to think
+if a definition of a conflict is reasonable.
+
+Assume the behavior given in the sample is the only suspicious behavior, which
+means that nothing is written to foo.txt other than those two strings in
+either branch. From the properties above we know that the sample is not a
+conflict if and only if foo.txt contains "edcba" in C''. In other words,
+the user still decides to write "edbca" after someone writes "abcde" to
+foo.txt. Is this a reasonable behavior? We'll show it by contradictions.
+
+Assume the user changes his mind after noticing changes between A and B. Then
+there must be a reason that he changes his mind. To be precise, the state of
+some devices have changed, and the write operation depend on those changes.
+Without lost of generality let's assume that there's one operation X
+which directly result in the change of mind. There are 2 cases of X:
+
+(1) A program reads X and decides a different output to foo.txt. In this case,
+    automatically running should also be able to read X and make the same
+    decision. So the case is invalid.
+(2) A human reads X and decides a different output to foo.txt. Then X must have
+    been output to an output device. Let's say the output device is a monitor.
+    Then the output of the monitor has already changed during rebase, and we
+    already have a conflict for that output. We don't need a conflict here since
+    this one is a consequence of that output. The human can be aware of it since
+    the human already see that output, which leads to the behavior here.
+
