@@ -375,7 +375,7 @@ NR_snapshot                    = 177
 _syscalls = [
         [ NR_read       , "read"        , sysarg_ssize_t,       [
                         [ "fd"          , sysarg_fd     , READ, OFFSET  ],
-                        [ "buf"         , sysarg_sha1   , EXIT  ],
+                        [ "buf"         , sysarg_buf_det   , EXIT  ],
                        #[ "buf"         , sysarg_ignore         ],
                         [ "count"       , sysarg_size_t         ]]],
         [ NR_write      , "write"       , sysarg_ssize_t,       [
