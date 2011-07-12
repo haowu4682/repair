@@ -24,7 +24,7 @@ class SystemManager
         // Set syscall list
         void setSyscallList(SystemCallList *syscallList) { this->syscallList = syscallList; }
         // add a command using command string
-        int addCommand(const Vector<String> &command);
+        int addCommand(const Vector<String> &command, pid_t pid);
         // add a command using values from a syscall
         int addCommand(const SystemCall &syscall);
         // to string

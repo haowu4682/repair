@@ -62,16 +62,16 @@ class SystemCall
                 PidManager *pidManager = NULL);
 
         // Tell whether the system call is a ``fork'' or ``vfork''
-        bool isFork();
+        bool isFork() const;
 
         // Tell whether the system call is an ``exec'' type syscall
-        bool isExec();
+        bool isExec() const;
 
         // Get return value
-        long getReturn() { return ret; }
+        long getReturn() const { return ret; }
 
         // Get pid which owns the syscall
-        pid_t getPid() { return pid; }
+        pid_t getPid() const { return pid; }
 
         bool getUsage() const { return usage;}
 

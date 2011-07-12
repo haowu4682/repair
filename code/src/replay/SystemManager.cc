@@ -44,10 +44,11 @@ int SystemManager::addCommand(const SystemCall &syscall)
     // command. It does not support other `exec' commands.
     Vector<String> command;
     parseArgv(command, syscall.getArg(1).getValue());
-    addCommand(command);
+    pid_t pid = syscall.getPid();
+    addCommand(command, pid);
 }
 
-int SystemManager::addCommand(const Vector<String> &command)
+int SystemManager::addCommand(const Vector<String> &command, pid_t pid)
 {
     //LOG1(command[0].c_str());
     commands.push_back(command);

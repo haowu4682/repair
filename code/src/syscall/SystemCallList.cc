@@ -13,9 +13,11 @@ SystemCall SystemCallList::search(SystemCall &syscall)
     if (pidManager != NULL)
     {
         pid_t oldPid = pidManager->getOld(newPid);
+        LOG("%d", oldPid);
         SyscallMapType::iterator it = syscallMap.find(oldPid);
         if (it != syscallMap.end())
         {
+            LOG1("Here!");
             SystemCallListItem *list = &it->second;
             // TODO: use a more heuristic way to find a matched syscall
             size_t pos;
@@ -37,17 +39,24 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
 {
     // '\n' is used as a delimeter between syscalls
     string syscallString;
-    SystemCall syscall;
+    SystemCall lastExecSyscall;
     while (!getline(in, syscallString).eof())
     {
         SystemCall syscall(syscallString, fdManager);
         pid_t oldPid = syscall.getPid();
         syscallMap[oldPid].syscalls.push_back(syscall);
-        // TODO:If the syscall is exec, do something
-        if (!syscall.getUsage() && syscall.isExec())
+
+        if (syscall.isExec())
         {
-            // TODO:If the exec is executed by a `fork'-ed process, we shall not add it to the list here.
-            systemManager->addCommand(syscall);
+            if (syscall.getUsage())
+            {
+                // TODO:If the exec is executed by a `fork'-ed process, we shall not add it to the list here.
+                systemManager->addCommand(lastExecSyscall);
+            }
+            else
+            {
+                lastExecSyscall = syscall;
+            }
         }
     }
 }

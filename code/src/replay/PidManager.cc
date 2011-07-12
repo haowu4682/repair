@@ -32,6 +32,7 @@ pid_t PidManager::getNew(pid_t oldPid)
 pid_t PidManager::getOld(pid_t newPid)
 {
     pid_t res = 0;
+    LOG("%d", newToOld.size())
     mapType::iterator it = newToOld.find(newPid);
     if (it != newToOld.end())
     {

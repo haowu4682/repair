@@ -214,13 +214,13 @@ int SystemCall::overwrite(user_regs_struct &regs)
 }
 
 // Tell whether the syscall is a ``fork'' or ``vfork''
-bool SystemCall::isFork()
+bool SystemCall::isFork() const
 {
     // XXX: Hard code the syscall number for x86_64 here now.
     return valid && (type->nr == 57 || type->nr == 58);
 }
 
-bool SystemCall::isExec()
+bool SystemCall::isExec() const
 {
     // XXX: Hard code the syscall number for x86_64 here now.
     return valid && (type->nr == 59);
