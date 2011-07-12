@@ -14,7 +14,7 @@ SYSCALLOBJ      := $(patsubst src/syscall/%.cc, bin/syscall/%.o, $(SYSCALLSRC))
 
 REPLAYBIN       := bin/SystemReplay
 
-all: bin
+all: bin retro
 
 bin: $(REPLAYBIN)
 
@@ -39,6 +39,10 @@ bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h src/syscall/tra
 src/syscall/trace_syscalls.inc: src/syscall/trace_syscalls.py
 	$< > $@
 
+retro: retro/*
+	cd retro; make -C ctl; make -C trace
+
 clean:
+	cd retro; make clean
 	rm -f $(REPLAYBIN) $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ) src/syscall/trace_syscalls.inc
 
