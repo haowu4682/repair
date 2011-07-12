@@ -32,8 +32,12 @@ class SystemManager
         String toString();
         // set fd manager
         void setFDManager(FDManager *fdManager) { this->fdManager = fdManager; }
+        // set pid manager
+        void setPidManager(PidManager *pidManager) { this->pidManager = pidManager; }
         // get fd manager
         FDManager *getFDManager() { return fdManager; }
+        // get pid manager
+        PidManager *getPidManager() { return pidManager; }
     private:
         // All the commands in the system manager
         Vector<Command> commands;
@@ -41,6 +45,8 @@ class SystemManager
         SystemCallList *syscallList;
         // The original copy of fd manager
         FDManager *fdManager;
+        // The original pid manager
+        PidManager *pidManager;
         // All the Process Managers
         Vector<ProcessManager> processManagerList;
         // All the threads to be executed

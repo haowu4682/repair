@@ -16,13 +16,13 @@
 #include <syscall/SystemCall.h>
 using namespace std;
 
-ProcessManager::ProcessManager(Vector<String> *command, SystemCallList *list)
-    : commandList(command), syscallList(list), oldPid(-1)
+ProcessManager::ProcessManager(Vector<String> *command, SystemCallList *list, PidManager *manager)
+    : commandList(command), syscallList(list), oldPid(-1), pidManager(manager)
 {
 }
 
-ProcessManager::ProcessManager(SystemCallList *list)
-    : syscallList(list), commandList(NULL), oldPid(-1)
+ProcessManager::ProcessManager(SystemCallList *list, PidManager *manager)
+    : syscallList(list), commandList(NULL), oldPid(-1), pidManager(manager)
 {
 }
 
@@ -154,13 +154,16 @@ int ProcessManager::dealWithFork(SystemCall &syscall, pid_t oldPid)
     // XXX: Hard code features for x86_64 here.
     // update pid manager
     pid_t newPid = (pid_t) syscall.getReturn();
-    pidManager.add(oldPid, newPid);
+    if (pidManager != NULL)
+    {
+        pidManager->add(oldPid, newPid);
+    }
     // fork a new manager
     pid_t newManagerPid = fork();
     if (newManagerPid == 0)
     {
         // Child process, manage the new process;
-        ProcessManager manager(syscallList);
+        ProcessManager manager(syscallList, pidManager);
         manager.trace(newPid);
         return 1;
     }
@@ -178,9 +181,9 @@ int ProcessManager::traceProcess(pid_t pid)
 
     waitpid(pid, &status, 0);
     // TODO: generation number
-    if (oldPid != -1)
+    if (pidManager != NULL && oldPid != -1)
     {
-        pidManager.add(oldPid, pid);
+        pidManager->add(oldPid, pid);
     }
     // Current the termination condition is: the child has exited from executing
     while (!WIFEXITED(status))
@@ -226,7 +229,7 @@ int ProcessManager::traceProcess(pid_t pid)
     }
     //LOG1("This is the parent process!");
     // cout << fdManager.toString();
-    cout <<pidManager.toString();
+    cout << pidManager->toString();
     return 0;
 }
 
@@ -287,7 +290,7 @@ int old_main(int argc, char **argv)
     PidManager pidManager;
     SystemManager sysManager;
     SystemCallList list(&pidManager, &sysManager);
-    ProcessManager manager(&commands, &list);
+    ProcessManager manager(&commands, &list, &pidManager);
     sysManager.setSyscallList(&list);
     cout <<sysManager.toString();
     sysManager.execAll();

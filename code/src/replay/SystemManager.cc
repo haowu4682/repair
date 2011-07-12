@@ -19,7 +19,7 @@ int SystemManager::execAll()
         pthread_t thread;
         int ret;
 
-        ProcessManager manager(&command_pt->argv, syscallList);
+        ProcessManager manager(&command_pt->argv, syscallList, pidManager);
         manager.setOldPid(command_pt->pid);
         processManagerList.push_back(manager);
         manager.getFDManager()->clone(fdManager);
@@ -81,6 +81,7 @@ int main(int argc, char **argv)
     SystemCallList list(&pidManager, &sysManager);
     sysManager.setSyscallList(&list);
     sysManager.setFDManager(&fdManager);
+    sysManager.setPidManager(&pidManager);
     list.init(fin, &fdManager);
     //LOG("init finished");
     cout << sysManager.toString();

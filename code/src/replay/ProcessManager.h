@@ -18,9 +18,9 @@ class ProcessManager
     public:
         // The constructor
         // @author haowu
-        ProcessManager() : oldPid(-1) {}
-        ProcessManager(Vector<String> *command, SystemCallList *list);
-        ProcessManager(SystemCallList *list);
+        ProcessManager(PidManager *manager) : oldPid(-1), pidManager(manager) {}
+        ProcessManager(Vector<String> *command, SystemCallList *list, PidManager *pidManager);
+        ProcessManager(SystemCallList *list, PidManager *pidManager);
 
         // Start replaying the process
         // @author haowu
@@ -38,7 +38,9 @@ class ProcessManager
         // Get the fd manager
         FDManager *getFDManager() { return &fdManager; }
         // Get the pid manager
-        PidManager *getPidManager() { return &pidManager; }
+        PidManager *getPidManager() { return pidManager; }
+        // Set the pid manager
+        void setPidManager(PidManager *pidManager) { this->pidManager = pidManager; }
 
         // Get old pid of the process
         pid_t getOldPid() const { return oldPid; }
@@ -68,7 +70,7 @@ class ProcessManager
         // The fd manager
         FDManager fdManager;
         // The pid manager
-        PidManager pidManager;
+        PidManager *pidManager;
         // The old pid of the process to be executed. If it equals -1, then no old pid has been specified.
         pid_t oldPid;
 };
