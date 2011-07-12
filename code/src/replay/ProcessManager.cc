@@ -171,6 +171,19 @@ int ProcessManager::dealWithFork(SystemCall &syscall, pid_t oldPid)
     return 0;
 }
 
+bool isConflict()
+{
+    //TODO: determine definition of conflict here.
+    return false;
+}
+
+void dealWithConflict()
+{
+    if (isConflict())
+    {
+    }
+}
+
 int ProcessManager::traceProcess(pid_t pid)
 {
     //LOG1("This is the parent process!");
@@ -215,7 +228,7 @@ int ProcessManager::traceProcess(pid_t pid)
         SystemCall syscallReturn(regs, pid, true, &fdManager);
 
         // TODO: Deal with conflict
-        // dealWithConflict();
+        dealWithConflict();
 
         // If the system call is fork/vfork, we must create a new process manager for it.
         if (syscall.isFork())
