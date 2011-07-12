@@ -17,7 +17,6 @@ SystemCall SystemCallList::search(SystemCall &syscall)
         SyscallMapType::iterator it = syscallMap.find(oldPid);
         if (it != syscallMap.end())
         {
-            LOG1("Here!");
             SystemCallListItem *list = &it->second;
             // TODO: use a more heuristic way to find a matched syscall
             size_t pos;

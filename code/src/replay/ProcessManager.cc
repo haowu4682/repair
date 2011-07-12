@@ -203,7 +203,7 @@ int ProcessManager::traceProcess(pid_t pid)
         bool matchFound = syscallMatch.isValid();
 
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
-        //LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
+        LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
         waitpid(pid, &status, 0);
 
         // The child process is at the point **after** a syscall.
