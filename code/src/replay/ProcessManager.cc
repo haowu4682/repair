@@ -17,12 +17,12 @@
 using namespace std;
 
 ProcessManager::ProcessManager(Vector<String> *command, SystemCallList *list)
-    : commandList(command), syscallList(list)
+    : commandList(command), syscallList(list), oldPid(-1)
 {
 }
 
 ProcessManager::ProcessManager(SystemCallList *list)
-    : syscallList(list), commandList(NULL)
+    : syscallList(list), commandList(NULL), oldPid(-1)
 {
 }
 
@@ -54,7 +54,7 @@ int ProcessManager::replay()
 // Function for pthread
 void *traceProcess(void *process)
 {
-    Process *proc = (Process *)process;
+    ManagedProcess *proc = (ManagedProcess *)process;
     proc->manager->trace(proc->pid);
 }
 
@@ -177,6 +177,11 @@ int ProcessManager::traceProcess(pid_t pid)
     struct user_regs_struct regs;
 
     waitpid(pid, &status, 0);
+    // TODO: generation number
+    if (oldPid != -1)
+    {
+        pidManager.add(oldPid, pid);
+    }
     // Current the termination condition is: the child has exited from executing
     while (!WIFEXITED(status))
     {

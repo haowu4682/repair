@@ -18,6 +18,7 @@ class ProcessManager
     public:
         // The constructor
         // @author haowu
+        ProcessManager() : oldPid(-1) {}
         ProcessManager(Vector<String> *command, SystemCallList *list);
         ProcessManager(SystemCallList *list);
 
@@ -38,6 +39,11 @@ class ProcessManager
         FDManager *getFDManager() { return &fdManager; }
         // Get the pid manager
         PidManager *getPidManager() { return &pidManager; }
+
+        // Get old pid of the process
+        pid_t getOldPid() const { return oldPid; }
+        // Set old pid of the process
+        void setOldPid(pid_t pid) { oldPid = pid; }
     private:
         // Start to execute and trace a process with Ptrace
         // @author haowu
@@ -63,13 +69,15 @@ class ProcessManager
         FDManager fdManager;
         // The pid manager
         PidManager pidManager;
+        // The old pid of the process to be executed. If it equals -1, then no old pid has been specified.
+        pid_t oldPid;
 };
 
 // Replay a process. The function is used as an API for pthread
 // @param manager the process manager used to replay the process
 void *replayProcess(void *manager);
 
-struct Process
+struct ManagedProcess
 {
     ProcessManager *manager;
     pid_t pid;

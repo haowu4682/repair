@@ -12,14 +12,15 @@ using namespace std;
 
 int SystemManager::execAll()
 {
-    Vector<Vector<String> >::iterator command_pt;
+    Vector<Command>::iterator command_pt;
     for (command_pt = commands.begin(); command_pt < commands.end(); ++command_pt)
     {
         // Refrain from using fork here. Use pthread instead
         pthread_t thread;
         int ret;
 
-        ProcessManager manager(&(*command_pt), syscallList);
+        ProcessManager manager(&command_pt->argv, syscallList);
+        manager.setOldPid(command_pt->pid);
         processManagerList.push_back(manager);
         manager.getFDManager()->clone(fdManager);
         //LOG1(command_pt[0][0].c_str());
@@ -28,7 +29,7 @@ int SystemManager::execAll()
         // If pthread creation fails
         if (ret != 0)
         {
-            LOG("pthread_create fails when trying to replay %s, errno=%d", (*command_pt)[0].c_str(), ret);
+            LOG("pthread_create fails when trying to replay %s, errno=%d", command_pt->argv[0].c_str(), ret);
             return -1;
         }
         threads.push_back(thread);
@@ -42,13 +43,13 @@ int SystemManager::addCommand(const SystemCall &syscall)
 {
     // In x86_64, only `execve' can execute a command. So the code is harded-coded for this
     // command. It does not support other `exec' commands.
-    Vector<String> command;
-    parseArgv(command, syscall.getArg(1).getValue());
-    pid_t pid = syscall.getPid();
-    addCommand(command, pid);
+    Command command;
+    parseArgv(command.argv, syscall.getArg(1).getValue());
+    command.pid = syscall.getPid();
+    addCommand(command);
 }
 
-int SystemManager::addCommand(const Vector<String> &command, pid_t pid)
+int SystemManager::addCommand(const Command &command)
 {
     //LOG1(command[0].c_str());
     commands.push_back(command);
@@ -58,15 +59,15 @@ String SystemManager::toString()
 {
     ostringstream os;
     //LOG("%ld", commands.size());
-    Vector<Vector<String> >::iterator command_pt;
+    Vector<Command>::iterator command_pt;
     for (command_pt = commands.begin(); command_pt < commands.end(); ++command_pt)
     {
-        for (Vector<String>::iterator argv_pt = command_pt->begin(); argv_pt != command_pt->end();
-                ++argv_pt)
+        for (Vector<String>::iterator argv_pt = command_pt->argv.begin(); argv_pt !=
+                command_pt->argv.end(); ++argv_pt)
         {
             os << *argv_pt << ", ";
         }
-        os << endl;
+        os << command_pt->pid << endl;
     }
     return os.str();
 }

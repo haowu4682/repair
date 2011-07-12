@@ -6,10 +6,11 @@
 #include <pthread.h>
 
 #include <common/common.h>
+#include <replay/Command.h>
 #include <replay/FDManager.h>
-#include <syscall/SystemCallList.h>
 #include <replay/ProcessManager.h>
 #include <syscall/SystemCall.h>
+#include <syscall/SystemCallList.h>
 
 // Not a good coding style here.
 class SystemCallList;
@@ -24,7 +25,7 @@ class SystemManager
         // Set syscall list
         void setSyscallList(SystemCallList *syscallList) { this->syscallList = syscallList; }
         // add a command using command string
-        int addCommand(const Vector<String> &command, pid_t pid);
+        int addCommand(const Command &command);
         // add a command using values from a syscall
         int addCommand(const SystemCall &syscall);
         // to string
@@ -35,7 +36,7 @@ class SystemManager
         FDManager *getFDManager() { return fdManager; }
     private:
         // All the commands in the system manager
-        Vector<Vector<String> > commands;
+        Vector<Command> commands;
         // The system call list;
         SystemCallList *syscallList;
         // The original copy of fd manager
