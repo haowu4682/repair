@@ -242,7 +242,7 @@ int ProcessManager::traceProcess(pid_t pid)
     }
     //LOG1("This is the parent process!");
     // cout << fdManager.toString();
-    cout << pidManager->toString();
+    LOG1(pidManager->toString().c_str());
     return 0;
 }
 
@@ -305,7 +305,7 @@ int old_main(int argc, char **argv)
     SystemCallList list(&pidManager, &sysManager);
     ProcessManager manager(&commands, &list, &pidManager);
     sysManager.setSyscallList(&list);
-    cout <<sysManager.toString();
+    LOG1(sysManager.toString().c_str());
     sysManager.execAll();
 
     list.init(fin, manager.getFDManager());

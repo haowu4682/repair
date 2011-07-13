@@ -86,7 +86,7 @@ int main(int argc, char **argv)
     sysManager.setPidManager(&pidManager);
     list.init(fin, &fdManager);
     LOG("init finished");
-    cout << sysManager.toString();
+    LOG1(sysManager.toString().c_str());
     sysManager.execAll();
     return 0;
 }
