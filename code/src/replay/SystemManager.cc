@@ -13,7 +13,8 @@ using namespace std;
 int SystemManager::execAll()
 {
     Vector<Command>::iterator command_pt;
-    for (command_pt = commands.begin(); command_pt < commands.end(); ++command_pt)
+    LOG("%ld %ld", commands.size(), threads.size());
+    for (command_pt = commands.begin(); command_pt != commands.end(); ++command_pt)
     {
         // Refrain from using fork here. Use pthread instead
         pthread_t thread;
@@ -23,7 +24,7 @@ int SystemManager::execAll()
         manager.setOldPid(command_pt->pid);
         processManagerList.push_back(manager);
         manager.getFDManager()->clone(fdManager);
-        //LOG1(command_pt[0][0].c_str());
+        LOG1(command_pt->argv[0].c_str());
         ret = pthread_create(&thread, NULL, replayProcess, &processManagerList.back());
         //LOG("%p", &processManagerList.back());
         // If pthread creation fails
@@ -83,7 +84,7 @@ int main(int argc, char **argv)
     sysManager.setFDManager(&fdManager);
     sysManager.setPidManager(&pidManager);
     list.init(fin, &fdManager);
-    //LOG("init finished");
+    LOG("init finished");
     cout << sysManager.toString();
     sysManager.execAll();
     return 0;
