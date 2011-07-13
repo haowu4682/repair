@@ -441,7 +441,7 @@ bool SystemCall::operator ==(SystemCall &another)
     return true;
 }
 
-String SystemCall::toString()
+String SystemCall::toString() const
 {
     ostringstream ss;
     ss << "name=" << type->name << ", ";

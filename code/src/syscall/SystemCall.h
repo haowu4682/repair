@@ -87,7 +87,7 @@ class SystemCall
         static void getRegsList(const user_regs_struct &regs, long args[]);
 
         // to string
-        String toString();
+        String toString() const;
     private:
         // Get an aux value for determing an argument
         static SystemCallArgumentAuxilation getAux(long args[], SyscallArgType &argType, int i,

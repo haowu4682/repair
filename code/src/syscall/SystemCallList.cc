@@ -60,7 +60,10 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
 #endif
             // This is the updated version
             // TODO:If the exec is executed by a `fork'-ed process, we shall not add it to the list here.
-            systemManager->addCommand(syscall);
+            if (!syscall.getUsage())
+            {
+                systemManager->addCommand(syscall);
+            }
         }
     }
 }

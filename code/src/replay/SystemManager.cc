@@ -20,13 +20,13 @@ int SystemManager::execAll()
         pthread_t thread;
         int ret;
 
+        LOG1(command_pt->argv[0].c_str());
         ProcessManager manager(&command_pt->argv, syscallList, pidManager);
         manager.setOldPid(command_pt->pid);
         processManagerList.push_back(manager);
         manager.getFDManager()->clone(fdManager);
-        LOG1(command_pt->argv[0].c_str());
         ret = pthread_create(&thread, NULL, replayProcess, &processManagerList.back());
-        //LOG("%p", &processManagerList.back());
+        LOG("%p", &processManagerList.back());
         // If pthread creation fails
         if (ret != 0)
         {
@@ -47,6 +47,7 @@ int SystemManager::addCommand(const SystemCall &syscall)
     Command command;
     parseArgv(command.argv, syscall.getArg(1).getValue());
     command.pid = syscall.getPid();
+    LOG1(syscall.toString().c_str());
     addCommand(command);
 }
 
