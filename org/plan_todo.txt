@@ -61,10 +61,13 @@ TODOs:
 (2) Define and detect a conflict.
 (3) Detect *shortcut* syscalls. (canceled)
 (4) Change values into the stored value (done).
-(5) pid mapping (done)
+(5) pid mapping ()
 (6) env handling. (canceled)
-(7) fd mapping (almost done)
-(8) process manage(use pthread)
+(7) fd mapping (done)
+(8) process manage(done)
+(9) remove bugs on multiple executions of a single process
+(10) allow multiple processes
+
 Some finished TODO items are not listed.
 
 Conflict: // This needs to be reviewed.

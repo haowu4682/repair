@@ -5,13 +5,21 @@
 #include <replay/PidManager.h>
 using namespace std;
 
+int PidManager::addForked(pid_t pid)
+{
+    forkedPid.insert(pid);
+    return 0;
+}
+
+bool PidManager::isForked(pid_t pid)
+{
+    return forkedPid.find(pid) != forkedPid.end();
+}
+
 int PidManager::add(pid_t oldPid, pid_t newPid)
 {
     oldToNew[oldPid] = newPid;
     newToOld[newPid] = oldPid;
-    //LOG("%d %d", oldPid, newPid);
-    //LOG("%d", newToOld.size());
-    //LOG1(toString().c_str());
     return 0;
 }
 
@@ -58,6 +66,11 @@ String PidManager::toString()
     for (mapType::iterator it = newToOld.begin(); it != newToOld.end(); ++it)
     {
         sout << it->first << "\t" << it->second << endl;
+    }
+    sout << "ForkedPid:" << endl;
+    for (setType::iterator it = forkedPid.begin(); it != forkedPid.end(); ++it)
+    {
+        sout << *it << endl;
     }
     return sout.str();
 }

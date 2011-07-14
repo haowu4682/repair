@@ -26,8 +26,8 @@ TODOs:
 (2) Define and detect a conflict.
 (3) Detect *shortcut* syscalls. (canceled)
 (4) Change values into the stored value (done).
-(5) pid mapping
-(7) fd mapping
+(5) pid mapping (done).
+(7) fd mapping (done).
 
 Conflict:
 (1) If the return value of a system call is *different* from its previous system call, the system

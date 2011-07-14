@@ -4,6 +4,7 @@
 #define __REPLAY_PIDMANAGER_H__
 
 #include <map>
+#include <set>
 
 #include <common/common.h>
 
@@ -16,12 +17,16 @@ class PidManager
         bool equals(pid_t oldPid, pid_t newPid);
         pid_t getOld(pid_t newPid);
         pid_t getNew(pid_t oldPid);
+        int addForked(pid_t pid);
+        bool isForked(pid_t pid);
         String toString();
     private:
         typedef std::pair<pid_t, pid_t> valueType;
         typedef std::map<pid_t, pid_t> mapType;
+        typedef std::set<pid_t> setType;
         mapType oldToNew;
         mapType newToOld;
+        setType forkedPid;
 };
 
 #endif // __REPLAY_PIDMANAGER_H__

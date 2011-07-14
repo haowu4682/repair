@@ -59,10 +59,21 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
             }
 #endif
             // This is the updated version
-            // TODO:If the exec is executed by a `fork'-ed process, we shall not add it to the list here.
-            if (!syscall.getUsage())
+            // If the exec is executed by a `fork'-ed process, we shall not add it to the list here.
+            if (!syscall.getUsage() && !pidManager->isForked(syscall.getPid()))
             {
                 systemManager->addCommand(syscall);
+            }
+        }
+        else if (syscall.isFork())
+        {
+            if (syscall.getUsage())
+            {
+                pid_t newPid = syscall.getReturn();
+                if (newPid != 0)
+                {
+                    pidManager->addForked(newPid);
+                }
             }
         }
     }
