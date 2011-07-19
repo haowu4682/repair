@@ -1,0 +1,12 @@
+1. How to define and implement a conflict?
+See ``conflict.txt'' for more information.
+
+2. How to decide the way when a user's input has occured in the original branch?
+We should feed the process with the original input. However if the input is from a file we might
+want to feed it with the current file. The policy should be:
+(1) If the current file exists, use the current file
+(2) If the current file does not exist, or the file is a device(e.g. keyboard, network, etc.)
+    we shall use the stored original input.
+
+3. How to deal with pipes and redirections?
+See ``pipe.txt''

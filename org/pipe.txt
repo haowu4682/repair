@@ -1,0 +1,16 @@
+Someone may think that pipe/redirection problem is an independent problem from process handling, but it is not. The problem arises here is: how can we define a process?
+
+Notice: when we say ``fork'' or ``exec'' below, we do not mean a specified syscall, but a series of syscalls which include other syscalls with similar functions (e.g. ``clone'') without further explanation.
+
+Current design and implementation treats a ``program'' as a process, but it isn't. For example, a user could run ``ls -l'' firstly, and run ``echo "Helloworld"'' secondly. In current design, we'll treat these two as being run by different processes. However, in original execution, they are done by the same process(the terminal which executes these two commands).
+
+The deficiency causes two problems. First, two commands done by the same process has a sequential order. If we re-execute them using two processes, we cannot guarantee that the order still holds. Second, if there is a pipe/redirection specified, we cannot still keep it.
+
+The reason is that we treat ``exec'' as the start of a process rather than ``fork'' if the process is not recorded as a process created by ``fork''. The reason that some processes might not be ``recorded as created by fork'' is, the current implementation of recording system call requires a user-mode program to write to the file. Before we start the user-mode program, we already created some processes(e.g. a terminal) which starts the program. And those processes will be recognized as a process ``not recorded to be created by fork''.
+
+Besides the reasoning above, a reason that we treat ``exec'' as the start is that if we treat ``fork'' as the start, we do not know how to re-execute it. ``fork'' is a syscall which just forks a new process. We don't know what the process actually does unless we know the program the process is going to execute, e.g. the program executed by ``exec'' syscall.
+
+There are 2 ways to avoid the problem:
+(1) Start recording system calls from the beginning of execution of a vm, and start every process from ``fork''. Two problems arise here. First we don't know how to implement(logically, we must boot the os before running any user-mode process). Second it doesn't solve the problem that we don't know what a process will do unless we know which program it is going to execute.
+
+(2) Keep the current design and implementation, do something special for sequential order and pipes/redirections. This is not elegant at all. Also the re-execution will be different from original execution, which may cause troubles in the future.
