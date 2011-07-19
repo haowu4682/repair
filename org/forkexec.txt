@@ -1,3 +1,6 @@
+-----------------------------------------------
+--------  Original Problem --------------------
+-----------------------------------------------
 Someone may think that pipe/redirection problem is an independent problem from process handling, but it is not. The problem arises here is: how can we define a process?
 
 Notice: when we say ``fork'' or ``exec'' below, we do not mean a specified syscall, but a series of syscalls which include other syscalls with similar functions (e.g. ``clone'') without further explanation.
@@ -14,3 +17,19 @@ There are 2 ways to avoid the problem:
 (1) Start recording system calls from the beginning of execution of a vm, and start every process from ``fork''. Two problems arise here. First we don't know how to implement(logically, we must boot the os before running any user-mode process). Second it doesn't solve the problem that we don't know what a process will do unless we know which program it is going to execute.
 
 (2) Keep the current design and implementation, do something special for sequential order and pipes/redirections. This is not elegant at all. Also the re-execution will be different from original execution, which may cause troubles in the future.
+
+-----------------------------------------------
+--------  Retro's opinion  --------------------
+-----------------------------------------------
+Retro's opinion interpreted by Hao:
+
+Retro does not have a clear definition of an ``action'', neither does it have a section or a paragraph to talk about the issue. However, the paper talks about the problem in several sections. Since the problem is vague, the following discussions is only our interpretation of how Retro solves the problem. Retro does not clearly give a way to solve the problem.
+
+Firstly, in section 4.2, ``the only supported process checkpoint is the initial state of a process immediately prior to exec'', which agrees that it treats ``exec'' as the entry point of a process, which basically the same as our current implementation. For pipes, Retro will assign an ephemeral object to help re-executing.
+
+Secondly, in section 5.2.1, Retro tracks pipes and special devices and replays them seperately. The solution is very similar to the second solution we've given above.
+
+Thirdly, in section 5.2.2, Retro treats both ``fork'' and ``exec'' as a creation of a new process. Both syscalls will result in 2 seperate actions: one for the old actor and one for the new actor. This seems to contradict section 4.2, which says that ``exec'' represents the entry of a process. But Retro does not use the word ``process'', but the word ``actor'' here. They are different. A process is an actor but an actor does not necessarily need to be a process. However Retro did not give a good explanation for the problem here. The explanation here is not perfect since we don't know which kind of an ``actor'' it is after a ``fork'' is executed. It is weird not to view it as a process.
+
+To sum up, Retro treats ``exec'' as the start of a process, and deals with pipes seperately. But Retro did not explain the role of ``fork'' in a process in a concrete way. Retro's solution is very similar to the solution (2) above. As far as we know how Retro solves the problem, it is reasonable to use the solution (2) we've given for the problem.
+

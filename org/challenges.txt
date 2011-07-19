@@ -9,4 +9,4 @@ want to feed it with the current file. The policy should be:
     we shall use the stored original input.
 
 3. How to deal with pipes and redirections?
-See ``pipe.txt''
+See ``forkexec.txt''
