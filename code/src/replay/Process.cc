@@ -24,6 +24,8 @@ int Process::exec()
         LOG("pthread_create fails when trying to replay %s, errno=%d", command->argv[0].c_str(), ret);
         return -1;
     }
+    // XXX: The join command must be moved to another place in the future.
+    pthread_join(thread, NULL);
     return 0;
 }
 
