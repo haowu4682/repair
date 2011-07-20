@@ -6,6 +6,7 @@
 #include <pthread.h>
 
 #include <common/common.h>
+#include <replay/Actor.h>
 #include <replay/Command.h>
 #include <replay/FDManager.h>
 #include <replay/ProcessManager.h>
@@ -25,9 +26,11 @@ class SystemManager
         // Set syscall list
         void setSyscallList(SystemCallList *syscallList) { this->syscallList = syscallList; }
         // add a command using command string
-        int addCommand(const Command &command);
+        int addCommand(Command &command);
         // add a command using values from a syscall
         int addCommand(const SystemCall &syscall);
+        // add an actor
+        int addActor(Actor &actor);
         // to string
         String toString();
         // set fd manager
@@ -39,8 +42,8 @@ class SystemManager
         // get pid manager
         PidManager *getPidManager() { return pidManager; }
     private:
-        // All the commands in the system manager
-        Vector<Command> commands;
+        // All the actors in the system manager
+        Vector<Actor*> actors;
         // The system call list;
         SystemCallList *syscallList;
         // The original copy of fd manager
