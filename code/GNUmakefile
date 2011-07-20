@@ -14,7 +14,7 @@ SYSCALLOBJ      := $(patsubst src/syscall/%.cc, bin/syscall/%.o, $(SYSCALLSRC))
 
 REPLAYBIN       := bin/SystemReplay
 
-all: bin retro
+all: bin
 
 bin: $(REPLAYBIN)
 

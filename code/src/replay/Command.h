@@ -3,6 +3,8 @@
 #ifndef __REPLAY_COMMAND_H__
 #define __REPLAY_COMMAND_H__
 
+#include <common/common.h>
+
 struct Command
 {
     Vector<String> argv;
