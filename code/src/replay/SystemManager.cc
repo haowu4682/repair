@@ -21,7 +21,7 @@ int SystemManager::execAll()
         // Refrain from using fork here. Use pthread instead
         // XXX: Remove the following when pipes are introduced
         Process *actor = (Process *)(*actor_pt);
-        LOG("%p %ld", actor, actor->getCommand()->argv.size());
+        //LOG("%p %ld", actor, actor->getCommand()->argv.size());
         (*actor_pt)->exec();
         /*
         pthread_t thread;
@@ -57,7 +57,7 @@ int SystemManager::addCommand(const SystemCall &syscall)
     Command *command = new Command();
     parseArgv(command->argv, syscall.getArg(1).getValue());
     command->pid = syscall.getPid();
-    LOG1(syscall.toString().c_str());
+    //LOG1(syscall.toString().c_str());
     return addCommand(*command);
 }
 
@@ -69,7 +69,7 @@ int SystemManager::addCommand(Command &command)
     process->setFDManager(fdManager);
     process->setPidManager(pidManager);
     process->setSyscallList(syscallList);
-    LOG("%p %ld", process, process->getCommand()->argv.size());
+    //LOG("%p %ld", process, process->getCommand()->argv.size());
     return addActor(process);
 }
 
