@@ -17,6 +17,10 @@ class Process : public Actor
         virtual int exec();
         void setCommand(Command *command) { this->command = command; }
         Command *getCommand() { return command;}
+        void setFDManager(FDManager *fdManager) { this->fdManager = fdManager; }
+        FDManager *getFDManager() { return fdManager; }
+        void setPidManager(PidManager *pidManager) { this->pidManager = pidManager; }
+        PidManager *getPidManager() { return pidManager; }
     private:
         Command *command;
         FDManager *fdManager;
