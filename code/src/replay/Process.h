@@ -21,6 +21,9 @@ class Process : public Actor
         FDManager *getFDManager() { return fdManager; }
         void setPidManager(PidManager *pidManager) { this->pidManager = pidManager; }
         PidManager *getPidManager() { return pidManager; }
+        void setSyscallList(SystemCallList *syscallList) { this->syscallList = syscallList; }
+        SystemCallList *getSyscallList() { return syscallList; }
+
     private:
         Command *command;
         FDManager *fdManager;

@@ -65,6 +65,7 @@ int SystemManager::addCommand(Command &actor)
     Process *process = new Process(&actor);
     process->setFDManager(fdManager);
     process->setPidManager(pidManager);
+    process->setSyscallList(syscallList);
     return addActor(*process);
 }
 
