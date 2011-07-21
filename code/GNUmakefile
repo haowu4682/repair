@@ -1,6 +1,6 @@
 CPP             := g++
-CXXFLAGS        := -Isrc/
-LDFLAGS         := -lrt -lssl
+CXXFLAGS        := -Isrc/ -g
+LDFLAGS         := -lrt -lssl -g
 
 COMMONHDR       := $(wildcard src/common/*.h)
 COMMONSRC       := $(wildcard src/common/*.cc)
