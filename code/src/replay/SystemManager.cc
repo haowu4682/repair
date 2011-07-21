@@ -15,8 +15,10 @@ using namespace std;
 int SystemManager::execAll()
 {
     Vector<Actor*>::iterator actor_pt;
+    LOG("%ld", actors.size());
     for (actor_pt = actors.begin(); actor_pt != actors.end(); ++actor_pt)
     {
+        LOG("%p", *actor_pt);
         // Refrain from using fork here. Use pthread instead
         (*actor_pt)->exec();
         /*
@@ -58,8 +60,12 @@ int SystemManager::addCommand(const SystemCall &syscall)
 
 int SystemManager::addCommand(Command &actor)
 {
-    Process process(&actor);
-    return addActor(process);
+    // XXX Caution: Memory Leak! Must be optimized when the system grows.
+    // Process *process = new Process(&actor);
+    Process *process = new Process(&actor);
+    process->setFDManager(fdManager);
+    process->setPidManager(pidManager);
+    return addActor(*process);
 }
 
 int SystemManager::addActor(Actor &actor)
