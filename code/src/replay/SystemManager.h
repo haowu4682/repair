@@ -30,7 +30,7 @@ class SystemManager
         // add a command using values from a syscall
         int addCommand(const SystemCall &syscall);
         // add an actor
-        int addActor(Actor &actor);
+        int addActor(Actor *actor);
         // to string
         String toString();
         // set fd manager
