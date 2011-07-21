@@ -13,7 +13,7 @@ SystemCall SystemCallList::search(SystemCall &syscall)
     if (pidManager != NULL)
     {
         pid_t oldPid = pidManager->getOld(newPid);
-        //LOG("%d", oldPid);
+        LOG("%d", oldPid);
         SyscallMapType::iterator it = syscallMap.find(oldPid);
         if (it != syscallMap.end())
         {
