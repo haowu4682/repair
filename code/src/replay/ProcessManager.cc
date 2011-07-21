@@ -48,6 +48,7 @@ int ProcessManager::replay()
 {
     // XXX: Somehow we need to specify some arguments here in the future.
     //LOG1(printArgv(commandList).c_str());
+    LOG("command list's size = %ld", commandList->size());
     return startProcess();
 }
 
@@ -214,9 +215,9 @@ int ProcessManager::traceProcess(pid_t pid)
         // nothing else here. However, if a match has been found we must change the return value
         // accoridngly when the syscall has returned.
         bool matchFound = syscallMatch.isValid();
+        //LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
 
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
-        LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
         waitpid(pid, &status, 0);
 
         // The child process is at the point **after** a syscall.

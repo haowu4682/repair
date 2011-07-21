@@ -18,8 +18,10 @@ int SystemManager::execAll()
     LOG("%ld", actors.size());
     for (actor_pt = actors.begin(); actor_pt != actors.end(); ++actor_pt)
     {
-        LOG("%p", *actor_pt);
         // Refrain from using fork here. Use pthread instead
+        // XXX: Remove the following when pipes are introduced
+        Process *actor = (Process *)(*actor_pt);
+        LOG("%p %ld", actor, actor->getCommand()->argv.size());
         (*actor_pt)->exec();
         /*
         pthread_t thread;
@@ -51,27 +53,31 @@ int SystemManager::addCommand(const SystemCall &syscall)
 {
     // In x86_64, only `execve' can execute a actor. So the code is harded-coded for this
     // actor. It does not support other `exec' actors.
-    Command actor;
-    parseArgv(actor.argv, syscall.getArg(1).getValue());
-    actor.pid = syscall.getPid();
+    // XXX Caution: Memory leak!
+    Command *command = new Command();
+    parseArgv(command->argv, syscall.getArg(1).getValue());
+    command->pid = syscall.getPid();
     LOG1(syscall.toString().c_str());
-    return addCommand(actor);
+    return addCommand(*command);
 }
 
-int SystemManager::addCommand(Command &actor)
+int SystemManager::addCommand(Command &command)
 {
     // XXX Caution: Memory Leak! Must be optimized when the system grows.
     // Process *process = new Process(&actor);
-    Process *process = new Process(&actor);
+    Process *process = new Process(&command);
     process->setFDManager(fdManager);
     process->setPidManager(pidManager);
     process->setSyscallList(syscallList);
-    return addActor(*process);
+    LOG("%p %ld", process, process->getCommand()->argv.size());
+    return addActor(process);
 }
 
-int SystemManager::addActor(Actor &actor)
+int SystemManager::addActor(Actor *actor)
 {
-    actors.push_back(&actor);
+    //Process *process = reinterpret_cast<Process *>(actor);
+    //LOG("%p %ld", process, process->getCommand()->argv.size());
+    actors.push_back(actor);
     return 0;
 }
 
@@ -106,7 +112,6 @@ int main(int argc, char **argv)
     sysManager.setPidManager(&pidManager);
     list.init(fin, &fdManager);
     LOG("init finished");
-    LOG1(sysManager.toString().c_str());
     sysManager.execAll();
     return 0;
 }

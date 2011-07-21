@@ -12,7 +12,7 @@ int Process::exec()
     pthread_t thread;
     int ret;
 
-    LOG1(command->argv[0].c_str());
+    LOG("%s %ld", command->argv[0].c_str(), command->argv.size());
     ProcessManager manager(&command->argv, syscallList, pidManager);
     manager.setOldPid(command->pid);
     manager.getFDManager()->clone(fdManager);

@@ -286,7 +286,6 @@ size_t findPosForNextArg(String &str, int pos)
     return res;
 }
 
-// TODO: Combine the state **BEFORE** a syscall and the state **AFTER** a syscall.
 int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager)
 {
     this->fdManager = fdManager;
