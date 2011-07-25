@@ -46,6 +46,11 @@ class ProcessManager
         pid_t getOldPid() const { return oldPid; }
         // Set old pid of the process
         void setOldPid(pid_t pid) { oldPid = pid; }
+
+        // Add pre-action
+        void addPreAction(Action *action) { preActions.push_back(action); }
+        // show pre-actions
+        Vector<Action *> getPreActions() { return preActions; }
     private:
         // Start to execute and trace a process with Ptrace
         // @author haowu
@@ -73,6 +78,8 @@ class ProcessManager
         PidManager *pidManager;
         // The old pid of the process to be executed. If it equals -1, then no old pid has been specified.
         pid_t oldPid;
+        // The actions to be executed before exec
+        Vector<Action *> preActions;
 };
 
 // Replay a process. The function is used as an API for pthread

@@ -47,8 +47,6 @@ String printArgv(Vector<String> *strs)
 int ProcessManager::replay()
 {
     // XXX: Somehow we need to specify some arguments here in the future.
-    //LOG1(printArgv(commandList).c_str());
-    LOG("command list's size = %ld", commandList->size());
     return startProcess();
 }
 
@@ -112,7 +110,6 @@ int ProcessManager::executeProcess()
     }
     // Assert the command is not empty here.
     ASSERT(commandList->size() != 0);
-//    LOG1("This is the child process!");
 
     // Arrange the arguments
     char **args = new char *[commandList->size()+1];
@@ -125,6 +122,12 @@ int ProcessManager::executeProcess()
         strcpy(args[i], argv);
     }
     args[commandList->size()] = NULL;
+
+    // Execute pre-actions
+    for (Vector<Action *>::iterator it = preActions.begin(); it != preActions.end(); ++it)
+    {
+        (*it)->exec();
+    }
 
     // Let the process to be traced
     long pret = ptrace(PTRACE_TRACEME, 0, NULL, NULL);
