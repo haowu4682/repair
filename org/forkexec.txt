@@ -33,3 +33,9 @@ Thirdly, in section 5.2.2, Retro treats both ``fork'' and ``exec'' as a creation
 
 To sum up, Retro treats ``exec'' as the start of a process, and deals with pipes seperately. But Retro did not explain the role of ``fork'' in a process in a concrete way. Retro's solution is very similar to the solution (2) above. As far as we know how Retro solves the problem, it is reasonable to use the solution (2) we've given for the problem.
 
+-----------------------------------------------
+--------  Solution         --------------------
+-----------------------------------------------
+Manually re-execute all the system calls before an ``exec'' took place, or re-execute dup and pipe
+(currently the former).
+
