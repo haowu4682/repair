@@ -27,8 +27,6 @@ struct SyscallArgType
     bool operator == (SyscallArgType &another) { return name == another.name; }
 };
 
-// XXX: Here we use C-style definition, since the author (haowu) don't know how to implement them
-// in C++-style.
 #define SYSARG_(type) String type##_record(long argValue, SystemCallArgumentAuxilation *argAux)
 
 SYSARG_(void);
