@@ -32,11 +32,14 @@ bin/replay/%.o: src/replay/%.cc src/replay/*.h src/syscall/*.h src/common/*.h
 	mkdir -p bin; mkdir -p bin/replay;
 	$(CPP) $(CXXFLAGS) -o $@ -c $<
 
-bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h src/syscall/trace_syscalls.inc src/replay/*.h
+bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h src/replay/*.h src/syscall/trace_syscalls.inc src/syscall/trace_syscalls_exec.inc
 	mkdir -p bin; mkdir -p bin/syscall;
 	$(CPP) $(CXXFLAGS) -o $@ -c $<
 
 src/syscall/trace_syscalls.inc: src/syscall/trace_syscalls.py
+	$< > $@
+
+src/syscall/trace_syscalls_exec.inc: src/syscall/trace_syscalls_exec.py
 	$< > $@
 
 retro: retro/*
@@ -44,5 +47,5 @@ retro: retro/*
 
 clean:
 	cd retro; make clean
-	rm -f $(REPLAYBIN) $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ) src/syscall/trace_syscalls.inc
+	rm -f $(REPLAYBIN) $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ) src/syscall/trace_syscalls.inc src/syscall/trace_syscalls_exec.inc
 

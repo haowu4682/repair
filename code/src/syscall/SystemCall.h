@@ -13,6 +13,8 @@
 
 // The max number of system call arguments in a system call
 #define SYSCALL_MAX_ARGS 6
+class SystemCall;
+typedef int (*syscall_exec_t) (SystemCall *syscall);
 
 // The **type** of a syscall describes which syscall it is
 // e.g. "read", "fork", etc.
@@ -24,7 +26,11 @@ struct SyscallType
     size_t numArgs;
     SyscallArgType args[6];
     bool operator ==(SyscallType &another) { return nr == another.nr && name == another.name; }
+    syscall_exec_t exec;
 };
+
+#define SYSCALL_(type) int type##_exec(SystemCall *syscall)
+#include "trace_syscalls_exec.inc"
 
 extern SyscallType syscallTypeList[];
 #define syscallTypeListSize (sizeof(syscallTypeList) / sizeof(SyscallType))
