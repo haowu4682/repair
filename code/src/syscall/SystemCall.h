@@ -6,6 +6,7 @@
 #include <sys/user.h>
 
 #include <common/common.h>
+#include <replay/Action.h>
 #include <replay/FDManager.h>
 #include <replay/PidManager.h>
 #include <syscall/SystemCallArg.h>
@@ -30,7 +31,7 @@ extern SyscallType syscallTypeList[];
 
 // The class is used to represent the **record** of a system call
 // @author haowu
-class SystemCall
+class SystemCall : public Action
 {
     public:
         SystemCall() : valid(false), fdManager(NULL) {}
@@ -88,6 +89,9 @@ class SystemCall
 
         // to string
         String toString() const;
+
+        // execute the systemcall
+        virtual int exec();
     private:
         // Get an aux value for determing an argument
         static SystemCallArgumentAuxilation getAux(long args[], SyscallArgType &argType, int i,
