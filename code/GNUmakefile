@@ -41,7 +41,7 @@ bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h src/replay/*.h 
 	$(CPP) $(CXXFLAGS) -o $@ -c $<
 
 src/gen_include/%.inc: src/gen_include/%.py $(PYTHONSRC)
-	$< > $@
+	PYTHONPATH=$(PYTHONPATH) $< > $@
 
 retro: retro/*
 	cd retro; make -C ctl; make -C trace
