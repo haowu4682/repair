@@ -30,7 +30,7 @@ struct SyscallType
 };
 
 #define SYSCALL_(type) int type##_exec(SystemCall *syscall)
-#include "trace_syscalls_exec.inc"
+#include <gen_include/trace_syscalls_exec.inc>
 
 extern SyscallType syscallTypeList[];
 #define syscallTypeListSize (sizeof(syscallTypeList) / sizeof(SyscallType))

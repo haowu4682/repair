@@ -1,6 +1,7 @@
 CPP             := g++
 CXXFLAGS        := -Isrc/ -g
 LDFLAGS         := -lrt -lssl -g
+PYTHONPATH      := src/python_include
 
 COMMONHDR       := $(wildcard src/common/*.h)
 COMMONSRC       := $(wildcard src/common/*.cc)
@@ -11,6 +12,9 @@ REPLAYOBJ       := $(patsubst src/replay/%.cc, bin/replay/%.o, $(REPLAYSRC))
 SYSCALLHDR      := $(wildcard src/syscall/*.h)
 SYSCALLSRC      := $(wildcard src/syscall/*.cc)
 SYSCALLOBJ      := $(patsubst src/syscall/%.cc, bin/syscall/%.o, $(SYSCALLSRC))
+INCSRC          := $(wildcard src/gen_include/*.py)
+INCOBJ          := $(patsubst src/gen_include/%.py, src/gen_include/%.inc, $(INCSRC))
+PYTHONSRC       := $(wildcard src/python_include/*.py)
 
 REPLAYBIN       := bin/SystemReplay
 
@@ -24,22 +28,19 @@ $(REPLAYBIN): $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ)
 
 obj: $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ)
 
-bin/common/%.o: src/common/%.cc src/common/*.h
+bin/common/%.o: src/common/%.cc src/common/*.h $(INCOBJ)
 	mkdir -p bin; mkdir -p bin/common;
 	$(CPP) $(CXXFLAGS) -o $@ -c $<
 
-bin/replay/%.o: src/replay/%.cc src/replay/*.h src/syscall/*.h src/common/*.h
+bin/replay/%.o: src/replay/%.cc src/replay/*.h src/syscall/*.h src/common/*.h $(INCOBJ)
 	mkdir -p bin; mkdir -p bin/replay;
 	$(CPP) $(CXXFLAGS) -o $@ -c $<
 
-bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h src/replay/*.h src/syscall/trace_syscalls.inc src/syscall/trace_syscalls_exec.inc
+bin/syscall/%.o: src/syscall/%.cc src/syscall/*.h src/common/*.h src/replay/*.h $(INCOBJ)
 	mkdir -p bin; mkdir -p bin/syscall;
 	$(CPP) $(CXXFLAGS) -o $@ -c $<
 
-src/syscall/trace_syscalls.inc: src/syscall/trace_syscalls.py
-	$< > $@
-
-src/syscall/trace_syscalls_exec.inc: src/syscall/trace_syscalls_exec.py
+src/gen_include/%.inc: src/gen_include/%.py $(PYTHONSRC)
 	$< > $@
 
 retro: retro/*

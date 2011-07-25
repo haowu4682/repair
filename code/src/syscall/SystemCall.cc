@@ -11,7 +11,7 @@ using namespace std;
 
 SyscallType syscallTypeList[] =
 {
-    #include "trace_syscalls.inc"
+    #include <gen_include/trace_syscalls.inc>
 };
 
 String lastOpenFilePath;
