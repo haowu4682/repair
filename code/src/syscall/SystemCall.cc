@@ -226,6 +226,13 @@ bool SystemCall::isExec() const
     return valid && (type->nr == 59);
 }
 
+// Execute the syscall manually
+int SystemCall::exec()
+{
+    // TODO: implement
+    return 0;
+}
+
 // An aux function to parse a syscall arg.
 void parseSyscallArg(String str, String *name, String *value)
 {
