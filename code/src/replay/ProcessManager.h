@@ -51,6 +51,8 @@ class ProcessManager
         void addPreAction(Action *action) { preActions.push_back(action); }
         // show pre-actions
         Vector<Action *> getPreActions() { return preActions; }
+        // set pre-action list
+        void setPreActions(Vector<Action *> *actions) { preActions = *actions; }
     private:
         // Start to execute and trace a process with Ptrace
         // @author haowu
