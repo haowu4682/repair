@@ -14,6 +14,7 @@ int Process::exec()
 
     LOG("%s %ld", command->argv[0].c_str(), command->argv.size());
     ProcessManager manager(&command->argv, syscallList, pidManager);
+    manager.setPreActions(preActions);
     manager.setOldPid(command->pid);
     manager.getFDManager()->clone(fdManager);
     ret = pthread_create(&thread, NULL, replayProcess, &manager);
