@@ -83,14 +83,25 @@ int SystemManager::addActor(Actor *actor)
 
 void SystemManager::togglePreActionsOn(pid_t pid)
 {
+    preActionsEnabled[pid] = true;
 }
 
 void SystemManager::togglePreActionsOff(pid_t pid)
 {
+    preActionsEnabled[pid] = false;
 }
 
-int SystemManager::recordPreAction(Action *action)
+int SystemManager::recordPreAction(pid_t pid, Action *action)
 {
+    PreActionsEnabledType::iterator it = preActionsEnabled.find(pid);
+    if (it != preActionsEnabled.end())
+    {
+        bool enabled = it->second;
+        if (enabled)
+        {
+            preActionsMap[pid].push_back(action);
+        }
+    }
     return 0;
 }
 
