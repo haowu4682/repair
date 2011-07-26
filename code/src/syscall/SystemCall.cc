@@ -68,7 +68,6 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
     else
     {
         valid = true;
-        //LOG("SYSCALL is %s", type->name.c_str());
     }
     long argsList[SYSCALL_MAX_ARGS];
     getRegsList(regs, argsList);
@@ -77,7 +76,6 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
     for (int i = 0; i < numArgs; i++)
     {
         SyscallArgType argType = type->args[i];
-        //LOG("%d %ld %s", i, argsList[i], argType.name.c_str());
         if (argType.usage != usage)
         {
             args[i].setArg();
@@ -165,24 +163,18 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
             // Length of the buffer is passed in by the user.
             used[i+1] = 1;
             a.aux = args[i+1];
-            //LOG("%ld", a.aux);
         }
     } else if (type.record == struct_record) {
         if (usage) {
             a.aux = 0;
             if (ret == 0) {
-                //if (sc->args[i+1].ty == sysarg_psize_t) {
                 int size = 0;
-                //get_user(size, (int *)args[i+1]);
                 readFromProcess((void *)size, args[i+1], sizeof(int), pid);
                 a.aux = size;
-                //}
             }
         } else {
-            //if (sc->args[i+1].ty == sysarg_uint) {
             used[i+1] = 1;
             a.aux = args[i+1];
-            //}
         }
     } else if (type.record == sha1_record) {
         // Akin to the case of sysarg_buf.
@@ -209,7 +201,6 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
 int SystemCall::overwrite(user_regs_struct &regs)
 {
     // TODO: Do the overwrite stuff
-    // regs.rax = ret;
     return 0;
 }
 
@@ -246,7 +237,6 @@ void parseSyscallArg(String str, String *name, String *value)
     }
     *name = str.substr(0, pos);
     // remove the trailing ','
-    // [pos+1, str.length() - 1), len = str.length() - pos - 2
     *value = str.substr(pos+1, str.length() - pos - 1);
 }
 
@@ -318,14 +308,8 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     is >> addr >> number >> statusChar >> pid;
     usage = ((statusChar == '<') ? true : false);
     // Now we are going to parse the args, we need some string operations here.
-    // is >> auxStr;
-    //char buffer[4096];
-    //is.read(buffer, 4096);
-    // LOG("%d", is.get());
     is.get();
     getline(is, auxStr);
-    //LOG("%d %s", usage, auxStr.c_str());
-    //auxStr = buffer;
     size_t pos = 0;
     // `6' is not hard-coded here now. The same as the max number of args hard-coded in `SystemCall.h'.
     for (i = 0; i < SYSCALL_MAX_ARGS; i++)
@@ -355,7 +339,6 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
         if (pos > auxStr.length())
         {
             LOG("System call record is corrupted: %s", record.c_str());
-            //LOG("%ld %ld", pos, auxStr.length());
         }
         String sysargStr = auxStr.substr(pos, endPos - pos);
         parseSyscallArg(sysargStr, &sysargName, &sysargValue);
@@ -366,14 +349,11 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
             // The args part has finished
             if (usage)
             {
-                //LOG1(auxStr.substr(endPos).c_str());
                 pos = endPos + 2;
                 pos = pos + 2;
                 if (pos < auxStr.length())
                 {
-                    //LOG("%ld %ld", pos, auxStr.length());
                     retStr = auxStr.substr(pos);
-                    //LOG1(retStr.c_str());
                 }
             }
             break;

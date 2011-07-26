@@ -72,6 +72,7 @@ int SystemManager::recordPreAction(pid_t pid, Action *action)
         bool enabled = it->second;
         if (enabled)
         {
+            LOG("%p", action);
             preActionsMap[pid].push_back(action);
         }
     }
