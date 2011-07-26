@@ -41,6 +41,13 @@ class SystemManager
         FDManager *getFDManager() { return fdManager; }
         // get pid manager
         PidManager *getPidManager() { return pidManager; }
+
+        // Set on unset recording pre-actions
+        void togglePreActionsOn(pid_t);
+        void togglePreActionsOff(pid_t);
+        // Record a pre-action if preActionsEnabled is enabled
+        int recordPreAction(Action *action);
+
     private:
         // All the actors in the system manager
         Vector<Actor*> actors;
@@ -54,6 +61,11 @@ class SystemManager
         Vector<ProcessManager> processManagerList;
         // All the threads to be executed
         Vector<pthread_t> threads;
+        // Enable recording pre-actions
+        Vector<pid_t> preActionsEnabled;
+        // Recorded pre-actions
+        typedef Map<pid_t, Vector<Action *> > PreActionsRecordType;
+        PreActionsRecordType preActionsMap;
 };
 
 #endif //__REPLAY_SYSTEMMANAGER_H__

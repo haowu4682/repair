@@ -81,6 +81,19 @@ int SystemManager::addActor(Actor *actor)
     return 0;
 }
 
+void SystemManager::togglePreActionsOn(pid_t pid)
+{
+}
+
+void SystemManager::togglePreActionsOff(pid_t pid)
+{
+}
+
+int SystemManager::recordPreAction(Action *action)
+{
+    return 0;
+}
+
 String SystemManager::toString()
 {
     ostringstream os;

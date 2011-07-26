@@ -213,11 +213,14 @@ int SystemCall::overwrite(user_regs_struct &regs)
     return 0;
 }
 
-// Tell whether the syscall is a ``fork'' or ``vfork''
+// Tell whether the syscall is a ``fork'' or ``vfork'' or ``clone''
 bool SystemCall::isFork() const
 {
     // XXX: Hard code the syscall number for x86_64 here now.
-    return valid && (type->nr == 57 || type->nr == 58);
+    return valid && (type->nr == 56 // clone
+                ||   type->nr == 57 // fork
+                ||   type->nr == 58 // vfork
+                );
 }
 
 bool SystemCall::isExec() const
@@ -229,8 +232,7 @@ bool SystemCall::isExec() const
 // Execute the syscall manually
 int SystemCall::exec()
 {
-    // TODO: implement
-    return 0;
+    return type->exec(this);
 }
 
 // An aux function to parse a syscall arg.
