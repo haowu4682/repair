@@ -50,6 +50,34 @@ String FDManager::searchNew(int fd)
     return str;
 }
 
+int FDManager::oldToNew(int oldFd)
+{
+    String path = searchOld(oldFd);
+    if (!path.empty())
+    {
+        for (mapType::iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
+        {
+            if (it->second == path)
+                return it->first;
+        }
+    }
+    return oldFd;
+}
+
+int FDManager::newToOld(int newFd)
+{
+    String path = searchNew(newFd);
+    if (!path.empty())
+    {
+        for (mapType::iterator it = oldFDMap.begin(); it != oldFDMap.end(); ++it)
+        {
+            if (it->second == path)
+                return it->first;
+        }
+    }
+    return newFd;
+}
+
 bool FDManager::equals(int oldFd, int newFd)
 {
     String oldPath = searchOld(oldFd);

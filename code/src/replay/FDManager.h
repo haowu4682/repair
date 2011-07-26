@@ -18,6 +18,10 @@ class FDManager
         int removeNew(int fd);
         String searchOld(int fd);
         String searchNew(int fd);
+        // If we can find a fd mapping, return the mapped fd. Otherwise return the old fd.
+        int oldToNew(int oldFd);
+        // If we can find a fd mapping, return the mapped fd. Otherwise return the new fd.
+        int newToOld(int newFd);
         bool equals(int oldFd, int newFd);
         String toString();
 

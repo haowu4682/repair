@@ -93,6 +93,12 @@ class SystemCall : public Action
         // We do not check it here.
         static void getRegsList(const user_regs_struct &regs, long args[]);
 
+        // Get fd manager
+        FDManager *getFDManager() { return fdManager; }
+
+        // Get pid manager
+        PidManager *getPidManager() { return pidManager; }
+
         // to string
         String toString() const;
 
