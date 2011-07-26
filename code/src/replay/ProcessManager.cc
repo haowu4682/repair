@@ -124,6 +124,10 @@ int ProcessManager::executeProcess()
     for (Vector<Action *>::iterator it = preActions.begin(); it != preActions.end(); ++it)
     {
         LOG("%p %d", *it, preActions.size());
+        // XXX: debug only
+        SystemCall *syscall = reinterpret_cast<SystemCall*>(*it);
+        LOG1(syscall->toString().c_str());
+
         (*it)->exec();
     }
 
