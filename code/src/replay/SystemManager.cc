@@ -44,6 +44,7 @@ int SystemManager::addCommand(Command &command)
     process->setFDManager(fdManager);
     process->setPidManager(pidManager);
     process->setSyscallList(syscallList);
+    process->setPreActions(&preActionsMap[command.pid]);
     return addActor(process);
 }
 
