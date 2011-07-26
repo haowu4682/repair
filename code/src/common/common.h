@@ -55,6 +55,20 @@ GetRealTime() {
     return time.tv_sec + kNanosecondsToSeconds * time.tv_nsec;
 }
 
+// class declaration
+class Action;
+class Actor;
+class Command;
+class FDManager;
+class PidManager;
+class Pipe;
+class Process;
+class ProcessManager;
+class SystemManager;
+
+class SystemCall;
+class SystemCallArg;
+class SystemCallList;
 
 #endif //__COMMON_COMMON_H__
 

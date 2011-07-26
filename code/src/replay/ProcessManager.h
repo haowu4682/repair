@@ -8,8 +8,8 @@
 
 #include <common/common.h>
 #include <replay/FDManager.h>
+#include <replay/Process.h>
 #include <syscall/SystemCall.h>
-#include <syscall/SystemCallList.h>
 
 // This class is used to manager the running or a process of class Process
 // @author haowu
@@ -17,13 +17,10 @@ class ProcessManager
 {
     public:
         // The constructor
-        // @author haowu
-        ProcessManager(PidManager *manager) : oldPid(-1), pidManager(manager) {}
-        ProcessManager(Vector<String> *command, SystemCallList *list, PidManager *pidManager);
-        ProcessManager(SystemCallList *list, PidManager *pidManager);
+        ProcessManager(const Process &proc) : process(proc) {}
+        ProcessManager(const Process *proc) : process(*proc) {}
 
         // Start replaying the process
-        // @author haowu
         int replay();
 
         // Trace the process without running ``exec''
@@ -32,27 +29,8 @@ class ProcessManager
 
         // Output all the infomation as a string.
         // The function is used for debugging and logging.
-        // @author haowu
         String toString();
 
-        // Get the fd manager
-        FDManager *getFDManager() { return &fdManager; }
-        // Get the pid manager
-        PidManager *getPidManager() { return pidManager; }
-        // Set the pid manager
-        void setPidManager(PidManager *pidManager) { this->pidManager = pidManager; }
-
-        // Get old pid of the process
-        pid_t getOldPid() const { return oldPid; }
-        // Set old pid of the process
-        void setOldPid(pid_t pid) { oldPid = pid; }
-
-        // Add pre-action
-        void addPreAction(Action *action) { preActions.push_back(action); }
-        // show pre-actions
-        Vector<Action *> getPreActions() { return preActions; }
-        // set pre-action list
-        void setPreActions(Vector<Action *> *actions) { preActions = *actions; }
     private:
         // Start to execute and trace a process with Ptrace
         // @author haowu
@@ -70,18 +48,8 @@ class ProcessManager
         static int writeMatchedSyscall(SystemCall &syscall, pid_t pid);
         // Deal with fork (manage pid, add a new proc manager for it.
         int dealWithFork(SystemCall &syscall, pid_t oldPid);
-        // The command line
-        Vector<String> *commandList;
-        // The system call list used when replaying
-        SystemCallList *syscallList;
-        // The fd manager
-        FDManager fdManager;
-        // The pid manager
-        PidManager *pidManager;
-        // The old pid of the process to be executed. If it equals -1, then no old pid has been specified.
-        pid_t oldPid;
-        // The actions to be executed before exec
-        Vector<Action *> preActions;
+        // The process to be replayed
+        Process process;
 };
 
 // Replay a process. The function is used as an API for pthread

@@ -16,16 +16,6 @@
 #include <syscall/SystemCall.h>
 using namespace std;
 
-ProcessManager::ProcessManager(Vector<String> *command, SystemCallList *list, PidManager *manager)
-    : commandList(command), syscallList(list), oldPid(-1), pidManager(manager)
-{
-}
-
-ProcessManager::ProcessManager(SystemCallList *list, PidManager *manager)
-    : syscallList(list), commandList(NULL), oldPid(-1), pidManager(manager)
-{
-}
-
 // Function for pthread
 void *replayProcess(void *manager)
 {
@@ -33,18 +23,8 @@ void *replayProcess(void *manager)
     procManager->replay();
 }
 
-/*
-String printArgv(Vector<String> *strs)
-{
-    String str;
-    for (Vector<String>::iterator it = strs->begin(); it != strs->end(); ++it)
-        str += *it;
-    return str;
-}*/
-
 int ProcessManager::replay()
 {
-    // XXX: Somehow we need to specify some arguments here in the future.
     return startProcess();
 }
 
@@ -199,6 +179,7 @@ int ProcessManager::traceProcess(pid_t pid)
     struct user_regs_struct regs;
 
     waitpid(pid, &status, 0);
+    pid_t oldPid = process->getCommand()->pid;
     // TODO: generation number
     if (pidManager != NULL && oldPid != -1)
     {
@@ -246,8 +227,6 @@ int ProcessManager::traceProcess(pid_t pid)
             }
         }
     }
-    //LOG1("This is the parent process!");
-    // cout << fdManager.toString();
     LOG1(pidManager->toString().c_str());
     return 0;
 }
@@ -279,17 +258,21 @@ String ProcessManager::toString()
 {
     // We only output the command line currently.
     stringstream ss;
+    // TODO: implement
+    /*
     for (Vector<String>::iterator it = commandList->begin(); it != commandList->end(); it++)
     {
         ss << (*it) << ", ";
     }
     ss << endl;
+    */
     return ss.str();
 }
 
 // The main function is used for development and debugging only.
 // It will be removed in the released version
 // @author haowu
+/*
 int old_main(int argc, char **argv)
 {
     // Init the ProcessManager
@@ -317,4 +300,4 @@ int old_main(int argc, char **argv)
     list.init(fin, manager.getFDManager());
     return 0;
 }
-
+*/
