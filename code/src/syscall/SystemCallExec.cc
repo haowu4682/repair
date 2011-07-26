@@ -4,6 +4,8 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include <common/common.h>
 #include <syscall/SystemCall.h>
@@ -21,6 +23,12 @@ SYSCALL_(write)
 
 SYSCALL_(open)
 {
+    String path = syscall->getArg(0).getValue();
+    int flag = atoi(syscall->getArg(1).getValue().c_str());
+    mode_t mode = atoi(syscall->getArg(2).getValue().c_str());
+    int newFd = open(path.c_str(), flag, mode);
+    FDManager *fdManager = syscall->getFDManager();
+    fdManager->addNew(newFd, path);
     return 0;
 }
 
