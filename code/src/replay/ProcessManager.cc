@@ -52,7 +52,7 @@ int ProcessManager::trace(pid_t pid)
 int ProcessManager::startProcess()
 {
     // If the command line is empty, we cannot do anything
-    if (commandList->empty())
+    if (process.getCommand()->argv.empty())
     {
         LOG1("Command is empty, refrain from executing nothing.");
         return -1;
@@ -80,11 +80,7 @@ int ProcessManager::startProcess()
 
 int ProcessManager::executeProcess()
 {
-    if (commandList == NULL)
-    {
-        LOG1("command list is empty!");
-        return -1;
-    }
+    Vector<String> *commandList = &process.getCommand()->argv;
     // Assert the command is not empty here.
     ASSERT(commandList->size() != 0);
 
@@ -101,13 +97,9 @@ int ProcessManager::executeProcess()
     args[commandList->size()] = NULL;
 
     // Execute pre-actions
-    for (Vector<Action *>::iterator it = preActions.begin(); it != preActions.end(); ++it)
+    Vector<Action *> *preActions = process.getPreActions();
+    for (Vector<Action *>::iterator it = preActions->begin(); it != preActions->end(); ++it)
     {
-        /*
-        SystemCall *syscall = reinterpret_cast<SystemCall*>(*it);
-        LOG1(syscall->toString().c_str());
-        */
-
         (*it)->exec();
     }
 
@@ -140,6 +132,8 @@ int ProcessManager::dealWithFork(SystemCall &syscall, pid_t oldPid)
     // XXX: Hard code features for x86_64 here.
     // update pid manager
     pid_t newPid = (pid_t) syscall.getReturn();
+    PidManager *pidManager = process.getPidManager();
+    SystemCallList *syscallList = process.getSyscallList();
     if (pidManager != NULL)
     {
         pidManager->add(oldPid, newPid);
@@ -149,8 +143,11 @@ int ProcessManager::dealWithFork(SystemCall &syscall, pid_t oldPid)
     if (newManagerPid == 0)
     {
         // Child process, manage the new process;
+        // TODO: trace the process
+        /*
         ProcessManager manager(syscallList, pidManager);
         manager.trace(newPid);
+        */
         return 1;
     }
     // We don't need to memorize the pid of the new manager here.
@@ -177,9 +174,12 @@ int ProcessManager::traceProcess(pid_t pid)
     int ret;
     long pret;
     struct user_regs_struct regs;
+    PidManager *pidManager = process.getPidManager();
+    SystemCallList *syscallList = process.getSyscallList();
+    FDManager *fdManager = process.getFDManager();
 
     waitpid(pid, &status, 0);
-    pid_t oldPid = process->getCommand()->pid;
+    pid_t oldPid = process.getCommand()->pid;
     // TODO: generation number
     if (pidManager != NULL && oldPid != -1)
     {
@@ -194,7 +194,7 @@ int ProcessManager::traceProcess(pid_t pid)
         // The child process is at the point **before** a syscall.
         // TODO: Deal with the syscall here.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        SystemCall syscall(regs, pid, false, &fdManager);
+        SystemCall syscall(regs, pid, false, fdManager);
         SystemCall syscallMatch = syscallList->search(syscall);
 
         // If no match has been found, we have to go on executing the system call and simply do
@@ -212,7 +212,7 @@ int ProcessManager::traceProcess(pid_t pid)
         // Most syscall will have its return value in the register %rax, But there are some
         // which does not follow the rule and we will need to deal with them seperately.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        SystemCall syscallReturn(regs, pid, true, &fdManager);
+        SystemCall syscallReturn(regs, pid, true, fdManager);
 
         // TODO: Deal with conflict
         dealWithConflict();

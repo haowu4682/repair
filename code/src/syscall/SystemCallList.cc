@@ -2,7 +2,9 @@
 
 #include <sstream>
 
-#include <syscall/SystemCall.h>
+#include <replay/FDManager.h>
+#include <replay/PidManager.h>
+#include <replay/SystemManager.h>
 #include <syscall/SystemCallList.h>
 using namespace std;
 
