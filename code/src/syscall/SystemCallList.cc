@@ -46,19 +46,8 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
 
         if (syscall.isExec())
         {
-#if 0
-            // The following code does not reflect the behavior of ``exec''
-            if (syscall.getUsage())
-            {
-                systemManager->addCommand(lastExecSyscall);
-            }
-            else
-            {
-                lastExecSyscall = syscall;
-            }
-#endif
             // This is the updated version
-            // If the exec is executed by a `fork'-ed process, we shall not add it to the list here.
+            // XXX: If the exec is executed by a `exec'-ed process, we shall not add it to the list here
             if (!syscall.getUsage()) // && !pidManager->isForked(syscall.getPid()))
             {
                 systemManager->addCommand(syscall);
@@ -79,7 +68,7 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
         }
         else
         {
-            systemManager->recordPreAction(&syscall);
+            systemManager->recordPreAction(oldPid, &syscall);
         }
     }
 }

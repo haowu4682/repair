@@ -46,7 +46,7 @@ class SystemManager
         void togglePreActionsOn(pid_t);
         void togglePreActionsOff(pid_t);
         // Record a pre-action if preActionsEnabled is enabled
-        int recordPreAction(Action *action);
+        int recordPreAction(pid_t pid, Action *action);
 
     private:
         // All the actors in the system manager
@@ -62,7 +62,8 @@ class SystemManager
         // All the threads to be executed
         Vector<pthread_t> threads;
         // Enable recording pre-actions
-        Vector<pid_t> preActionsEnabled;
+        typedef Map<pid_t, bool> PreActionsEnabledType;
+        PreActionsEnabledType preActionsEnabled;
         // Recorded pre-actions
         typedef Map<pid_t, Vector<Action *> > PreActionsRecordType;
         PreActionsRecordType preActionsMap;
