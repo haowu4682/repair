@@ -29,9 +29,7 @@ ProcessManager::ProcessManager(SystemCallList *list, PidManager *manager)
 // Function for pthread
 void *replayProcess(void *manager)
 {
-    //LOG("%p", manager);
     ProcessManager *procManager = (ProcessManager *)manager;
-    //LOG("%s", procManager->toString().c_str());
     procManager->replay();
 }
 
@@ -79,7 +77,6 @@ int ProcessManager::startProcess()
         LOG1("Command is empty, refrain from executing nothing.");
         return -1;
     }
-    //LOG1("HREE!");
     pid_t pid = fork();
 
     // If the fork fails

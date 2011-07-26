@@ -23,12 +23,15 @@ class Process : public Actor
         PidManager *getPidManager() { return pidManager; }
         void setSyscallList(SystemCallList *syscallList) { this->syscallList = syscallList; }
         SystemCallList *getSyscallList() { return syscallList; }
+        void setPreActions(Vector<Action *> *preActions) { this->preActions = preActions; }
+        Vector<Action *> *getPreActions() { return preActions; }
 
     private:
         Command *command;
         FDManager *fdManager;
         PidManager *pidManager;
         SystemCallList *syscallList;
+        Vector<Action *> *preActions;
 };
 
 #endif //__REPLAY_PROCESS_H__
