@@ -91,9 +91,12 @@ SYSCALL_(dup)
 
 SYSCALL_(dup2)
 {
-    int oldFd = atoi(syscall->getArg(0).getValue().c_str());
-    int newFd = atoi(syscall->getArg(1).getValue().c_str());
-    dup2(oldFd, newFd);
+    int originalOldFd = atoi(syscall->getArg(0).getValue().c_str());
+    int originalNewFd = atoi(syscall->getArg(1).getValue().c_str());
+    FDManager *fdManager = syscall->getFDManager();
+    int currentOldFd = fdManager->oldToNew(originalOldFd);
+    int currentNewFd = fdManager->oldToNew(originalNewFd);
+    dup2(currentOldFd, currentNewFd);
     return 0;
 }
 
