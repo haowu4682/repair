@@ -21,7 +21,7 @@ def print_syscalls():
                 assert issubclass(aux, Structure)
                 aux = sizeof(aux)
             print('\t\t{ "%s", %s, %s, %s },' % (arg.name, new_ty, arg.usage & 1, aux))
-        print("\t}, NULL },")
+        print("\t}, %s_exec }," % sc.name)
 
 if __name__ == "__main__":
     print_syscalls()

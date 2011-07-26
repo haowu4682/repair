@@ -123,6 +123,7 @@ int ProcessManager::executeProcess()
     // Execute pre-actions
     for (Vector<Action *>::iterator it = preActions.begin(); it != preActions.end(); ++it)
     {
+        LOG("%p %d", *it, preActions.size());
         (*it)->exec();
     }
 
