@@ -65,8 +65,11 @@ TODOs:
 (6) env handling. (canceled)
 (7) fd mapping (done)
 (8) process manage(done)
-(9) remove bugs on multiple executions of a single process
-(10) allow multiple processes
+(9) remove bugs on multiple executions of a single process(done)
+(10) allow multiple processes(not tested yet)
+(11) pipes&dups
+(12) solve memory leak problems(see XXX in the code)
+(13) use shortcut in user's input
 
 Some finished TODO items are not listed.
 
