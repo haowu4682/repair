@@ -2,7 +2,12 @@
 // This file contians how to execute a syscall. 
 // TODO: implement everything
 
+#include <cstdlib>
+#include <cstring>
+
+#include <common/common.h>
 #include <syscall/SystemCall.h>
+using namespace std;
 
 SYSCALL_(read)
 {
@@ -86,6 +91,9 @@ SYSCALL_(dup)
 
 SYSCALL_(dup2)
 {
+    int oldFd = atoi(syscall->getArg(0).getValue().c_str());
+    int newFd = atoi(syscall->getArg(1).getValue().c_str());
+    dup2(oldFd, newFd);
     return 0;
 }
 
