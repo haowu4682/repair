@@ -15,6 +15,7 @@
 // Type definition
 #define String std::string
 #define Vector std::vector
+#define Map std::map
 
 // Constant definition
 #define kNanosecondsToSeconds 1e-9
