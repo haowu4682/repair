@@ -10,9 +10,6 @@
 #include <replay/PidManager.h>
 #include <syscall/SystemCall.h>
 
-// Not a good coding style here
-class SystemManager;
-
 // a vector of system calls which belong to a single process
 struct SystemCallListItem
 {
@@ -23,7 +20,6 @@ struct SystemCallListItem
 
 // The class is used to represent the **record** of a system call list
 //     as well as simple operations like matching.
-// @author haowu
 class SystemCallList
 {
     public:
