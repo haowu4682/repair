@@ -68,7 +68,9 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
         }
         else
         {
-            systemManager->recordPreAction(oldPid, &syscall);
+            // XXX: memory leak
+            SystemCall *newSyscall = new SystemCall(syscall);
+            systemManager->recordPreAction(oldPid, newSyscall);
         }
     }
 }

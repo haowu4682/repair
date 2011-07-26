@@ -74,8 +74,10 @@ int SystemManager::recordPreAction(pid_t pid, Action *action)
         {
             LOG("%p", action);
             preActionsMap[pid].push_back(action);
+            return 0;
         }
     }
+    delete action;
     return 0;
 }
 
