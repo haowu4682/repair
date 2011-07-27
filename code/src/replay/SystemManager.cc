@@ -15,7 +15,6 @@ using namespace std;
 int SystemManager::execAll()
 {
     Vector<Actor*>::iterator actor_pt;
-    LOG("%ld", actors.size());
     for (actor_pt = actors.begin(); actor_pt != actors.end(); ++actor_pt)
     {
         // Refrain from using fork here. Use pthread instead
@@ -72,7 +71,6 @@ int SystemManager::recordPreAction(pid_t pid, Action *action)
         bool enabled = it->second;
         if (enabled)
         {
-            LOG("%p", action);
             preActionsMap[pid].push_back(action);
             return 0;
         }
