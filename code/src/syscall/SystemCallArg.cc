@@ -322,9 +322,33 @@ void SystemCallArgument::setArg()
     this->value = "None";
 }
 
+// An aux function to get the path from a path record. It's not elegant.
+String getPathString(const String &value)
+{
+    size_t startPos = value.find('"');
+    if (startPos >= value.length())
+        return "";
+    size_t endPos = value.find('"', startPos + 1);
+    if (endPos >= value.length())
+        return "";
+    return value.substr(startPos+1, endPos - startPos - 1);
+}
+
+String SystemCallArgument::getValue() const
+{
+    // TODO: no ad-hoc here.
+    if (type->name == "path")
+    {
+        return getPathString(value);
+    }
+    else
+    {
+        return value;
+    }
+}
+
 bool SystemCallArgument::operator == (SystemCallArgument &another)
 {
-    // TODO: Implement it
     if (type != another.type)
         return false;
     if (value != another.value)

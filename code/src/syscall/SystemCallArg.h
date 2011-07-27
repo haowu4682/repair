@@ -80,7 +80,7 @@ class SystemCallArgument
         // to string
         String toString() const;
         // get value
-        String getValue() const { return value;}
+        String getValue() const;
     private:
         // The name
         String name;
