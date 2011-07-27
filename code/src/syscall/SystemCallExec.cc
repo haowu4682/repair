@@ -27,6 +27,7 @@ SYSCALL_(open)
     int flag = atoi(syscall->getArg(1).getValue().c_str());
     mode_t mode = atoi(syscall->getArg(2).getValue().c_str());
     int newFd = open(path.c_str(), flag, mode);
+    LOG("newFd=%d", newFd);
     FDManager *fdManager = syscall->getFDManager();
     fdManager->addNew(newFd, path);
     return 0;
@@ -104,6 +105,7 @@ SYSCALL_(dup2)
     FDManager *fdManager = syscall->getFDManager();
     int currentOldFd = fdManager->oldToNew(originalOldFd);
     int currentNewFd = fdManager->oldToNew(originalNewFd);
+    LOG("newFd=(%d, %d)", currentOldFd, currentNewFd);
     dup2(currentOldFd, currentNewFd);
     return 0;
 }
