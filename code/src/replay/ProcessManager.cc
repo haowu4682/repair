@@ -227,7 +227,7 @@ int ProcessManager::traceProcess(pid_t pid)
             }
         }
     }
-    LOG1(pidManager->toString().c_str());
+    //LOG1(pidManager->toString().c_str());
     return 0;
 }
 
