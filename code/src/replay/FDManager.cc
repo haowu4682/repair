@@ -8,12 +8,12 @@ using namespace std;
 int FDManager::addOld(int fd, String path)
 {
     oldFDMap.insert(valueType(fd, path));
+    LOG("%d=%s", fd, path.c_str());
 }
 
 int FDManager::addNew(int fd, String path)
 {
     newFDMap.insert(valueType(fd, path));
-    //LOG("%d=%s", fd, newFDMap[fd].c_str());
 }
 
 int FDManager::removeOld(int fd)
@@ -53,6 +53,7 @@ String FDManager::searchNew(int fd)
 int FDManager::oldToNew(int oldFd)
 {
     String path = searchOld(oldFd);
+    LOG1(path.c_str());
     if (!path.empty())
     {
         for (mapType::iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
