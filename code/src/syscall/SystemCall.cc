@@ -223,7 +223,14 @@ bool SystemCall::isExec() const
 // Execute the syscall manually
 int SystemCall::exec()
 {
-    return type->exec(this);
+    if (!usage)
+    {
+        return type->exec(this);
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 // An aux function to parse a syscall arg.

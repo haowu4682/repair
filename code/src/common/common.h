@@ -55,7 +55,7 @@ GetRealTime() {
     return time.tv_sec + kNanosecondsToSeconds * time.tv_nsec;
 }
 
-// class declaration
+// Class declarations. Used to avoid circular reference
 class Action;
 class Actor;
 class Command;
