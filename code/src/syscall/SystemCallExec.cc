@@ -35,6 +35,11 @@ SYSCALL_(open)
 
 SYSCALL_(close)
 {
+    int originalFd = atoi(syscall->getArg(0).getValue().c_str());
+    FDManager *fdManager = syscall->getFDManager();
+    long seqNum = syscall->getSeqNum();
+    int currentFd = fdManager->oldToNew(originalFd, seqNum);
+    close(currentFd);
     return 0;
 }
 
