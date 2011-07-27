@@ -10,3 +10,7 @@ want to feed it with the current file. The policy should be:
 
 3. How to deal with pipes and redirections?
 See ``forkexec.txt''
+
+4. FD mapping
+See ``fd_manager.txt''
+

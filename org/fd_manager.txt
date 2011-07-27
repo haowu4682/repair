@@ -1,0 +1,7 @@
+In re-execution, the OS might assign a different fd(file-descriptor) to a file than the original one,
+which results in that the fd in the following steps are different from previous execution. Thus we
+need to maintain a fd mapping for that.
+
+The OS might also assign an fd to different files - as long as the previous one will never be used
+again. So we need a generation number for fd's. Fortunately the sequential number for system calls
+could be used here.
