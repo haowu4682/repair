@@ -57,6 +57,8 @@ SYSARG_(execve);
 
 extern sysarg_type_t sysarg_type_list[];
 
+Pair<int, int> fd2_derecord(String value);
+
 // This class declares a system call argument.
 // Currently we use a **string** to represent the argument.
 class SystemCallArgument

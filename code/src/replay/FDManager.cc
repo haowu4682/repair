@@ -64,7 +64,7 @@ String FDManager::searchNew(int fd)
 int FDManager::oldToNew(int oldFd, long seqNum)
 {
     String path = searchOld(oldFd, seqNum);
-    LOG1(path.c_str());
+    //LOG1(path.c_str());
     if (!path.empty())
     {
         for (mapType::iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)

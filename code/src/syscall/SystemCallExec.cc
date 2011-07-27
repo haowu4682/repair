@@ -9,6 +9,7 @@
 
 #include <common/common.h>
 #include <syscall/SystemCall.h>
+#include <syscall/SystemCallArg.h>
 using namespace std;
 
 SYSCALL_(read)
@@ -85,11 +86,23 @@ SYSCALL_(writev)
 
 SYSCALL_(access)
 {
+    String path = syscall->getArg(0).getValue();
+    mode_t mode = atoi(syscall->getArg(1).getValue().c_str());
+    access(path.c_str(), mode);
     return 0;
 }
 
 SYSCALL_(pipe)
 {
+    Pair<int, int> fd2 = fd2_derecord(syscall->getArg(0).getValue());
+    int originalOldFd = fd2.first;
+    int originalNewFd = fd2.second;
+    long seqNum = syscall->getSeqNum();
+    FDManager *fdManager = syscall->getFDManager();
+    int fd[2];
+    fd[0] = fdManager->oldToNew(originalOldFd, seqNum);
+    fd[1] = fdManager->oldToNew(originalNewFd, seqNum);
+    pipe(fd);
     return 0;
 }
 

@@ -107,6 +107,7 @@ class SystemCall : public Action
 
         // execute the systemcall
         virtual int exec();
+
     private:
         // Get an aux value for determing an argument
         static SystemCallArgumentAuxilation getAux(long args[], SyscallArgType &argType, int i,

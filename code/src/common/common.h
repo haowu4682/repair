@@ -7,6 +7,7 @@
 #include <bits/wordsize.h>
 #include <cerrno>
 #include <ctime>
+#include <map>
 #include <stdio.h>
 #include <string>
 #include <sys/user.h>
@@ -16,6 +17,7 @@
 #define String std::string
 #define Vector std::vector
 #define Map std::map
+#define Pair std::pair
 
 // Constant definition
 #define kNanosecondsToSeconds 1e-9
