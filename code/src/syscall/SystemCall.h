@@ -88,6 +88,9 @@ class SystemCall : public Action
         // Get an argument
         const SystemCallArgument &getArg(int i) const { return args[i]; }
 
+        // Get the sequence number
+        long getSeqNum() const { return seqNum; }
+
         // Get syscall args list from regs
         // Warning: The size of the given list must be at least SYSCALL_MAX_ARGS!
         // We do not check it here.
@@ -119,6 +122,8 @@ class SystemCall : public Action
         SystemCallArgument args[SYSCALL_MAX_ARGS];
         // The return value of the system call
         long ret;
+        // The seq number of the system call
+        long seqNum;
         // The old pid which owns the syscall
         pid_t pid;
         // The fd manager

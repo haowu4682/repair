@@ -96,13 +96,11 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
         {
             if (usage)
             {
-                //LOG("%ld=%s", ret, lastOpenFilePath.c_str());
                 fdManager->addNew(ret, lastOpenFilePath);
             }
             else
             {
                 lastOpenFilePath = args[0].getValue();
-                //LOG1(lastOpenFilePath.c_str());
             }
         }
         // close
@@ -300,7 +298,6 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     // ADDRESS NUMBER <|> PID syscallname(arg1, arg2, ..., argN) = ret
     istringstream is(record);
     String addr;
-    long number;
     // Equals '<' when it's **before** a syscall. Equals '>' when it's **after** a syscall.
     char statusChar;
 
@@ -312,7 +309,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     int i;
 
     // Read the first part of the record.
-    is >> addr >> number >> statusChar >> pid;
+    is >> addr >> seqNum >> statusChar >> pid;
     usage = ((statusChar == '<') ? true : false);
     // Now we are going to parse the args, we need some string operations here.
     is.get();
@@ -384,7 +381,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
         {
             if (usage)
             {
-                fdManager->addOld(ret, lastOpenFilePath);
+                fdManager->addOld(ret, lastOpenFilePath, seqNum);
             }
             else
             {
@@ -394,10 +391,12 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
         // close
         if (type->nr == 3)
         {
+            /*
             if (!usage)
             {
                 fdManager->removeOld(atoi(args[0].getValue().c_str()));
             }
+            */
         }
     }
 }
@@ -421,7 +420,7 @@ bool SystemCall::operator ==(SystemCall &another)
                 {
                     int oldFD = atoi(another.args[i].getValue().c_str());
                     int newFD = atoi(args[i].getValue().c_str());
-                    if (!fdManager->equals(oldFD, newFD))
+                    if (!fdManager->equals(oldFD, newFD, another.seqNum))
                     {
                         return false;
                     }

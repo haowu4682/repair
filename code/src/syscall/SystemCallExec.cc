@@ -102,9 +102,10 @@ SYSCALL_(dup2)
 {
     int originalOldFd = atoi(syscall->getArg(0).getValue().c_str());
     int originalNewFd = atoi(syscall->getArg(1).getValue().c_str());
+    long seqNum = syscall->getSeqNum();
     FDManager *fdManager = syscall->getFDManager();
-    int currentOldFd = fdManager->oldToNew(originalOldFd);
-    int currentNewFd = fdManager->oldToNew(originalNewFd);
+    int currentOldFd = fdManager->oldToNew(originalOldFd, seqNum);
+    int currentNewFd = fdManager->oldToNew(originalNewFd, seqNum);
     LOG("newFd=(%d, %d)", currentOldFd, currentNewFd);
     dup2(currentOldFd, currentNewFd);
     return 0;
