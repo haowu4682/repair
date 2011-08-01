@@ -218,6 +218,11 @@ bool SystemCall::isExec() const
     return valid && (type->nr == 59);
 }
 
+bool SystemCall::isPipe() const
+{
+    return valid && (type->nr == 22);
+}
+
 // Execute the syscall manually
 int SystemCall::exec()
 {

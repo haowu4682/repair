@@ -74,6 +74,8 @@ class SystemCall : public Action
         // Tell whether the system call is an ``exec'' type syscall
         bool isExec() const;
 
+        bool isPipe() const;
+
         // Get return value
         long getReturn() const { return ret; }
 
