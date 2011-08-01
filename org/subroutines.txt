@@ -1,0 +1,14 @@
+-----------------------
+----- The problem -----
+-----------------------
+Problem: Sometimes, a process is a sub-process of a process which has no ``exec'' command recorded. If we do not keep the relation, some problems might occur. For example, when we run the following command:
+ls -l | grep "drx" > foo.txt
+The bash will make a pipe firstly, than clone 2 processes for "ls" and "grep". After that the 2 processes will work seperately. If we do not maintain the relation between them, we cannot form the pipe correctly.
+
+-----------------------
+----- The solution ----
+-----------------------
+maintain sub-process relationship. Each process is responsable for its sub-processes. Any process which has no parent process in the record will be a sub-process of a special ``root'' process. When replaying, we first run the root process. The root process has a special pid: -1. No usual process will has pid=-1 so it's fine to allocate it to the root. Remember the root process is NOT a actual process: it's a virtual process in the system and is not mapped to the operating system.
+
+Also we will devide a process into 2 types: actual process and virtual process. An actual process is a process as before, which is mapped to the OS and will be traced and executed. A virtual process is not mapped to the OS and is not executed. It is used to create sub-processes and manage them.
+

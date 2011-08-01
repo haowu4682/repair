@@ -9,7 +9,7 @@ want to feed it with the current file. The policy should be:
     we shall use the stored original input.
 
 3. How to deal with pipes and redirections?
-See ``forkexec.txt''
+See ``forkexec.txt'' and ``subroutines.txt''
 
 4. FD mapping
 See ``fd_manager.txt''
