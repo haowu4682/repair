@@ -68,6 +68,14 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
                 systemManager->togglePreActionsOn(newPid);
             }
         }
+        else if (syscall.isPipe())
+        {
+            // XXX: memory leak
+            SystemCall *newSyscall = new SystemCall(syscall);
+            systemManager->togglePreActionsOn(oldPid);
+            systemManager->recordPreAction(oldPid, newSyscall);
+            systemManager->togglePreActionsOff(oldPid);
+        }
         else
         {
             // XXX: memory leak
