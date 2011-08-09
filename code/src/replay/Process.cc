@@ -9,6 +9,30 @@ using namespace std;
 
 int Process::exec()
 {
+    if (isVirtual)
+    {
+        execVirtual();
+    }
+    else
+    {
+        execReal();
+    }
+}
+
+int Process::execVirtual()
+{
+    int ret;
+    for (Vector<Process *>::iterator it = subProcessList.begin(); it != subProcessList.end(); ++it)
+    {
+        ret = (*it)->exec();
+        if (ret < 0)
+            return ret;
+    }
+    return 0;
+}
+
+int Process::execReal()
+{
     pthread_t thread;
     int ret;
 

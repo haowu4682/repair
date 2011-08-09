@@ -37,6 +37,8 @@ class Process : public Actor
 
         Vector<Process *> subProcessList;
         bool isVirtual;
+        int execReal();
+        int execVirtual();
 };
 
 #endif //__REPLAY_PROCESS_H__
