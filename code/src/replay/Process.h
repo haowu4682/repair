@@ -12,8 +12,8 @@
 class Process : public Actor
 {
     public:
-        Process() {}
-        Process(Command *comm) { setCommand(comm); }
+        Process(bool virt = false) : isVirtual(virt) {}
+        Process(Command *comm, bool virt = false) : isVirtual(virt) { setCommand(comm); }
         virtual int exec();
         void setCommand(Command *command) { this->command = command; }
         Command *getCommand() { return command;}
@@ -26,12 +26,17 @@ class Process : public Actor
         void setPreActions(Vector<Action *> *preActions) { this->preActions = preActions; }
         Vector<Action *> *getPreActions() { return preActions; }
 
+        void addSubProcess(Process *process) { subProcessList.push_back(process); }
+
     private:
         Command *command;
         FDManager *fdManager;
         PidManager *pidManager;
         SystemCallList *syscallList;
         Vector<Action *> *preActions;
+
+        Vector<Process *> subProcessList;
+        bool isVirtual;
 };
 
 #endif //__REPLAY_PROCESS_H__
