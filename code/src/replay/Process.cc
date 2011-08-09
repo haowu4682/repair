@@ -50,3 +50,23 @@ int Process::execReal()
     return 0;
 }
 
+bool Process::isParent(Process *process)
+{
+}
+
+bool Process::isChild(Process *process)
+{
+}
+
+bool Process::isAncestor(Process *process)
+{
+}
+
+bool Process::isOffSpring(Process *process)
+{
+}
+
+bool Process::operator ==(const Process &process) const
+{
+}
+

@@ -27,6 +27,12 @@ class Process : public Actor
         Vector<Action *> *getPreActions() { return preActions; }
 
         void addSubProcess(Process *process) { subProcessList.push_back(process); }
+        bool isChild(Process *process);
+        bool isOffSpring(Process *process);
+        bool isParent(Process *process);
+        bool isAncestor(Process *process);
+
+        bool operator == (const Process &process) const;
 
     private:
         Command *command;
@@ -35,6 +41,7 @@ class Process : public Actor
         SystemCallList *syscallList;
         Vector<Action *> *preActions;
 
+        Process *parentProcess;
         Vector<Process *> subProcessList;
         bool isVirtual;
         int execReal();
