@@ -63,7 +63,6 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
                     Process *proc = root->addSubProcess(oldPid);
                     processMap[oldPid] = proc;
                     proc->setCommand(&syscall);
-                    proc->setVirtual(false);
                 }
                 else
                 {

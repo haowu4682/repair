@@ -102,6 +102,7 @@ int main(int argc, char **argv)
     list.init(fin, &fdManager);
     LOG("init finished");
     sysManager.execAll();
+    LOG("execution finished");
     return 0;
 }
 

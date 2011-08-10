@@ -55,6 +55,8 @@ void Process::setCommand(SystemCall *syscall)
 {
     command->pid = syscall->getPid();
     parseArgv(command->argv, syscall->getArg(1).getValue());
+    LOG1(command->argv[0].c_str());
+    setVirtual(false);
 }
 
 bool Process::isParent(Process *process)
@@ -142,6 +144,9 @@ Process *Process::addSubProcess(pid_t pid)
     Command *comm = new Command;
     comm->pid = pid;
     Process *proc = new Process(comm, true, this);
+    proc->setSyscallList(syscallList);
+    proc->setPidManager(pidManager);
+    proc->setFDManager(fdManager);
     subProcessList.push_back(proc);
     return proc;
 }
