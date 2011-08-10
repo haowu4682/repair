@@ -12,3 +12,12 @@ maintain sub-process relationship. Each process is responsable for its sub-proce
 
 Also we will devide a process into 2 types: actual process and virtual process. An actual process is a process as before, which is mapped to the OS and will be traced and executed. A virtual process is not mapped to the OS and is not executed. It is used to create sub-processes and manage them.
 
+-----------------------
+----- Pseudo-code  ----
+-----------------------
+In init syscall list:
+    when a ``fork'' is seen:
+        Search for the parent process
+        set the child process a child of the parent process
+        (if not found, set it to be a child of the root)
+
