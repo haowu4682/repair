@@ -54,6 +54,14 @@ int SystemManager::addActor(Actor *actor)
     return 0;
 }
 
+void SystemManager::setRoot(Process *root)
+{
+    root->setFDManager(fdManager);
+    root->setPidManager(pidManager);
+    root->setSyscallList(syscallList);
+    rootProcess = root;
+}
+
 void SystemManager::togglePreActionsOn(pid_t pid)
 {
     preActionsEnabled[pid] = true;
@@ -95,10 +103,12 @@ int main(int argc, char **argv)
     FDManager fdManager;
     Process rootProcess(true, NULL);
     SystemCallList list(&pidManager, &sysManager);
+
     sysManager.setSyscallList(&list);
     sysManager.setFDManager(&fdManager);
     sysManager.setPidManager(&pidManager);
     sysManager.setRoot(&rootProcess);
+
     list.init(fin, &fdManager);
     LOG("init finished");
     sysManager.execAll();

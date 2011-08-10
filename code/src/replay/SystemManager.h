@@ -42,7 +42,7 @@ class SystemManager
         // get pid manager
         PidManager *getPidManager() { return pidManager; }
         // set root process
-        void setRoot(Process *process) { rootProcess = process; }
+        void setRoot(Process *process);
         // get root process
         Process *getRoot() { return rootProcess; }
 
