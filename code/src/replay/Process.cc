@@ -109,6 +109,32 @@ bool Process::isOffSpring(Process *process)
     return false;
 }
 
+Process *Process::searchProcess(pid_t pid)
+{
+    Process *result = NULL;
+    if (command->pid == pid)
+    {
+        result = this;
+    }
+    else
+    {
+        for (Vector<Process *>::iterator it = subProcessList.begin(); it != subProcessList.end(); ++it)
+        {
+            result = (*it)->searchProcess(pid);
+            if (result != NULL)
+            {
+                break;
+            }
+        }
+    }
+    return result;
+}
+
+bool Process::operator ==(pid_t pid) const
+{
+    return command->pid == pid;
+}
+
 bool Process::operator ==(const Process &process) const
 {
     return command->pid == process.command->pid;

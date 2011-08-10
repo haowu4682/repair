@@ -32,8 +32,10 @@ class Process : public Actor
         bool isOffSpring(Process *process);
         bool isParent(Process *process);
         bool isAncestor(Process *process);
+        Process *searchProcess(pid_t pid);
 
         bool operator == (const Process &process) const;
+        bool operator == (pid_t pid) const;
 
     private:
         Command *command;
