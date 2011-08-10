@@ -130,6 +130,14 @@ Process *Process::searchProcess(pid_t pid)
     return result;
 }
 
+Process *Process::addSubProcess(pid_t pid)
+{
+    Command *comm = new Command;
+    comm->pid = pid;
+    Process *proc = new Process(comm, true, this);
+    subProcessList.push_back(proc);
+}
+
 bool Process::operator ==(pid_t pid) const
 {
     return command->pid == pid;
@@ -138,5 +146,14 @@ bool Process::operator ==(pid_t pid) const
 bool Process::operator ==(const Process &process) const
 {
     return command->pid == process.command->pid;
+}
+
+Process::~Process()
+{
+    delete command;
+    for (Vector<Process *>::iterator it = subProcessList.begin(); it != subProcessList.end(); ++it)
+    {
+        delete *it;
+    }
 }
 

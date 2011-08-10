@@ -40,6 +40,7 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
     // '\n' is used as a delimeter between syscalls
     string syscallString;
     SystemCall lastExecSyscall;
+    Process *root = systemManager->getRoot();
     while (!getline(in, syscallString).eof())
     {
         SystemCall syscall(syscallString, fdManager);

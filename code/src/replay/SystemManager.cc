@@ -92,7 +92,7 @@ int main(int argc, char **argv)
     PidManager pidManager;
     SystemManager sysManager;
     FDManager fdManager;
-    Process rootProcess;
+    Process rootProcess(true, NULL);
     SystemCallList list(&pidManager, &sysManager);
     sysManager.setSyscallList(&list);
     sysManager.setFDManager(&fdManager);

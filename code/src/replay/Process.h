@@ -15,7 +15,9 @@ class Process : public Actor
         Process(bool virt = false, Process *parent = NULL) : isVirtual(virt), parentProcess(parent) {}
         Process(Command *comm, bool virt = false, Process *parent = NULL) : isVirtual(virt),
             parentProcess(parent) { setCommand(comm); }
+        ~Process();
         virtual int exec();
+        void setCommand(SystemCall *syscall);
         void setCommand(Command *command) { this->command = command; }
         Command *getCommand() { return command;}
         void setFDManager(FDManager *fdManager) { this->fdManager = fdManager; }
@@ -26,8 +28,11 @@ class Process : public Actor
         SystemCallList *getSyscallList() { return syscallList; }
         void setPreActions(Vector<Action *> *preActions) { this->preActions = preActions; }
         Vector<Action *> *getPreActions() { return preActions; }
+        void setVirtual(bool virt) { isVirtual = virt; }
+        bool getVirtual() { return isVirtual; }
 
-        void addSubProcess(Process *process) { subProcessList.push_back(process); }
+        //void addSubProcess(Process *process) { subProcessList.push_back(process); }
+        Process *addSubProcess(pid_t pid);
         bool isChild(Process *process);
         bool isOffSpring(Process *process);
         bool isParent(Process *process);
