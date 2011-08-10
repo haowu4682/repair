@@ -22,6 +22,7 @@ int SystemManager::execAll()
         Process *actor = (Process *)(*actor_pt);
         (*actor_pt)->exec();
     }
+    rootProcess->exec();
     return 0;
 }
 

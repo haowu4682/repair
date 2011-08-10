@@ -12,7 +12,8 @@
 class Process : public Actor
 {
     public:
-        Process(bool virt = false, Process *parent = NULL) : isVirtual(virt), parentProcess(parent) {}
+        Process(bool virt = false, Process *parent = NULL) : isVirtual(virt),
+            parentProcess(parent), command(new Command()) {}
         Process(Command *comm, bool virt = false, Process *parent = NULL) : isVirtual(virt),
             parentProcess(parent) { setCommand(comm); }
         ~Process();
