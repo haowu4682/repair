@@ -41,6 +41,10 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
     string syscallString;
     SystemCall lastExecSyscall;
     Process *root = systemManager->getRoot();
+    Map<pid_t, Process *> processMap;
+    root->getCommand()->pid = ROOT_PID;
+    processMap[ROOT_PID] = root;
+
     while (!getline(in, syscallString).eof())
     {
         SystemCall syscall(syscallString, fdManager);
@@ -53,7 +57,18 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
             // XXX: If the exec is executed by a `exec'-ed process, we shall not add it to the list here
             if (!syscall.getUsage()) // && !pidManager->isForked(syscall.getPid()))
             {
-                systemManager->addCommand(syscall);
+                Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
+                if (it == processMap.end())
+                {
+                    Process *proc = root->addSubProcess(oldPid);
+                    processMap[oldPid] = proc;
+                    proc->setCommand(&syscall);
+                    proc->setVirtual(false);
+                }
+                else
+                {
+                    it->second->setCommand(&syscall);
+                }
                 systemManager->togglePreActionsOff(oldPid);
             }
         }
@@ -62,6 +77,14 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
             if (syscall.getUsage())
             {
                 pid_t newPid = syscall.getReturn();
+                Process *parent = root->searchProcess(oldPid);
+                if (parent == NULL)
+                {
+                    parent = root;
+                }
+                Process *child = parent->addSubProcess(newPid);
+                processMap[newPid] = child;
+
                 if (newPid != 0)
                 {
                     pidManager->addForked(newPid);

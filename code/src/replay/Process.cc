@@ -3,6 +3,7 @@
 #include <pthread.h>
 
 #include <common/common.h>
+#include <common/util.h>
 #include <replay/Process.h>
 #include <replay/ProcessManager.h>
 using namespace std;
@@ -48,6 +49,12 @@ int Process::execReal()
     // XXX: The join command must be moved to another place in the future.
     pthread_join(thread, NULL);
     return 0;
+}
+
+void Process::setCommand(SystemCall *syscall)
+{
+    command->pid = syscall->getPid();
+    parseArgv(command->argv, syscall->getArg(1).getValue());
 }
 
 bool Process::isParent(Process *process)
@@ -136,6 +143,7 @@ Process *Process::addSubProcess(pid_t pid)
     comm->pid = pid;
     Process *proc = new Process(comm, true, this);
     subProcessList.push_back(proc);
+    return proc;
 }
 
 bool Process::operator ==(pid_t pid) const

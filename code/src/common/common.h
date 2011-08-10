@@ -20,6 +20,7 @@
 #define Pair std::pair
 
 // Constant definition
+#define ROOT_PID -1
 #define kNanosecondsToSeconds 1e-9
 // The length of the max 64bit-int represented in decimals must not exceed the value
 #ifndef UIO_MAXIOV
