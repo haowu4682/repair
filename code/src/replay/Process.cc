@@ -52,21 +52,65 @@ int Process::execReal()
 
 bool Process::isParent(Process *process)
 {
+    if (process == NULL)
+        return parentProcess == NULL;
+    else if (parentProcess == NULL)
+        return false;
+    else
+        return *parentProcess == *process;
 }
 
 bool Process::isChild(Process *process)
 {
+    if (process == NULL)
+    {
+        return false;
+    }
+    for (Vector<Process *>::iterator it = subProcessList.begin(); it != subProcessList.end(); ++it)
+    {
+        if ((**it) == (*process))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool Process::isAncestor(Process *process)
 {
+    // NULL is the ancestor of any process
+    if (process == NULL)
+        return true;
+    else if (parentProcess == NULL)
+        return false;
+    else if (*process == *this)
+        return true;
+    else
+        return parentProcess->isAncestor(process);
 }
 
 bool Process::isOffSpring(Process *process)
 {
+    if (process == NULL)
+    {
+        return false;
+    }
+    if (*this == *process)
+    {
+        return true;
+    }
+    for (Vector<Process *>::iterator it = subProcessList.begin(); it != subProcessList.end(); ++it)
+    {
+        if ((*it)->isOffSpring(process))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool Process::operator ==(const Process &process) const
 {
+    return command->pid == process.command->pid;
 }
 
