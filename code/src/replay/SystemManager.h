@@ -41,6 +41,10 @@ class SystemManager
         FDManager *getFDManager() { return fdManager; }
         // get pid manager
         PidManager *getPidManager() { return pidManager; }
+        // set root process
+        void setRoot(Process *process) { rootProcess = process; }
+        // get root process
+        Process *getRoot() { return rootProcess; }
 
         // Set on unset recording pre-actions
         void togglePreActionsOn(pid_t);
@@ -51,6 +55,8 @@ class SystemManager
     private:
         // All the actors in the system manager
         Vector<Actor*> actors;
+        // The root process
+        Process *rootProcess;
         // The system call list;
         SystemCallList *syscallList;
         // The original copy of fd manager

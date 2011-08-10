@@ -92,10 +92,12 @@ int main(int argc, char **argv)
     PidManager pidManager;
     SystemManager sysManager;
     FDManager fdManager;
+    Process rootProcess;
     SystemCallList list(&pidManager, &sysManager);
     sysManager.setSyscallList(&list);
     sysManager.setFDManager(&fdManager);
     sysManager.setPidManager(&pidManager);
+    sysManager.setRoot(&rootProcess);
     list.init(fin, &fdManager);
     LOG("init finished");
     sysManager.execAll();
