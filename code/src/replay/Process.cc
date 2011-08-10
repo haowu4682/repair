@@ -43,9 +43,10 @@ int Process::execReal()
     // If pthread creation fails
     if (ret != 0)
     {
-        LOG("pthread_create fails when trying to replay %s, errno=%d", command->argv[0].c_str(), ret);
+        LOG("pthread_create fails when trying to replay %s, errno=%d", command->toString().c_str(), ret);
         return -1;
     }
+    LOG("Executing %s", command->toString().c_str());
     // XXX: The join command must be moved to another place in the future.
     pthread_join(thread, NULL);
     return 0;

@@ -80,6 +80,7 @@ int ProcessManager::startProcess()
 
 int ProcessManager::executeProcess()
 {
+    LOG("Executing %s", process.getCommand()->toString().c_str());
     Vector<String> *commandList = &process.getCommand()->argv;
     // Assert the command is not empty here.
     ASSERT(commandList->size() != 0);
@@ -120,6 +121,7 @@ int ProcessManager::executeProcess()
     {
         delete args[i];
     }
+    LOG("Finished executing %s", process.getCommand()->toString().c_str());
     return ret;
 }
 
@@ -201,7 +203,8 @@ int ProcessManager::traceProcess(pid_t pid)
         // nothing else here. However, if a match has been found we must change the return value
         // accoridngly when the syscall has returned.
         bool matchFound = syscallMatch.isValid();
-        //LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
+        LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
+        LOG("syscall: %s", syscall.toString().c_str());
 
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
         waitpid(pid, &status, 0);
@@ -227,7 +230,6 @@ int ProcessManager::traceProcess(pid_t pid)
             }
         }
     }
-    //LOG1(pidManager->toString().c_str());
     return 0;
 }
 
