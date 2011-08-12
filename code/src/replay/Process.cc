@@ -23,6 +23,10 @@ int Process::exec()
 int Process::execVirtual()
 {
     int ret;
+    for (Vector<Action *>::iterator it = preActions->begin(); it != preActions->end(); ++it)
+    {
+        (*it)->exec();
+    }
     for (Vector<Process *>::iterator it = subProcessList.begin(); it != subProcessList.end(); ++it)
     {
         ret = (*it)->exec();
