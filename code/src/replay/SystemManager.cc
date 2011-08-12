@@ -102,6 +102,7 @@ int main(int argc, char **argv)
     SystemManager sysManager;
     FDManager fdManager;
     Process rootProcess(true, NULL);
+    rootProcess.setPreActions(new Vector<Action *>());
     SystemCallList list(&pidManager, &sysManager);
 
     sysManager.setSyscallList(&list);

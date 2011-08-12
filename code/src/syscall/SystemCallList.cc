@@ -42,6 +42,7 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
     SystemCall lastExecSyscall;
     Process *root = systemManager->getRoot();
     Map<pid_t, Process *> processMap;
+    Map<pid_t, bool> preActionRecordEnabled;
     root->getCommand()->pid = ROOT_PID;
     processMap[ROOT_PID] = root;
 
@@ -68,7 +69,8 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
                 {
                     it->second->setCommand(&syscall);
                 }
-                systemManager->togglePreActionsOff(oldPid);
+                //systemManager->togglePreActionsOff(oldPid);
+                preActionRecordEnabled[oldPid] = false;
             }
         }
         else if (syscall.isFork())
@@ -88,22 +90,49 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
                 {
                     pidManager->addForked(newPid);
                 }
-                systemManager->togglePreActionsOn(newPid);
+                //systemManager->togglePreActionsOn(newPid);
+                preActionRecordEnabled[newPid] = true;
             }
         }
         else if (syscall.isPipe())
         {
             // XXX: memory leak
             SystemCall *newSyscall = new SystemCall(syscall);
-            systemManager->togglePreActionsOn(oldPid);
-            systemManager->recordPreAction(oldPid, newSyscall);
-            systemManager->togglePreActionsOff(oldPid);
+            Process *proc;
+            Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
+            if (it == processMap.end())
+            {
+                proc = root;
+            }
+            else
+            {
+                proc = it->second;
+            }
+            proc->addPreAction(newSyscall);
+            //systemManager->togglePreActionsOn(oldPid);
+            //systemManager->recordPreAction(oldPid, newSyscall);
+            //systemManager->togglePreActionsOff(oldPid);
         }
         else
         {
             // XXX: memory leak
-            SystemCall *newSyscall = new SystemCall(syscall);
-            systemManager->recordPreAction(oldPid, newSyscall);
+            Map<pid_t, bool>::iterator jt = preActionRecordEnabled.find(oldPid);
+            if (jt != preActionRecordEnabled.end() && jt->second)
+            {
+                SystemCall *newSyscall = new SystemCall(syscall);
+                Process *proc;
+                Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
+                if (it == processMap.end())
+                {
+                    proc = root;
+                }
+                else
+                {
+                    proc = it->second;
+                }
+                proc->addPreAction(newSyscall);
+                //systemManager->recordPreAction(oldPid, newSyscall);
+            }
         }
     }
 }

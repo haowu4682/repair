@@ -28,6 +28,7 @@ class Process : public Actor
         void setSyscallList(SystemCallList *syscallList) { this->syscallList = syscallList; }
         SystemCallList *getSyscallList() { return syscallList; }
         void setPreActions(Vector<Action *> *preActions) { this->preActions = preActions; }
+        void addPreAction(Action *action) { preActions->push_back(action); }
         Vector<Action *> *getPreActions() { return preActions; }
         void setVirtual(bool virt) { isVirtual = virt; }
         bool getVirtual() { return isVirtual; }
