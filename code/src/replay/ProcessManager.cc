@@ -80,7 +80,6 @@ int ProcessManager::startProcess()
 
 int ProcessManager::executeProcess()
 {
-    LOG("Executing %s", process.getCommand()->toString().c_str());
     Vector<String> *commandList = &process.getCommand()->argv;
     // Assert the command is not empty here.
     ASSERT(commandList->size() != 0);
@@ -98,11 +97,13 @@ int ProcessManager::executeProcess()
     args[commandList->size()] = NULL;
 
     // Execute pre-actions
+    LOG("Before executing pre-actions %s", process.getCommand()->toString().c_str());
     Vector<Action *> *preActions = process.getPreActions();
     for (Vector<Action *>::iterator it = preActions->begin(); it != preActions->end(); ++it)
     {
         (*it)->exec();
     }
+    LOG("After executing pre-actions %s %ld", process.getCommand()->toString().c_str(), preActions->size());
 
     // Let the process to be traced
     long pret = ptrace(PTRACE_TRACEME, 0, NULL, NULL);
@@ -114,6 +115,7 @@ int ProcessManager::executeProcess()
 
     // Execute the command
     int ret;
+    LOG("Before executing %s", process.getCommand()->toString().c_str());
     ret = execvp((*commandList)[0].c_str(), args);
 
     // Clean up
@@ -203,8 +205,11 @@ int ProcessManager::traceProcess(pid_t pid)
         // nothing else here. However, if a match has been found we must change the return value
         // accoridngly when the syscall has returned.
         bool matchFound = syscallMatch.isValid();
-        LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
-        LOG("syscall: %s", syscall.toString().c_str());
+        //LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
+        //if (syscall.isValid())
+        //{
+            //LOG("syscall: %s", syscall.toString().c_str());
+        //}
 
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
         waitpid(pid, &status, 0);
@@ -217,7 +222,6 @@ int ProcessManager::traceProcess(pid_t pid)
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
         SystemCall syscallReturn(regs, pid, true, fdManager);
 
-        // TODO: Deal with conflict
         dealWithConflict();
 
         // If the system call is fork/vfork, we must create a new process manager for it.

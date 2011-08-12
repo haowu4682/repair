@@ -443,6 +443,7 @@ bool SystemCall::operator ==(SystemCall &another)
 String SystemCall::toString() const
 {
     ostringstream ss;
+    LOG("%p", type);
     ss << "name=" << type->name << ", ";
     ss << "valid=" << valid << ", ";
     ss << "usage=" << usage << ", ";

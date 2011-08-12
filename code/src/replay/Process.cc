@@ -144,10 +144,12 @@ Process *Process::addSubProcess(pid_t pid)
 {
     Command *comm = new Command;
     comm->pid = pid;
+    Vector<Action *> *preActions = new Vector<Action *>();
     Process *proc = new Process(comm, true, this);
     proc->setSyscallList(syscallList);
     proc->setPidManager(pidManager);
     proc->setFDManager(fdManager);
+    proc->preActions = preActions;
     subProcessList.push_back(proc);
     return proc;
 }
@@ -165,6 +167,7 @@ bool Process::operator ==(const Process &process) const
 Process::~Process()
 {
     delete command;
+    delete preActions;
     for (Vector<Process *>::iterator it = subProcessList.begin(); it != subProcessList.end(); ++it)
     {
         delete *it;

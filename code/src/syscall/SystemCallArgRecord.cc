@@ -156,6 +156,7 @@ String sha1_record(long argValue, SystemCallArgumentAuxilation *argAux)
     long len = argAux->aux;
     // XXX: there might be a bug here.
     // 128 is hard-coded in syscall record function
+    //LOG("sha1 len = %ld", len);
     if (len <= 128)
     {
         return buf_record(argValue, argAux);
