@@ -170,11 +170,13 @@ bool Process::operator ==(const Process &process) const
 
 Process::~Process()
 {
+    /*
     delete command;
     delete preActions;
     for (Vector<Process *>::iterator it = subProcessList.begin(); it != subProcessList.end(); ++it)
     {
         delete *it;
     }
+    */
 }
 
