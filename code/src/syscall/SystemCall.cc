@@ -149,7 +149,8 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
             a.ret = UIO_MAXIOV*PAGE_SIZE;
         }
     }
-    if (type.record == buf_record || type.record == buf_det_record) {
+    if (type.record == buf_record || type.record == buf_det_record
+            || type.record == sha1_record) {
         if (usage) {
             // Length of the buffer depends on the kernel.
             if (ret > 0) {
@@ -172,13 +173,6 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
             }
         } else {
             used[i+1] = 1;
-            a.aux = args[i+1];
-        }
-    } else if (type.record == sha1_record) {
-        // Akin to the case of sysarg_buf.
-        if (usage) {
-            a.aux = ret;
-        } else {
             a.aux = args[i+1];
         }
     } else if (type.record == path_at_record || type.record == rpath_at_record) {

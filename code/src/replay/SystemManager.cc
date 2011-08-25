@@ -14,14 +14,6 @@ using namespace std;
 
 int SystemManager::execAll()
 {
-    Vector<Actor*>::iterator actor_pt;
-    for (actor_pt = actors.begin(); actor_pt != actors.end(); ++actor_pt)
-    {
-        // Refrain from using fork here. Use pthread instead
-        // XXX: Remove the following when pipes are introduced
-        Process *actor = (Process *)(*actor_pt);
-        (*actor_pt)->exec();
-    }
     rootProcess->exec();
     return 0;
 }
