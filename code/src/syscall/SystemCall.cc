@@ -222,6 +222,7 @@ int SystemCall::exec()
 {
     if (!usage)
     {
+        LOG("Trying to replay: %s", toString().c_str());
         return type->exec(this);
     }
     else
