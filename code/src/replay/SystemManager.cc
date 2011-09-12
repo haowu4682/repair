@@ -6,71 +6,84 @@
 #include <sstream>
 
 #include <common/util.h>
+#include <replay/Actor.h>
+#include <replay/Process.h>
 #include <replay/ProcessManager.h>
 #include <replay/SystemManager.h>
 using namespace std;
 
 int SystemManager::execAll()
 {
-    Vector<Command>::iterator command_pt;
-    LOG("%ld %ld", commands.size(), threads.size());
-    for (command_pt = commands.begin(); command_pt != commands.end(); ++command_pt)
-    {
-        // Refrain from using fork here. Use pthread instead
-        pthread_t thread;
-        int ret;
-
-        LOG1(command_pt->argv[0].c_str());
-        ProcessManager manager(&command_pt->argv, syscallList, pidManager);
-        manager.setOldPid(command_pt->pid);
-        processManagerList.push_back(manager);
-        manager.getFDManager()->clone(fdManager);
-        ret = pthread_create(&thread, NULL, replayProcess, &processManagerList.back());
-        LOG("%p", &processManagerList.back());
-        // If pthread creation fails
-        if (ret != 0)
-        {
-            LOG("pthread_create fails when trying to replay %s, errno=%d", command_pt->argv[0].c_str(), ret);
-            return -1;
-        }
-        threads.push_back(thread);
-    }
-    for (Vector<pthread_t>::iterator it = threads.begin(); it != threads.end(); ++it)
-        pthread_join(*it, NULL);
+    rootProcess->exec();
     return 0;
 }
 
 int SystemManager::addCommand(const SystemCall &syscall)
 {
-    // In x86_64, only `execve' can execute a command. So the code is harded-coded for this
-    // command. It does not support other `exec' commands.
-    Command command;
-    parseArgv(command.argv, syscall.getArg(1).getValue());
-    command.pid = syscall.getPid();
-    LOG1(syscall.toString().c_str());
-    addCommand(command);
+    // In x86_64, only `execve' can execute a actor. So the code is harded-coded for this
+    // actor. It does not support other `exec' actors.
+    // XXX Caution: Memory leak!
+    Command *command = new Command();
+    parseArgv(command->argv, syscall.getArg(1).getValue());
+    command->pid = syscall.getPid();
+    return addCommand(*command);
 }
 
-int SystemManager::addCommand(const Command &command)
+int SystemManager::addCommand(Command &command)
 {
-    //LOG1(command[0].c_str());
-    commands.push_back(command);
+    // XXX Caution: Memory Leak! Must be optimized when the system grows.
+    Process *process = new Process(&command);
+    process->setFDManager(fdManager);
+    process->setPidManager(pidManager);
+    process->setSyscallList(syscallList);
+    process->setPreActions(&preActionsMap[command.pid]);
+    return addActor(process);
+}
+
+int SystemManager::addActor(Actor *actor)
+{
+    actors.push_back(actor);
+    return 0;
+}
+
+void SystemManager::setRoot(Process *root)
+{
+    root->setFDManager(fdManager);
+    root->setPidManager(pidManager);
+    root->setSyscallList(syscallList);
+    rootProcess = root;
+}
+
+void SystemManager::togglePreActionsOn(pid_t pid)
+{
+    preActionsEnabled[pid] = true;
+}
+
+void SystemManager::togglePreActionsOff(pid_t pid)
+{
+    preActionsEnabled[pid] = false;
+}
+
+int SystemManager::recordPreAction(pid_t pid, Action *action)
+{
+    PreActionsEnabledType::iterator it = preActionsEnabled.find(pid);
+    if (it != preActionsEnabled.end())
+    {
+        bool enabled = it->second;
+        if (enabled)
+        {
+            preActionsMap[pid].push_back(action);
+            return 0;
+        }
+    }
+    delete action;
+    return 0;
 }
 
 String SystemManager::toString()
 {
     ostringstream os;
-    //LOG("%ld", commands.size());
-    Vector<Command>::iterator command_pt;
-    for (command_pt = commands.begin(); command_pt < commands.end(); ++command_pt)
-    {
-        for (Vector<String>::iterator argv_pt = command_pt->argv.begin(); argv_pt !=
-                command_pt->argv.end(); ++argv_pt)
-        {
-            os << *argv_pt << ", ";
-        }
-        os << command_pt->pid << endl;
-    }
+    // TODO: implement
     return os.str();
 }
 
@@ -80,14 +93,19 @@ int main(int argc, char **argv)
     PidManager pidManager;
     SystemManager sysManager;
     FDManager fdManager;
+    Process rootProcess(true, NULL);
+    rootProcess.setPreActions(new Vector<Action *>());
     SystemCallList list(&pidManager, &sysManager);
+
     sysManager.setSyscallList(&list);
     sysManager.setFDManager(&fdManager);
     sysManager.setPidManager(&pidManager);
+    sysManager.setRoot(&rootProcess);
+
     list.init(fin, &fdManager);
     LOG("init finished");
-    LOG1(sysManager.toString().c_str());
     sysManager.execAll();
+    LOG("execution finished");
     return 0;
 }
 

@@ -16,38 +16,15 @@
 #include <syscall/SystemCall.h>
 using namespace std;
 
-ProcessManager::ProcessManager(Vector<String> *command, SystemCallList *list, PidManager *manager)
-    : commandList(command), syscallList(list), oldPid(-1), pidManager(manager)
-{
-}
-
-ProcessManager::ProcessManager(SystemCallList *list, PidManager *manager)
-    : syscallList(list), commandList(NULL), oldPid(-1), pidManager(manager)
-{
-}
-
 // Function for pthread
 void *replayProcess(void *manager)
 {
-    //LOG("%p", manager);
     ProcessManager *procManager = (ProcessManager *)manager;
-    //LOG("%s", procManager->toString().c_str());
     procManager->replay();
 }
 
-/*
-String printArgv(Vector<String> *strs)
-{
-    String str;
-    for (Vector<String>::iterator it = strs->begin(); it != strs->end(); ++it)
-        str += *it;
-    return str;
-}*/
-
 int ProcessManager::replay()
 {
-    // XXX: Somehow we need to specify some arguments here in the future.
-    //LOG1(printArgv(commandList).c_str());
     return startProcess();
 }
 
@@ -75,12 +52,11 @@ int ProcessManager::trace(pid_t pid)
 int ProcessManager::startProcess()
 {
     // If the command line is empty, we cannot do anything
-    if (commandList->empty())
+    if (process.getCommand()->argv.empty())
     {
         LOG1("Command is empty, refrain from executing nothing.");
         return -1;
     }
-    //LOG1("HREE!");
     pid_t pid = fork();
 
     // If the fork fails
@@ -104,14 +80,9 @@ int ProcessManager::startProcess()
 
 int ProcessManager::executeProcess()
 {
-    if (commandList == NULL)
-    {
-        LOG1("command list is empty!");
-        return -1;
-    }
+    Vector<String> *commandList = &process.getCommand()->argv;
     // Assert the command is not empty here.
     ASSERT(commandList->size() != 0);
-//    LOG1("This is the child process!");
 
     // Arrange the arguments
     char **args = new char *[commandList->size()+1];
@@ -125,6 +96,15 @@ int ProcessManager::executeProcess()
     }
     args[commandList->size()] = NULL;
 
+    // Execute pre-actions
+    LOG("Before executing pre-actions %s", process.getCommand()->toString().c_str());
+    Vector<Action *> *preActions = process.getPreActions();
+    for (Vector<Action *>::iterator it = preActions->begin(); it != preActions->end(); ++it)
+    {
+        (*it)->exec();
+    }
+    LOG("After executing pre-actions %s %ld", process.getCommand()->toString().c_str(), preActions->size());
+
     // Let the process to be traced
     long pret = ptrace(PTRACE_TRACEME, 0, NULL, NULL);
     if (pret < 0)
@@ -135,6 +115,7 @@ int ProcessManager::executeProcess()
 
     // Execute the command
     int ret;
+    LOG("Before executing %s", process.getCommand()->toString().c_str());
     ret = execvp((*commandList)[0].c_str(), args);
 
     // Clean up
@@ -142,6 +123,7 @@ int ProcessManager::executeProcess()
     {
         delete args[i];
     }
+    LOG("Finished executing %s", process.getCommand()->toString().c_str());
     return ret;
 }
 
@@ -154,6 +136,8 @@ int ProcessManager::dealWithFork(SystemCall &syscall, pid_t oldPid)
     // XXX: Hard code features for x86_64 here.
     // update pid manager
     pid_t newPid = (pid_t) syscall.getReturn();
+    PidManager *pidManager = process.getPidManager();
+    SystemCallList *syscallList = process.getSyscallList();
     if (pidManager != NULL)
     {
         pidManager->add(oldPid, newPid);
@@ -163,8 +147,11 @@ int ProcessManager::dealWithFork(SystemCall &syscall, pid_t oldPid)
     if (newManagerPid == 0)
     {
         // Child process, manage the new process;
+        // TODO: trace the process
+        /*
         ProcessManager manager(syscallList, pidManager);
         manager.trace(newPid);
+        */
         return 1;
     }
     // We don't need to memorize the pid of the new manager here.
@@ -191,8 +178,12 @@ int ProcessManager::traceProcess(pid_t pid)
     int ret;
     long pret;
     struct user_regs_struct regs;
+    PidManager *pidManager = process.getPidManager();
+    SystemCallList *syscallList = process.getSyscallList();
+    FDManager *fdManager = process.getFDManager();
 
     waitpid(pid, &status, 0);
+    pid_t oldPid = process.getCommand()->pid;
     // TODO: generation number
     if (pidManager != NULL && oldPid != -1)
     {
@@ -207,16 +198,20 @@ int ProcessManager::traceProcess(pid_t pid)
         // The child process is at the point **before** a syscall.
         // TODO: Deal with the syscall here.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        SystemCall syscall(regs, pid, false, &fdManager);
+        SystemCall syscall(regs, pid, false, fdManager);
         SystemCall syscallMatch = syscallList->search(syscall);
 
         // If no match has been found, we have to go on executing the system call and simply do
         // nothing else here. However, if a match has been found we must change the return value
         // accoridngly when the syscall has returned.
         bool matchFound = syscallMatch.isValid();
+        //LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
+        //if (syscall.isValid())
+        //{
+            //LOG("syscall: %s", syscall.toString().c_str());
+        //}
 
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
-        LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
         waitpid(pid, &status, 0);
 
         // The child process is at the point **after** a syscall.
@@ -225,9 +220,8 @@ int ProcessManager::traceProcess(pid_t pid)
         // Most syscall will have its return value in the register %rax, But there are some
         // which does not follow the rule and we will need to deal with them seperately.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        SystemCall syscallReturn(regs, pid, true, &fdManager);
+        SystemCall syscallReturn(regs, pid, true, fdManager);
 
-        // TODO: Deal with conflict
         dealWithConflict();
 
         // If the system call is fork/vfork, we must create a new process manager for it.
@@ -240,9 +234,6 @@ int ProcessManager::traceProcess(pid_t pid)
             }
         }
     }
-    //LOG1("This is the parent process!");
-    // cout << fdManager.toString();
-    LOG1(pidManager->toString().c_str());
     return 0;
 }
 
@@ -273,17 +264,21 @@ String ProcessManager::toString()
 {
     // We only output the command line currently.
     stringstream ss;
+    // TODO: implement
+    /*
     for (Vector<String>::iterator it = commandList->begin(); it != commandList->end(); it++)
     {
         ss << (*it) << ", ";
     }
     ss << endl;
+    */
     return ss.str();
 }
 
 // The main function is used for development and debugging only.
 // It will be removed in the released version
 // @author haowu
+/*
 int old_main(int argc, char **argv)
 {
     // Init the ProcessManager
@@ -311,4 +306,4 @@ int old_main(int argc, char **argv)
     list.init(fin, manager.getFDManager());
     return 0;
 }
-
+*/

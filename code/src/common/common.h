@@ -7,6 +7,7 @@
 #include <bits/wordsize.h>
 #include <cerrno>
 #include <ctime>
+#include <map>
 #include <stdio.h>
 #include <string>
 #include <sys/user.h>
@@ -15,8 +16,11 @@
 // Type definition
 #define String std::string
 #define Vector std::vector
+#define Map std::map
+#define Pair std::pair
 
 // Constant definition
+#define ROOT_PID -1
 #define kNanosecondsToSeconds 1e-9
 // The length of the max 64bit-int represented in decimals must not exceed the value
 #ifndef UIO_MAXIOV
@@ -54,6 +58,20 @@ GetRealTime() {
     return time.tv_sec + kNanosecondsToSeconds * time.tv_nsec;
 }
 
+// Class declarations. Used to avoid circular reference
+class Action;
+class Actor;
+class Command;
+class FDManager;
+class PidManager;
+class Pipe;
+class Process;
+class ProcessManager;
+class SystemManager;
+
+class SystemCall;
+class SystemCallArg;
+class SystemCallList;
 
 #endif //__COMMON_COMMON_H__
 

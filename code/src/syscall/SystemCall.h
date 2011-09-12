@@ -6,12 +6,15 @@
 #include <sys/user.h>
 
 #include <common/common.h>
+#include <replay/Action.h>
 #include <replay/FDManager.h>
 #include <replay/PidManager.h>
 #include <syscall/SystemCallArg.h>
 
 // The max number of system call arguments in a system call
 #define SYSCALL_MAX_ARGS 6
+class SystemCall;
+typedef int (*syscall_exec_t) (SystemCall *syscall);
 
 // The **type** of a syscall describes which syscall it is
 // e.g. "read", "fork", etc.
@@ -23,14 +26,18 @@ struct SyscallType
     size_t numArgs;
     SyscallArgType args[6];
     bool operator ==(SyscallType &another) { return nr == another.nr && name == another.name; }
+    syscall_exec_t exec;
 };
+
+#define SYSCALL_(type) int type##_exec(SystemCall *syscall)
+#include <gen_include/trace_syscalls_exec.inc>
 
 extern SyscallType syscallTypeList[];
 #define syscallTypeListSize (sizeof(syscallTypeList) / sizeof(SyscallType))
 
 // The class is used to represent the **record** of a system call
 // @author haowu
-class SystemCall
+class SystemCall : public Action
 {
     public:
         SystemCall() : valid(false), fdManager(NULL) {}
@@ -67,6 +74,8 @@ class SystemCall
         // Tell whether the system call is an ``exec'' type syscall
         bool isExec() const;
 
+        bool isPipe() const;
+
         // Get return value
         long getReturn() const { return ret; }
 
@@ -81,13 +90,26 @@ class SystemCall
         // Get an argument
         const SystemCallArgument &getArg(int i) const { return args[i]; }
 
+        // Get the sequence number
+        long getSeqNum() const { return seqNum; }
+
         // Get syscall args list from regs
         // Warning: The size of the given list must be at least SYSCALL_MAX_ARGS!
         // We do not check it here.
         static void getRegsList(const user_regs_struct &regs, long args[]);
 
+        // Get fd manager
+        FDManager *getFDManager() { return fdManager; }
+
+        // Get pid manager
+        PidManager *getPidManager() { return pidManager; }
+
         // to string
         String toString() const;
+
+        // execute the systemcall
+        virtual int exec();
+
     private:
         // Get an aux value for determing an argument
         static SystemCallArgumentAuxilation getAux(long args[], SyscallArgType &argType, int i,
@@ -103,6 +125,8 @@ class SystemCall
         SystemCallArgument args[SYSCALL_MAX_ARGS];
         // The return value of the system call
         long ret;
+        // The seq number of the system call
+        long seqNum;
         // The old pid which owns the syscall
         pid_t pid;
         // The fd manager

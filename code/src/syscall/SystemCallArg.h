@@ -27,8 +27,6 @@ struct SyscallArgType
     bool operator == (SyscallArgType &another) { return name == another.name; }
 };
 
-// XXX: Here we use C-style definition, since the author (haowu) don't know how to implement them
-// in C++-style.
 #define SYSARG_(type) String type##_record(long argValue, SystemCallArgumentAuxilation *argAux)
 
 SYSARG_(void);
@@ -59,6 +57,8 @@ SYSARG_(execve);
 
 extern sysarg_type_t sysarg_type_list[];
 
+Pair<int, int> fd2_derecord(String value);
+
 // This class declares a system call argument.
 // Currently we use a **string** to represent the argument.
 class SystemCallArgument
@@ -82,7 +82,7 @@ class SystemCallArgument
         // to string
         String toString() const;
         // get value
-        String getValue() const { return value;}
+        String getValue() const;
     private:
         // The name
         String name;

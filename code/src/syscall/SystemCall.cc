@@ -11,7 +11,7 @@ using namespace std;
 
 SyscallType syscallTypeList[] =
 {
-    #include "trace_syscalls.inc"
+    #include <gen_include/trace_syscalls.inc>
 };
 
 String lastOpenFilePath;
@@ -68,7 +68,6 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
     else
     {
         valid = true;
-        //LOG("SYSCALL is %s", type->name.c_str());
     }
     long argsList[SYSCALL_MAX_ARGS];
     getRegsList(regs, argsList);
@@ -77,7 +76,6 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
     for (int i = 0; i < numArgs; i++)
     {
         SyscallArgType argType = type->args[i];
-        //LOG("%d %ld %s", i, argsList[i], argType.name.c_str());
         if (argType.usage != usage)
         {
             args[i].setArg();
@@ -98,13 +96,11 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
         {
             if (usage)
             {
-                //LOG("%ld=%s", ret, lastOpenFilePath.c_str());
                 fdManager->addNew(ret, lastOpenFilePath);
             }
             else
             {
                 lastOpenFilePath = args[0].getValue();
-                //LOG1(lastOpenFilePath.c_str());
             }
         }
         // close
@@ -153,7 +149,8 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
             a.ret = UIO_MAXIOV*PAGE_SIZE;
         }
     }
-    if (type.record == buf_record || type.record == buf_det_record) {
+    if (type.record == buf_record || type.record == buf_det_record
+            || type.record == sha1_record) {
         if (usage) {
             // Length of the buffer depends on the kernel.
             if (ret > 0) {
@@ -165,30 +162,17 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
             // Length of the buffer is passed in by the user.
             used[i+1] = 1;
             a.aux = args[i+1];
-            //LOG("%ld", a.aux);
         }
     } else if (type.record == struct_record) {
         if (usage) {
             a.aux = 0;
             if (ret == 0) {
-                //if (sc->args[i+1].ty == sysarg_psize_t) {
                 int size = 0;
-                //get_user(size, (int *)args[i+1]);
                 readFromProcess((void *)size, args[i+1], sizeof(int), pid);
                 a.aux = size;
-                //}
             }
         } else {
-            //if (sc->args[i+1].ty == sysarg_uint) {
             used[i+1] = 1;
-            a.aux = args[i+1];
-            //}
-        }
-    } else if (type.record == sha1_record) {
-        // Akin to the case of sysarg_buf.
-        if (usage) {
-            a.aux = ret;
-        } else {
             a.aux = args[i+1];
         }
     } else if (type.record == path_at_record || type.record == rpath_at_record) {
@@ -209,21 +193,42 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
 int SystemCall::overwrite(user_regs_struct &regs)
 {
     // TODO: Do the overwrite stuff
-    // regs.rax = ret;
     return 0;
 }
 
-// Tell whether the syscall is a ``fork'' or ``vfork''
+// Tell whether the syscall is a ``fork'' or ``vfork'' or ``clone''
 bool SystemCall::isFork() const
 {
     // XXX: Hard code the syscall number for x86_64 here now.
-    return valid && (type->nr == 57 || type->nr == 58);
+    return valid && (type->nr == 56 // clone
+                ||   type->nr == 57 // fork
+                ||   type->nr == 58 // vfork
+                );
 }
 
 bool SystemCall::isExec() const
 {
     // XXX: Hard code the syscall number for x86_64 here now.
     return valid && (type->nr == 59);
+}
+
+bool SystemCall::isPipe() const
+{
+    return valid && (type->nr == 22);
+}
+
+// Execute the syscall manually
+int SystemCall::exec()
+{
+    if (!usage)
+    {
+        LOG("Trying to replay: %s", toString().c_str());
+        return type->exec(this);
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 // An aux function to parse a syscall arg.
@@ -237,7 +242,6 @@ void parseSyscallArg(String str, String *name, String *value)
     }
     *name = str.substr(0, pos);
     // remove the trailing ','
-    // [pos+1, str.length() - 1), len = str.length() - pos - 2
     *value = str.substr(pos+1, str.length() - pos - 1);
 }
 
@@ -286,7 +290,6 @@ size_t findPosForNextArg(String &str, int pos)
     return res;
 }
 
-// TODO: Combine the state **BEFORE** a syscall and the state **AFTER** a syscall.
 int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager)
 {
     this->fdManager = fdManager;
@@ -295,7 +298,6 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     // ADDRESS NUMBER <|> PID syscallname(arg1, arg2, ..., argN) = ret
     istringstream is(record);
     String addr;
-    long number;
     // Equals '<' when it's **before** a syscall. Equals '>' when it's **after** a syscall.
     char statusChar;
 
@@ -307,17 +309,11 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     int i;
 
     // Read the first part of the record.
-    is >> addr >> number >> statusChar >> pid;
+    is >> addr >> seqNum >> statusChar >> pid;
     usage = ((statusChar == '<') ? true : false);
     // Now we are going to parse the args, we need some string operations here.
-    // is >> auxStr;
-    //char buffer[4096];
-    //is.read(buffer, 4096);
-    // LOG("%d", is.get());
     is.get();
     getline(is, auxStr);
-    //LOG("%d %s", usage, auxStr.c_str());
-    //auxStr = buffer;
     size_t pos = 0;
     // `6' is not hard-coded here now. The same as the max number of args hard-coded in `SystemCall.h'.
     for (i = 0; i < SYSCALL_MAX_ARGS; i++)
@@ -347,7 +343,6 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
         if (pos > auxStr.length())
         {
             LOG("System call record is corrupted: %s", record.c_str());
-            //LOG("%ld %ld", pos, auxStr.length());
         }
         String sysargStr = auxStr.substr(pos, endPos - pos);
         parseSyscallArg(sysargStr, &sysargName, &sysargValue);
@@ -358,14 +353,11 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
             // The args part has finished
             if (usage)
             {
-                //LOG1(auxStr.substr(endPos).c_str());
                 pos = endPos + 2;
                 pos = pos + 2;
                 if (pos < auxStr.length())
                 {
-                    //LOG("%ld %ld", pos, auxStr.length());
                     retStr = auxStr.substr(pos);
-                    //LOG1(retStr.c_str());
                 }
             }
             break;
@@ -389,7 +381,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
         {
             if (usage)
             {
-                fdManager->addOld(ret, lastOpenFilePath);
+                fdManager->addOld(ret, lastOpenFilePath, seqNum);
             }
             else
             {
@@ -399,10 +391,12 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
         // close
         if (type->nr == 3)
         {
+            /*
             if (!usage)
             {
                 fdManager->removeOld(atoi(args[0].getValue().c_str()));
             }
+            */
         }
     }
 }
@@ -426,7 +420,7 @@ bool SystemCall::operator ==(SystemCall &another)
                 {
                     int oldFD = atoi(another.args[i].getValue().c_str());
                     int newFD = atoi(args[i].getValue().c_str());
-                    if (!fdManager->equals(oldFD, newFD))
+                    if (!fdManager->equals(oldFD, newFD, another.seqNum))
                     {
                         return false;
                     }
@@ -444,6 +438,7 @@ bool SystemCall::operator ==(SystemCall &another)
 String SystemCall::toString() const
 {
     ostringstream ss;
+    LOG("%p", type);
     ss << "name=" << type->name << ", ";
     ss << "valid=" << valid << ", ";
     ss << "usage=" << usage << ", ";
