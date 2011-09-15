@@ -18,11 +18,14 @@ enum FileType
 class File
 {
     public:
+        File(int fd, FileType type, String path);
+        bool equals(const File &file) const;
+        bool operator == (const File &file) const { return equals(file); }
     private:
-        int oldFd;
-        int newFd;
+        int fd;
         FileType type;
         String path;
 };
 
 #endif //__REPLAY_FILE_H__
+
