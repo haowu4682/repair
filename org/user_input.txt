@@ -52,6 +52,7 @@ Whenever there is a user input, match it to a recorded user input if:
 (1) The recorded user input is never matched.
 (2) The recorded user input is from the same device of current user input.
 
+Problem here:
 The approach works assuming the process is a deterministic machine that does
 not change between the original execution and the current execution.
 
