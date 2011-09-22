@@ -84,7 +84,6 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
         {
             SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid, usage);
             args[i].setArg(argsList[i], &aux, &argType);
-            //LOG1(argType.record(argsList[i], &aux).c_str());
         }
     }
 
@@ -96,7 +95,8 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
         {
             if (usage)
             {
-                fdManager->addNew(ret, lastOpenFilePath);
+                File *file = new File(ret, lastOpenFilePath);
+                fdManager->addNewFile(file);
             }
             else
             {
@@ -108,7 +108,7 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
         {
             if (!usage)
             {
-                fdManager->removeNew(atoi(args[0].getValue().c_str()));
+                //fdManager->removeNew(atoi(args[0].getValue().c_str()));
             }
         }
     }
@@ -381,7 +381,8 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
         {
             if (usage)
             {
-                fdManager->addOld(ret, lastOpenFilePath, seqNum);
+                File *file = new File(ret, lastOpenFilePath);
+                fdManager->addOldFile(file, seqNum);
             }
             else
             {

@@ -7,6 +7,7 @@
 #include <bits/wordsize.h>
 #include <cerrno>
 #include <ctime>
+#include <iostream>
 #include <map>
 #include <stdio.h>
 #include <string>

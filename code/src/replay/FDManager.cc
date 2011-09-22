@@ -5,19 +5,20 @@
 #include <replay/FDManager.h>
 using namespace std;
 
-int FDManager::addOld(int fd, String path, long seqNum)
+int FDManager::addOldFile(File *file, long seqNum)
 {
-    //oldFDMap.insert(valueType(fd, path));
-    oldFDMap[fd].push_back(FDItem(seqNum, path));
+    int fd = file->getFD();
+    oldFDMap[fd].push_back(FDItem(seqNum, file));
 }
 
-int FDManager::addNew(int fd, String path, long seqNum)
+int FDManager::addNewFile(File *file, long seqNum)
 {
-    //newFDMap.insert(valueType(fd, path));
-    newFDMap[fd].push_back(FDItem(seqNum, path));
+    int fd = file->getFD();
+    newFDMap[fd].push_back(FDItem(seqNum, file));
 }
 
-int FDManager::removeOld(int fd)
+/*
+int FDManager::removeOldFile(int fd)
 {
     oldFDMap.erase(fd);
 }
@@ -26,10 +27,11 @@ int FDManager::removeNew(int fd)
 {
     newFDMap.erase(fd);
 }
+*/
 
-String FDManager::searchOld(int fd, long seqNum)
+File *FDManager::searchOld(int fd, long seqNum)
 {
-    String str;
+    File *str = NULL;
     mapType::iterator it;
     it = oldFDMap.find(fd);
     if (it != oldFDMap.end())
@@ -38,7 +40,7 @@ String FDManager::searchOld(int fd, long seqNum)
         {
             if (jt->seqNum < seqNum)
             {
-                str = jt->path;
+                str = jt->file;
             }
             else
             {
@@ -49,45 +51,44 @@ String FDManager::searchOld(int fd, long seqNum)
     return str;
 }
 
-String FDManager::searchNew(int fd)
+File *FDManager::searchNew(int fd)
 {
-    String str;
+    File *str = NULL;
     mapType::iterator it;
     it = newFDMap.find(fd);
     if (it != newFDMap.end())
     {
-        str = it->second.back().path;
+        str = it->second.back().file;
     }
     return str;
 }
 
 int FDManager::oldToNew(int oldFd, long seqNum)
 {
-    String path = searchOld(oldFd, seqNum);
-    //LOG1(path.c_str());
-    if (!path.empty())
+    File *file = searchOld(oldFd, seqNum);
+    if (file != NULL)
     {
         for (mapType::iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
         {
             // XXX: Use the most recent one now. It may cause a problem if it is called
             //      while the most recent one has expired.
-            if (it->second.back().path == path)
+            if (it->second.back().file == file)
                 return it->first;
         }
     }
-    return oldFd;
+    return -1;
 }
 
 // XXX: temporarily invalid
 /*
 int FDManager::newToOld(int newFd, long seqNum)
 {
-    String path = searchNew(newFd);
-    if (!path.empty())
+    String file = searchNew(newFd);
+    if (!file.empty())
     {
         for (mapType::iterator it = oldFDMap.begin(); it != oldFDMap.end(); ++it)
         {
-            if (it->second == path)
+            if (it->second == file)
                 return it->first;
         }
     }
@@ -97,11 +98,11 @@ int FDManager::newToOld(int newFd, long seqNum)
 
 bool FDManager::equals(int oldFd, int newFd, long seqNum)
 {
-    String oldPath = searchOld(oldFd, seqNum);
-    String newPath = searchNew(newFd);
-    if (oldPath.empty())
+    File *oldPath = searchOld(oldFd, seqNum);
+    File *newPath = searchNew(newFd);
+    if (oldPath == NULL)
         return false;
-    if (newPath.empty())
+    if (newPath == NULL)
         return false;
     if (oldPath != newPath)
         return false;
@@ -116,7 +117,7 @@ String FDManager::toString()
     {
         for (Vector<FDItem>::iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
         {
-            sout << it->first << "\t" << jt->seqNum << "\t" << jt->path << endl;
+            sout << it->first << "\t" << jt->seqNum << "\t" << jt->file << endl;
         }
     }
     sout << "New FDs" << endl;
@@ -124,7 +125,7 @@ String FDManager::toString()
     {
         for (Vector<FDItem>::iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
         {
-            sout << it->first << "\t" << jt->seqNum << "\t" << jt->path << endl;
+            sout << it->first << "\t" << jt->seqNum << "\t" << jt->file << endl;
         }
     }
     return sout.str();

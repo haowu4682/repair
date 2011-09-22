@@ -30,7 +30,8 @@ SYSCALL_(open)
     int newFd = open(path.c_str(), flag, mode);
     LOG("path=%s, newFd=%d", path.c_str(), newFd);
     FDManager *fdManager = syscall->getFDManager();
-    fdManager->addNew(newFd, path);
+    File *file = new File(newFd, path);
+    fdManager->addNewFile(file);
     return 0;
 }
 
