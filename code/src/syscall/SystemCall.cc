@@ -222,7 +222,7 @@ int SystemCall::exec()
 {
     if (!usage)
     {
-        LOG("Trying to replay: %s", toString().c_str());
+        //LOG("Trying to replay: %s", toString().c_str());
         return type->exec(this);
     }
     else
@@ -439,7 +439,6 @@ bool SystemCall::operator ==(SystemCall &another)
 String SystemCall::toString() const
 {
     ostringstream ss;
-    LOG("%p", type);
     ss << "name=" << type->name << ", ";
     ss << "valid=" << valid << ", ";
     ss << "usage=" << usage << ", ";

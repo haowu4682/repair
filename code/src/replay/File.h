@@ -12,7 +12,9 @@ enum FileType
 {
     real,
     device,
-    network
+    network,
+    unknown,
+    MAX_SIZE
 };
 
 class File

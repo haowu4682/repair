@@ -1,5 +1,7 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <sys/stat.h>
+
 #include <replay/File.h>
 
 using namespace std;
@@ -43,7 +45,28 @@ ostream &operator <<(ostream &os, File &file)
 
 FileType File::pathToType(const String &path)
 {
-    //TODO: implement
+    struct stat statBuf;
+    int ret;
+    mode_t mode;
+
+    if ((ret = stat(path.c_str(), &statBuf)) < 0)
+    {
+        return unknown;
+    }
+    mode = statBuf.st_mode;
+
+    if (S_ISBLK(mode) || S_ISCHR(mode))
+    {
+        return device;
+    }
+    else if (S_ISSOCK(mode))
+    {
+        return network;
+    }
+    else
+    {
+        return real;
+    }
     return real;
 }
 

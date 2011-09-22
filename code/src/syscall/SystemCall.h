@@ -106,6 +106,8 @@ class SystemCall : public Action
 
         // to string
         String toString() const;
+        //friend std::ostream &operator <<(std::ostream &os, SystemCall &syscall) 
+        //{ syscall.toString(os); }
 
         // execute the systemcall
         virtual int exec();
