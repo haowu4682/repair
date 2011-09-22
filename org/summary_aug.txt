@@ -1,0 +1,22 @@
+----------------------------------------------
+----------------- Basic Points ---------------
+----------------------------------------------
+The basic work of vm rebase is currently the following:
+1. Action-based record. We will record system calls while executing. We will record all the system calls while a vm is running. The system calls will used to analyze what happened in a vm.
+2. Process-based rebase. Rebase means to replay all the processes, not all the actions. If a process takes a different action than in replaying, we will respect the new action. It might be found as a conflict. See conflict part below.
+3. Replay a virtual process. It means to replay all the actions owned by the process.
+4. Replay an actual process. The actions in an actual process are divided into 2 groups: pre-actions, which is before the ``exec'' command; post-actions, which is after the ``exec'' command. We will replay all the pre-actions and the ``exec'' command manually. We will not replay post-actions manually, they shall be automatically done by the executable we started.
+5. Track replaying an actual process. We use ptrace to track the actions by a replaying actual process. The purpose here is to find out a conflict.
+6. Managers. Managers are used to manage objects in replaying. ProcessManager and SystemManager are used to manage replaying processes. Pid manager and Fd manager are used to manage pid's and fd's, which might have changed during replaying.
+7. Conflict. See ``conflict.txt'' for more details. Currently the part is not implemented.
+
+-----------------
+-- Definitions --
+-----------------
+Action: Generally, an action is an information exchange between an application and the OS. In our system, an action is equivalent to a system call currently.
+Actor: An application which is able to execute an action. In our system, it's equivalent to a process currently.
+Process: A process is a set of actions which could interfere the status of a vm. There are 2 kinds of processes currently. An ``actual'' process is a process which has a ``exec'' command, which runs an actual executable file. A ``virtual'' process is a process which does not have a ``exec'' command, and only contains some other actions.
+rebase: Rebase branch C on branch B means to re-execute all the processes of branch C on the head of branch B.
+root-process: A virtual process which owns any processes which is not owned by other processes.
+Sub-process: A process which is owned by another process. In our system, a process other than root-process must have an owner.
+

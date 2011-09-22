@@ -14,3 +14,13 @@ See ``forkexec.txt'' and ``subroutines.txt''
 4. FD mapping
 See ``fd_manager.txt''
 
+5. Real-time user input
+When we open a vim, wait for 30sec and hit some keys to type in values, probably we do not
+need to hold for 30sec in replaying.
+However, when we run a program, and hit Ctrl+C, or any keys that is used to influence the
+control, probably we don't want to change the timing of it.
+
+6. Affecting the record while recording
+If we read the record while recording, the recording process will crash. We don't know where
+the problem comes from.
+
