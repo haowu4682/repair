@@ -118,6 +118,9 @@ class SystemCall : public Action
         // execute the systemcall
         virtual int exec();
 
+        // overwrite the systemcall return content
+        virtual int overwrite(pid_t pid) const;
+
     private:
         // Get an aux value for determing an argument
         static SystemCallArgumentAuxilation getAux(long args[], SyscallArgType &argType, int i,

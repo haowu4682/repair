@@ -208,16 +208,21 @@ int ProcessManager::traceProcess(pid_t pid)
         // If the system call is user input or output, we need to act quite differently.
         if (syscall.isUserInput())
         {
-            // TODO: implement
             // Get the user input from syscallMatch
             // Use ptrace to put the user input back
+            syscallMatch.overwrite(pid);
             // Skip executing the system call
-            //pret = ptrace(PTRACE_SYSEMU_SINGLESTEP, pid, NULL, NULL);
+            if (skipSyscall(pid) < 0)
+            {
+                LOG("Skip syscall failed: %s", syscall.toString().c_str());
+            }
         }
+#if 0
         else if (syscall.isOutput())
         {
             // TODO: implement later
         }
+#endif
         else
         {
             //LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
@@ -253,9 +258,18 @@ int ProcessManager::traceProcess(pid_t pid)
     return 0;
 }
 
+int ProcessManager::skipSyscall(pid_t pid)
+{
+    //TODO: "PTRACE_SYSEMU" is not supported in x64, we need to figure out another way to do it.
+    //pret = ptrace(PTRACE_SYSEMU_SINGLESTEP, pid, NULL, NULL);
+}
+
 int ProcessManager::writeMatchedSyscall(SystemCall &syscall, pid_t pid)
 {
     // Simply rewrite rax currently
+
+    // Comment away obsoleted code
+#if 0
     long pret;
     int ret;
     struct user_regs_struct regs;
@@ -273,6 +287,7 @@ int ProcessManager::writeMatchedSyscall(SystemCall &syscall, pid_t pid)
         LOG1("Cannot overwrite the return value!");
         return (int) pret;
     }
+#endif
     return 0;
 }
 

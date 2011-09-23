@@ -82,3 +82,7 @@ String SystemCallArgument::toString() const
     return str;
 }
 
+int SystemCallArgument::overwrite(pid_t pid) const
+{
+}
+

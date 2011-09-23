@@ -243,6 +243,12 @@ int SystemCall::exec()
     }
 }
 
+// Overwrite syscall return value
+int SystemCall::overwrite(pid_t pid) const
+{
+    //TODO: implement
+}
+
 // An aux function to parse a syscall arg.
 void parseSyscallArg(String str, String *name, String *value)
 {
