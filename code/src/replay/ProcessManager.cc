@@ -2,6 +2,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+//#include <linux/ptrace.h>
 #include <sstream>
 #include <string>
 #include <sys/ptrace.h>
@@ -173,7 +174,6 @@ void dealWithConflict()
 
 int ProcessManager::traceProcess(pid_t pid)
 {
-    //LOG1("This is the parent process!");
     int status;
     int ret;
     long pret;
@@ -184,7 +184,7 @@ int ProcessManager::traceProcess(pid_t pid)
 
     waitpid(pid, &status, 0);
     pid_t oldPid = process.getCommand()->pid;
-    // TODO: generation number
+    // XXX: generation numbers might cause problems here.
     if (pidManager != NULL && oldPid != -1)
     {
         pidManager->add(oldPid, pid);
@@ -196,7 +196,6 @@ int ProcessManager::traceProcess(pid_t pid)
         waitpid(pid, &status, 0);
 
         // The child process is at the point **before** a syscall.
-        // TODO: Deal with the syscall here.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
         SystemCall syscall(regs, pid, false, fdManager);
         SystemCall syscallMatch = syscallList->search(syscall);
@@ -210,7 +209,7 @@ int ProcessManager::traceProcess(pid_t pid)
         {
             // Get the user input from syscallMatch
             // Use ptrace to put the user input back
-            syscallMatch.overwrite(pid);
+            writeMatchedSyscall(syscallMatch, pid);
             // Skip executing the system call
             if (skipSyscall(pid) < 0)
             {
@@ -260,13 +259,15 @@ int ProcessManager::traceProcess(pid_t pid)
 
 int ProcessManager::skipSyscall(pid_t pid)
 {
-    //TODO: "PTRACE_SYSEMU" is not supported in x64, we need to figure out another way to do it.
-    //pret = ptrace(PTRACE_SYSEMU_SINGLESTEP, pid, NULL, NULL);
+    //"PTRACE_SYSEMU" is in "linux/ptrace.h" x64, not sure if it is supported fully by x64
+    long pret;
+    pret = ptrace(PTRACE_SYSEMU_SINGLESTEP, pid, NULL, NULL);
+    return (int) pret;
 }
 
 int ProcessManager::writeMatchedSyscall(SystemCall &syscall, pid_t pid)
 {
-    // Simply rewrite rax currently
+    syscall.overwrite(pid);
 
     // Comment away obsoleted code
 #if 0

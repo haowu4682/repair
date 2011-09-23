@@ -28,6 +28,14 @@
 #define UIO_MAXIOV 1024
 #endif
 
+#ifndef PTRACE_SYSEMU
+#define PTRACE_SYSEMU ((enum __ptrace_request)31)
+#endif
+
+#ifndef PTRACE_SYSEMU_SINGLESTEP
+#define PTRACE_SYSEMU_SINGLESTEP ((enum __ptrace_request)32)
+#endif
+
 #define WORD_SIZE __WORDSIZE
 #define BYTE_SIZE 8
 #define WORD_BYTES (WORD_SIZE / BYTE_SIZE)
