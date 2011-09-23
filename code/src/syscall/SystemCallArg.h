@@ -17,17 +17,20 @@ struct SystemCallArgumentAuxilation
 };
 
 typedef String (*sysarg_type_t) (long argValue, SystemCallArgumentAuxilation *argAux);
+typedef int (*sysarg_overwrite_t) (SystemCallArgument *sysarg);
 // The type for a sysarg record
 struct SyscallArgType
 {
     String name;
     sysarg_type_t record;
+    sysarg_overwrite_t overwrite;
     bool usage;
     long aux;
     bool operator == (SyscallArgType &another) { return name == another.name; }
 };
 
 #define SYSARG_(type) String type##_record(long argValue, SystemCallArgumentAuxilation *argAux)
+#define SYSARGOVERWRITE_(type) int type##_overwrite(SystemCallArgument *sysarg)
 
 SYSARG_(void);
 SYSARG_(sint);
@@ -58,6 +61,32 @@ SYSARG_(execve);
 extern sysarg_type_t sysarg_type_list[];
 
 Pair<int, int> fd2_derecord(String value);
+
+SYSARGOVERWRITE_(void);
+SYSARGOVERWRITE_(sint);
+SYSARGOVERWRITE_(uint);
+SYSARGOVERWRITE_(sint32);
+SYSARGOVERWRITE_(uint32);
+SYSARGOVERWRITE_(intp);
+SYSARGOVERWRITE_(pid_t);
+SYSARGOVERWRITE_(buf);
+SYSARGOVERWRITE_(sha1);
+SYSARGOVERWRITE_(string);
+SYSARGOVERWRITE_(strings);
+SYSARGOVERWRITE_(iovec);
+SYSARGOVERWRITE_(fd);
+SYSARGOVERWRITE_(fd2);
+SYSARGOVERWRITE_(name);
+SYSARGOVERWRITE_(path);
+SYSARGOVERWRITE_(path_at);
+SYSARGOVERWRITE_(rpath);
+SYSARGOVERWRITE_(rpath_at);
+SYSARGOVERWRITE_(buf_det);
+SYSARGOVERWRITE_(struct);
+SYSARGOVERWRITE_(psize_t);
+SYSARGOVERWRITE_(msghdr);
+#define dirfd_overwrite    fd_overwrite
+SYSARGOVERWRITE_(execve);
 
 // This class declares a system call argument.
 // Currently we use a **string** to represent the argument.

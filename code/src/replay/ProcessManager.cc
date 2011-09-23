@@ -212,7 +212,7 @@ int ProcessManager::traceProcess(pid_t pid)
             // Get the user input from syscallMatch
             // Use ptrace to put the user input back
             // Skip executing the system call
-            pret = ptrace(PTRACE_SYSEMU_SINGLESTEP, pid, NULL, NULL);
+            //pret = ptrace(PTRACE_SYSEMU_SINGLESTEP, pid, NULL, NULL);
         }
         else if (syscall.isOutput())
         {

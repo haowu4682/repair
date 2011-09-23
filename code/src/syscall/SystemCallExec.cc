@@ -1,5 +1,5 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
-// This file contians how to execute a syscall. 
+// This file contians how to execute a syscall.
 // TODO: implement everything
 
 #include <cstdlib>
