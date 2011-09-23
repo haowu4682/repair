@@ -217,6 +217,18 @@ bool SystemCall::isPipe() const
     return valid && (type->nr == 22);
 }
 
+bool SystemCall::isUserInput() const
+{
+    //TODO: Implement
+    return false;
+}
+
+bool SystemCall::isOutput() const
+{
+    //TODO: Implement
+    return false;
+}
+
 // Execute the syscall manually
 int SystemCall::exec()
 {

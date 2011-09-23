@@ -76,6 +76,12 @@ class SystemCall : public Action
 
         bool isPipe() const;
 
+        // Tell whether the system call is a user input
+        bool isUserInput() const;
+
+        // Tell whether the system call is a output
+        bool isOutput() const;
+
         // Get return value
         long getReturn() const { return ret; }
 
