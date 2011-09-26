@@ -2,7 +2,6 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
-//#include <linux/ptrace.h>
 #include <sstream>
 #include <string>
 #include <sys/ptrace.h>
@@ -98,6 +97,8 @@ int ProcessManager::executeProcess()
     args[commandList->size()] = NULL;
 
     // Execute pre-actions
+    // XXX: Temporarily canceled for debugging
+#if 0
     LOG("Before executing pre-actions %s", process.getCommand()->toString().c_str());
     Vector<Action *> *preActions = process.getPreActions();
     for (Vector<Action *>::iterator it = preActions->begin(); it != preActions->end(); ++it)
@@ -105,6 +106,7 @@ int ProcessManager::executeProcess()
         (*it)->exec();
     }
     LOG("After executing pre-actions %s %ld", process.getCommand()->toString().c_str(), preActions->size());
+#endif
 
     // Let the process to be traced
     long pret = ptrace(PTRACE_TRACEME, 0, NULL, NULL);

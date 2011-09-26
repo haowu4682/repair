@@ -77,7 +77,11 @@ class SystemCall : public Action
         bool isPipe() const;
 
         // Tell whether the system call is a user input
+        // A user input is an input whose source is from user.
         bool isUserInput() const;
+
+        // Tell whether the system call is a input
+        bool isInput() const;
 
         // Tell whether the system call is a output
         bool isOutput() const;

@@ -6,6 +6,7 @@
 
 #include <common/common.h>
 #include <common/util.h>
+#include <replay/File.h>
 #include <syscall/SystemCall.h>
 using namespace std;
 
@@ -219,8 +220,42 @@ bool SystemCall::isPipe() const
 
 bool SystemCall::isUserInput() const
 {
-    //TODO: Implement
+    bool ifUserInput = isInput();
+    if (!ifUserInput)
+        return false;
+    size_t numArgs = type->numArgs;
+    for (size_t i = 0; i < numArgs; ++i)
+    {
+        if (type->args[i].record == fd_record)
+        {
+            int fd = atoi(args[i].getValue().c_str());
+            // XXX: Hard code for ``new syscall'' here.
+            File *file = fdManager->searchNew(fd);
+            if (file == NULL)
+            {
+                // Unknown fd, we do not treat it as user input.
+                // XXX: might need to assert(file != NULL)
+                continue;
+            }
+            FileType fileTy = file->getType();
+            // XXX: Do we interact both device and network?
+            if (fileTy == device || fileTy == network)
+            {
+                return true;
+            }
+        }
+    }
     return false;
+}
+
+bool SystemCall::isInput() const
+{
+    return valid && (
+            type->nr == 0 ||        // read
+            type->nr == 17 ||       // pread
+            type->nr == 45 ||       // recvfrom
+            type->nr == 47          // recvmsg
+            );
 }
 
 bool SystemCall::isOutput() const
