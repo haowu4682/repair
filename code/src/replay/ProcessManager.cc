@@ -209,6 +209,8 @@ int ProcessManager::traceProcess(pid_t pid)
         // If the system call is user input or output, we need to act quite differently.
         if (syscall.isUserInput())
         {
+            LOG("THERE");
+            LOG("User input found: %s", syscall.toString().c_str());
             // Get the user input from syscallMatch
             // Use ptrace to put the user input back
             writeMatchedSyscall(syscallMatch, pid);
@@ -226,7 +228,7 @@ int ProcessManager::traceProcess(pid_t pid)
 #endif
         else
         {
-            //LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
+            LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
             //if (syscall.isValid())
             //{
                 //LOG("syscall: %s", syscall.toString().c_str());

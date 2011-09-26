@@ -4,26 +4,21 @@
 using namespace std;
 
 void SystemCallArgument::setArg(long regValue, SystemCallArgumentAuxilation *aux,
-        const SyscallArgType *syscallType /* = NULL */)
+        const SyscallArgType *syscallType)
 {
-    if (syscallType != NULL)
-    {
-        type = syscallType;
-    }
+    type = syscallType;
     value = type->record(regValue, aux);
 }
 
-void SystemCallArgument::setArg(String record, const SyscallArgType *syscallType /*=NULL*/)
+void SystemCallArgument::setArg(String record, const SyscallArgType *syscallType)
 {
-    if (syscallType != NULL)
-    {
-        type = syscallType;
-    }
+    type = syscallType;
     this->value = record;
 }
 
-void SystemCallArgument::setArg()
+void SystemCallArgument::setArg(const SyscallArgType *syscallType)
 {
+    type = syscallType;
     this->value = "None";
 }
 
@@ -42,6 +37,7 @@ String getPathString(const String &value)
 String SystemCallArgument::getValue() const
 {
     // TODO: no ad-hoc here.
+    //LOG("type name is: %s", type->name.c_str());
     if (type->name == "path")
     {
         return getPathString(value);

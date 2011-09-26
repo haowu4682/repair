@@ -79,7 +79,7 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
         SyscallArgType argType = type->args[i];
         if (argType.usage != usage)
         {
-            args[i].setArg();
+            args[i].setArg(&argType);
         }
         else
         {
@@ -223,11 +223,13 @@ bool SystemCall::isUserInput() const
     bool ifUserInput = isInput();
     if (!ifUserInput)
         return false;
+    LOG("Input found: %s", toString().c_str());
     size_t numArgs = type->numArgs;
     for (size_t i = 0; i < numArgs; ++i)
     {
         if (type->args[i].record == fd_record)
         {
+            LOG("Argval equals: %s", args[i].getValue().c_str());
             int fd = atoi(args[i].getValue().c_str());
             // XXX: Hard code for ``new syscall'' here.
             File *file = fdManager->searchNew(fd);
@@ -235,16 +237,19 @@ bool SystemCall::isUserInput() const
             {
                 // Unknown fd, we do not treat it as user input.
                 // XXX: might need to assert(file != NULL)
+                LOG("Unknown fd: %d", fd);
                 continue;
             }
             FileType fileTy = file->getType();
             // XXX: Do we interact both device and network?
             if (fileTy == device || fileTy == network)
             {
+                //LOG("User input found: %s", toString().c_str());
                 return true;
             }
         }
     }
+    LOG("HERE");
     return false;
 }
 

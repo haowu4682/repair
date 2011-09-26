@@ -97,11 +97,11 @@ class SystemCallArgument
         SystemCallArgument(const SyscallArgType *syscallType) : type(syscallType) { }
         // Create the argument with a given register value
         void setArg(long argValue, SystemCallArgumentAuxilation *aux,
-                const SyscallArgType *syscallType = NULL);
+                const SyscallArgType *syscallType);
         // Create the argument from a syscall arg record
-        void setArg(String record, const SyscallArgType *syscallType = NULL);
+        void setArg(String record, const SyscallArgType *syscallType);
         // Set the argument to "None".
-        void setArg();
+        void setArg(const SyscallArgType *syscallType);
         // Set up the sysarg name
         void setName(String newName) { name = newName; }
         // compare if two system call arguments are equal
