@@ -186,6 +186,7 @@ int ProcessManager::traceProcess(pid_t pid)
 
     waitpid(pid, &status, 0);
     pid_t oldPid = process.getCommand()->pid;
+
     // XXX: generation numbers might cause problems here.
     if (pidManager != NULL && oldPid != -1)
     {
@@ -200,23 +201,35 @@ int ProcessManager::traceProcess(pid_t pid)
         // The child process is at the point **before** a syscall.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
         SystemCall syscall(regs, pid, false, fdManager);
-        SystemCall syscallMatch = syscallList->search(syscall);
-        // If no match has been found, we have to go on executing the system call and simply do
-        // nothing else here. However, if a match has been found we must change the return value
-        // accoridngly when the syscall has returned.
-        bool matchFound = syscallMatch.isValid();
 
         // If the system call is user input or output, we need to act quite differently.
         if (syscall.isUserInput())
         {
             LOG("User input found: %s", syscall.toString().c_str());
-            // Get the user input from syscallMatch
-            // Use ptrace to put the user input back
-            writeMatchedSyscall(syscallMatch, pid);
-            // Skip executing the system call
-            if (skipSyscall(pid) < 0)
+            SystemCall syscallMatch = syscallList->search(syscall);
+            bool matchFound = syscallMatch.isValid();
+
+            // If a match has been found, we'll change the syscall result
+            // accordingly and cancel the syscall execution. Otherwise the
+            // syscall is executed as usual.
+            if (matchFound)
             {
-                LOG("Skip syscall failed: %s", syscall.toString().c_str());
+                LOG("Match Found!");
+                // Get the user input from syscallMatch
+                // Use ptrace to put the user input back
+                writeMatchedSyscall(syscallMatch, pid);
+
+                // Skip executing the system call
+                if (skipSyscall(pid) < 0)
+                {
+                    LOG("Skip syscall failed: %s", syscall.toString().c_str());
+                }
+            }
+            else
+            {
+                LOG("No Match Found!");
+                pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+                waitpid(pid, &status, 0);
             }
         }
 #if 0
@@ -242,9 +255,11 @@ int ProcessManager::traceProcess(pid_t pid)
             // Most syscall will have its return value in the register %rax, But there are some
             // which does not follow the rule and we will need to deal with them seperately.
             ptrace(PTRACE_GETREGS, pid, 0, &regs);
+            // We might not need the return value, but we need the side
+            // effect for pid manager and fd manager.
             SystemCall syscallReturn(regs, pid, true, fdManager);
 
-            dealWithConflict();
+            //dealWithConflict();
 
             // If the system call is fork/vfork, we must create a new process manager for it.
             if (syscall.isFork())
