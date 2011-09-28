@@ -34,6 +34,10 @@ class File
 
         static FileType pathToType(const String &path);
 
+        static File STDIN;
+        static File STDOUT;
+        static File STDERR;
+
     private:
         int fd;
         FileType type;

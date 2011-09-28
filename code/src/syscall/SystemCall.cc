@@ -223,13 +223,14 @@ bool SystemCall::isUserInput() const
     bool ifUserInput = isInput();
     if (!ifUserInput)
         return false;
-    LOG("Input found: %s", toString().c_str());
+    //LOG("Input found: %s", toString().c_str());
     size_t numArgs = type->numArgs;
     for (size_t i = 0; i < numArgs; ++i)
     {
         if (type->args[i].record == fd_record)
         {
-            LOG("Argval equals: %s", args[i].getValue().c_str());
+            //LOG("syscall type %lu: %s", i, type->name.c_str());
+            //LOG("Argval equals: %s", args[i].getValue().c_str());
             int fd = atoi(args[i].getValue().c_str());
             // XXX: Hard code for ``new syscall'' here.
             File *file = fdManager->searchNew(fd);
@@ -244,12 +245,12 @@ bool SystemCall::isUserInput() const
             // XXX: Do we interact both device and network?
             if (fileTy == device || fileTy == network)
             {
-                //LOG("User input found: %s", toString().c_str());
+                LOG("User input found: %s", toString().c_str());
                 return true;
             }
         }
     }
-    LOG("HERE");
+    //LOG("HERE");
     return false;
 }
 

@@ -45,6 +45,10 @@
 #define int64_MAX_LENGTH 25
 #define FASTBUF PAGE_SIZE
 
+#define STDIN_FD 0
+#define STDOUT_FD 1
+#define STDERR_FD 2
+
 // Debugging tools
 #define LOG(fmt,args...) do { \
         fprintf(stderr, "%f:%s:%s:%d: " fmt "\n", GetRealTime(),__FILE__,__func__,__LINE__ ,##args); \

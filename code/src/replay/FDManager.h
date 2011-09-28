@@ -13,6 +13,7 @@
 class FDManager
 {
     public:
+        FDManager() { init(); }
         // XXX: ASSUME item with lower seq number will always be inserted in the first place
         //      here.
         int addOldFile(File *file, long seqNum);
@@ -38,6 +39,15 @@ class FDManager
         void clone(FDManager *another);
 
     private:
+        // Shall not use these things currently.
+        FDManager(const FDManager &fdManager);
+        FDManager& operator=(const FDManager &fdManger);
+
+        /** The function initializes the fd manager with standard fds, namely
+         *  stdin, stdout, stderr.
+         */
+        void init();
+
         struct FDItem
         {
             long seqNum;
@@ -50,6 +60,9 @@ class FDManager
         typedef std::map<int, Vector<FDItem> > mapType;
         mapType oldFDMap;
         mapType newFDMap;
+
+        static File standardFiles[];
+        static unsigned standardFilesSize;
 };
 
 #endif // __REPLAY_FDMANAGER_H__

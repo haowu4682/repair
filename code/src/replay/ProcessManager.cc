@@ -228,7 +228,7 @@ int ProcessManager::traceProcess(pid_t pid)
 #endif
         else
         {
-            LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
+            //LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
             //if (syscall.isValid())
             //{
                 //LOG("syscall: %s", syscall.toString().c_str());

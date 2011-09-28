@@ -37,6 +37,7 @@ String getPathString(const String &value)
 String SystemCallArgument::getValue() const
 {
     // TODO: no ad-hoc here.
+    //LOG("type is: %p", type->name.c_str());
     //LOG("type name is: %s", type->name.c_str());
     if (type->name == "path")
     {
