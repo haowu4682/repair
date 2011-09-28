@@ -49,7 +49,7 @@ String SystemCallArgument::getValue() const
     }
 }
 
-bool SystemCallArgument::operator == (SystemCallArgument &another)
+bool SystemCallArgument::operator == (const SystemCallArgument &another) const
 {
     if (type != another.type)
         return false;
@@ -58,12 +58,12 @@ bool SystemCallArgument::operator == (SystemCallArgument &another)
     return true;
 }
 
-bool SystemCallArgument::operator != (SystemCallArgument &another)
+bool SystemCallArgument::operator != (const SystemCallArgument &another) const
 {
     return !operator ==(another);
 }
 
-bool SystemCallArgument::operator < (SystemCallArgument &another)
+bool SystemCallArgument::operator < (const SystemCallArgument &another) const
 {
     if (type != another.type)
         return false;

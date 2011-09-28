@@ -35,10 +35,34 @@ SystemCall SystemCallList::search(SystemCall &syscall)
     return result;
 }
 
-size_t searchMatchInput(SystemCall &match, const SystemCall &source,
-        pid_t pid, size_t seq)
+long SystemCallList::searchMatchInput(SystemCall &match, 
+        const SystemCall &source, pid_t pid, size_t seq /* = 0 */)
 {
-    return -1;
+    // TODO: Implement
+    SyscallMapType::iterator it;
+    if ((it = syscallMap.find(pid)) == syscallMap.end())
+    {
+        // No syscall list found
+        return MATCH_NOT_FOUND;
+    }
+    SystemCallListItem &listItem = it->second;
+    Vector<SystemCall> &syscalls = listItem.syscalls;
+    /*
+    if (seq > syscalls.size())
+    {
+        // The sequence number is larger than the system call list size
+        return MATCH_NOT_FOUND;
+    }*/
+    for (size_t pos = seq, end = syscalls.size(); pos < end; ++pos)
+    {
+        if (source == syscalls[pos])
+        {
+            match = syscalls[pos];
+            return static_cast<int>(pos + 1);
+        }
+    }
+out:
+    return MATCH_NOT_FOUND;
 }
 
 void SystemCallList::init(istream &in, FDManager *fdManager)

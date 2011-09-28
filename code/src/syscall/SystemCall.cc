@@ -265,7 +265,7 @@ bool SystemCall::isOutput() const
 }
 
 // Execute the syscall manually
-int SystemCall::exec()
+int SystemCall::exec() 
 {
     if (!usage)
     {
@@ -449,7 +449,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     }
 }
 
-bool SystemCall::operator ==(SystemCall &another)
+bool SystemCall::operator ==(const SystemCall &another) const
 {
     if (!valid || !another.valid)
         return false;

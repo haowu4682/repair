@@ -206,9 +206,10 @@ int ProcessManager::traceProcess(pid_t pid)
         if (syscall.isUserInput())
         {
             LOG("User input found: %s", syscall.toString().c_str());
-            SystemCall syscallMatch = syscallList->search(syscall);
-            LOG("HERE");
-            bool matchFound = syscallMatch.isValid();
+            //SystemCall syscallMatch = syscallList->search(syscall);
+            SystemCall syscallMatch;
+            pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid);
+            bool matchFound = (pret < 0);
 
             // If a match has been found, we'll change the syscall result
             // accordingly and cancel the syscall execution. Otherwise the

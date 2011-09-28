@@ -21,6 +21,8 @@ struct SystemCallListItem
 class SystemCallList
 {
     public:
+        const static int MATCH_NOT_FOUND = -1;
+
         // The constructor, requires a pid manager
         SystemCallList(PidManager *pidManager, SystemManager *systemManager)
             { this->pidManager = pidManager; this->systemManager = systemManager;}
@@ -38,9 +40,9 @@ class SystemCallList
         // @param seq the sequence number of the first system call in the list
         //        to search. Default value is 0.
         // @ret the sequence number of the next system call in the list.
-        //      -1 if no matched system call is found
-        size_t searchMatchInput(SystemCall &match, const SystemCall &source,
-                pid_t pid, size_t seq);
+        //      MATCH_NOT_FOUND if no matched system call is found.
+        long searchMatchInput(SystemCall &match, const SystemCall &source,
+                pid_t pid, size_t seq = 0);
 
         // Init the system call list from an input stream.
         // @param in the input stream
@@ -48,6 +50,7 @@ class SystemCallList
 
         // to string
         String toString();
+
     private:
         typedef std::map<pid_t, SystemCallListItem> SyscallMapType;
 

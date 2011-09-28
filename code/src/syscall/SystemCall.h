@@ -25,7 +25,8 @@ struct SyscallType
     String name;
     size_t numArgs;
     SyscallArgType args[6];
-    bool operator ==(SyscallType &another) { return nr == another.nr && name == another.name; }
+    bool operator ==(const SyscallType &another) const
+        { return nr == another.nr && name == another.name; }
     syscall_exec_t exec;
 };
 
@@ -49,12 +50,12 @@ class SystemCall : public Action
 
         // Whether two syscalls are equal. Two syscalls are equal if their usages are equal, and
         // each available arguments and return value(if usage==true) are equal
-        bool operator == (SystemCall &);
+        bool operator == (const SystemCall &) const;
 
         // Whether the system call is valid.
         // A valid system call is a system with its code and args provided.
         // @author haowu
-        bool isValid() { return valid;}
+        bool isValid() const { return valid;}
 
         // Init a system call from a record
         // @param record The record
@@ -103,10 +104,10 @@ class SystemCall : public Action
         static void getRegsList(const user_regs_struct &regs, long args[]);
 
         // Get fd manager
-        FDManager *getFDManager() { return fdManager; }
+        FDManager *getFDManager() const { return fdManager; }
 
         // Get pid manager
-        PidManager *getPidManager() { return pidManager; }
+        PidManager *getPidManager() const { return pidManager; }
 
         // to string
         String toString() const;

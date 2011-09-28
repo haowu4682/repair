@@ -26,7 +26,8 @@ struct SyscallArgType
     sysarg_overwrite_t overwrite;
     bool usage;
     long aux;
-    bool operator == (SyscallArgType &another) { return name == another.name; }
+    bool operator == (const SyscallArgType &another) const
+        { return name == another.name; }
 };
 
 #define SYSARG_(type) String type##_record(long argValue, SystemCallArgumentAuxilation *argAux)
@@ -105,9 +106,9 @@ class SystemCallArgument
         // Set up the sysarg name
         void setName(String newName) { name = newName; }
         // compare if two system call arguments are equal
-        bool operator ==(SystemCallArgument &);
-        bool operator !=(SystemCallArgument &);
-        bool operator <(SystemCallArgument &);
+        bool operator ==(const SystemCallArgument &) const;
+        bool operator !=(const SystemCallArgument &) const;
+        bool operator <(const SystemCallArgument &) const;
         // to string
         String toString() const;
         // get value
