@@ -220,7 +220,8 @@ bool SystemCall::isUserInput() const
     size_t numArgs = type->numArgs;
     for (size_t i = 0; i < numArgs; ++i)
     {
-        if (type->args[i].record == fd_record)
+        SyscallArgType argType = type->args[i];
+        if (argType.record == fd_record)
         {
             //LOG("syscall type %lu: %s", i, type->name.c_str());
             //LOG("Argval equals: %s", args[i].getValue().c_str());

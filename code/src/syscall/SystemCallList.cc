@@ -35,6 +35,12 @@ SystemCall SystemCallList::search(SystemCall &syscall)
     return result;
 }
 
+size_t searchMatchInput(SystemCall &match, const SystemCall &source,
+        pid_t pid, size_t seq)
+{
+    return -1;
+}
+
 void SystemCallList::init(istream &in, FDManager *fdManager)
 {
     // '\n' is used as a delimeter between syscalls
