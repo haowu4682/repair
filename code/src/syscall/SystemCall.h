@@ -56,12 +56,6 @@ class SystemCall : public Action
         // @author haowu
         bool isValid() { return valid;}
 
-        // Given the current registers, overwrite the return value in the registers
-        // with current return values of the system call.
-        // @author haowu
-        // @param regs The current registers, will be modified.
-        int overwrite(user_regs_struct &regs);
-
         // Init a system call from a record
         // @param record The record
         int init(String record, FDManager *fdManager = NULL, PidManager *pidManager = NULL);
@@ -121,9 +115,6 @@ class SystemCall : public Action
 
         // execute the systemcall
         virtual int exec();
-
-        // overwrite the systemcall return content
-        virtual int overwrite(pid_t pid) const;
 
     private:
         // Get an aux value for determing an argument

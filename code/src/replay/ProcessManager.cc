@@ -209,7 +209,6 @@ int ProcessManager::traceProcess(pid_t pid)
         // If the system call is user input or output, we need to act quite differently.
         if (syscall.isUserInput())
         {
-            LOG("THERE");
             LOG("User input found: %s", syscall.toString().c_str());
             // Get the user input from syscallMatch
             // Use ptrace to put the user input back
@@ -263,7 +262,8 @@ int ProcessManager::traceProcess(pid_t pid)
 
 int ProcessManager::skipSyscall(pid_t pid)
 {
-    //"PTRACE_SYSEMU" is in "linux/ptrace.h" x64, not sure if it is supported fully by x64
+    // HW: "PTRACE_SYSEMU" is in "linux/ptrace.h" x64, but not in "sys/ptrace.h".
+    // Thus I am not sure if it is supported fully by x64
     long pret;
     pret = ptrace(PTRACE_SYSEMU_SINGLESTEP, pid, NULL, NULL);
     return (int) pret;
@@ -271,8 +271,8 @@ int ProcessManager::skipSyscall(pid_t pid)
 
 int ProcessManager::writeMatchedSyscall(SystemCall &syscall, pid_t pid)
 {
-    syscall.overwrite(pid);
 
+    // TODO: Implement
     // Comment away obsoleted code
 #if 0
     long pret;

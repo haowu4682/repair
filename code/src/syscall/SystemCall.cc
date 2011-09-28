@@ -190,13 +190,6 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
     return a;
 }
 
-// XXX: This may not apply to some system calls. It needs to be reviewed.
-int SystemCall::overwrite(user_regs_struct &regs)
-{
-    // TODO: Do the overwrite stuff
-    return 0;
-}
-
 // Tell whether the syscall is a ``fork'' or ``vfork'' or ``clone''
 bool SystemCall::isFork() const
 {
@@ -282,12 +275,6 @@ int SystemCall::exec()
     {
         return 0;
     }
-}
-
-// Overwrite syscall return value
-int SystemCall::overwrite(pid_t pid) const
-{
-    //TODO: implement
 }
 
 // An aux function to parse a syscall arg.
