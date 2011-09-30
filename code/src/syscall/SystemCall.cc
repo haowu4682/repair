@@ -464,16 +464,14 @@ bool SystemCall::operator ==(const SystemCall &another) const
         if (usage == type->args[i].usage && usage == another.type->args[i].usage)
         {
             // If it's a FD argument, use FDManager
-            if (type->args[i].record == fd_record)
+            if (fdManager != NULL && type->args[i].record == fd_record)
             {
-                if (fdManager != NULL)
+                int oldFD = atoi(another.args[i].getValue().c_str());
+                int newFD = atoi(args[i].getValue().c_str());
+                //LOG("oldFD=%d; newFD=%d", oldFD, newFD);
+                if (!fdManager->equals(oldFD, newFD, another.seqNum))
                 {
-                    int oldFD = atoi(another.args[i].getValue().c_str());
-                    int newFD = atoi(args[i].getValue().c_str());
-                    if (!fdManager->equals(oldFD, newFD, another.seqNum))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
             else if (!((args[i] < another.args[i]) || (another.args[i] < args[i])))

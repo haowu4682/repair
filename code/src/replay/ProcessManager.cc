@@ -211,14 +211,14 @@ int ProcessManager::traceProcess(pid_t pid)
             //SystemCall syscallMatch = syscallList->search(syscall);
             SystemCall syscallMatch;
             pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid);
-            bool matchFound = (pret < 0);
+            bool matchFound = (pret >= 0);
 
             // If a match has been found, we'll change the syscall result
             // accordingly and cancel the syscall execution. Otherwise the
             // syscall is executed as usual.
             if (matchFound)
             {
-                //LOG("Match Found!");
+                LOG("Match Found! Match is: %s", syscallMatch.toString().c_str());
                 // Get the user input from syscallMatch
                 // Use ptrace to put the user input back
                 writeMatchedSyscall(syscallMatch, pid);

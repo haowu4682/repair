@@ -98,6 +98,9 @@ class SystemCall : public Action
         // Get the sequence number
         long getSeqNum() const { return seqNum; }
 
+        // Get the type
+        const SyscallType *getType() const { return type; }
+
         // Get syscall args list from regs
         // Warning: The size of the given list must be at least SYSCALL_MAX_ARGS!
         // We do not check it here.

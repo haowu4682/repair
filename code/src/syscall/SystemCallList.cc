@@ -43,6 +43,7 @@ long SystemCallList::searchMatchInput(SystemCall &match,
     if ((it = syscallMap.find(pid)) == syscallMap.end())
     {
         // No syscall list found
+        LOG("No system call list found for %d", pid);
         return MATCH_NOT_FOUND;
     }
     SystemCallListItem &listItem = it->second;
@@ -57,8 +58,22 @@ long SystemCallList::searchMatchInput(SystemCall &match,
     {
         if (source == syscalls[pos])
         {
-            match = syscalls[pos];
-            return static_cast<int>(pos + 1);
+            if ((++pos) < syscalls.size())
+            {
+                match = syscalls[pos];
+                if (match.getType() != source.getType())
+                {
+                    LOG("Syscall record pair not matched.");
+                    --pos;
+                    continue;
+                }
+                return static_cast<int>(pos + 1);
+            }
+            else
+            {
+                LOG("Syscall record pair broken due to eof");
+                break;
+            }
         }
     }
 out:
