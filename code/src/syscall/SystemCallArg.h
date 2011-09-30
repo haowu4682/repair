@@ -113,6 +113,8 @@ class SystemCallArgument
         String toString() const;
         // get value
         String getValue() const;
+        // get type
+        const SyscallArgType *getType() const { return type; }
 
         // overwrite syscall argument
         int overwrite(pid_t) const;

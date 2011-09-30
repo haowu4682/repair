@@ -76,16 +76,18 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
     ret = regs.rax;
     for (int i = 0; i < numArgs; i++)
     {
-        SyscallArgType argType = type->args[i];
-        if (argType.usage != usage)
+        const SyscallArgType *argType = &type->args[i];
+        //LOG("arg type pointer original: %d %s %p", i, type->name.c_str(), argType);
+        if (argType->usage != usage)
         {
-            args[i].setArg(&argType);
+            args[i].setArg(argType);
         }
         else
         {
-            SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid, usage);
-            args[i].setArg(argsList[i], &aux, &argType);
+            SystemCallArgumentAuxilation aux = getAux(argsList, *argType, i, ret, numArgs, pid, usage);
+            args[i].setArg(argsList[i], &aux, argType);
         }
+        //LOG("arg type pointer: %d %p", i, getArg(i).getType());
     }
 
     // Manager fd's
@@ -128,7 +130,7 @@ void SystemCall::getRegsList(const user_regs_struct &regs, long args[])
 }
 
 // This is an adpation of similar kernel-mode code in retro. But this one is in user-mode.
-SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &type, int i,
+SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallArgType &type, int i,
         long ret, int nargs, pid_t pid, bool usage)
 {
     SystemCallArgumentAuxilation a;
@@ -178,13 +180,13 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
         }
     } else if (type.record == path_at_record || type.record == rpath_at_record) {
         /* test AT_SYMLINK_(NO)FOLLOW, always the last argument */
+        /*
         if (a.aux && (a.aux & args[nargs - 1])) {
-            /* toggle */
             if (type.record == path_at_record)
                 type.record = rpath_at_record;
             else
                 type.record = path_at_record;
-        }
+        }*/
         a.aux = args[i-1];
     }
     return a;
@@ -220,8 +222,8 @@ bool SystemCall::isUserInput() const
     size_t numArgs = type->numArgs;
     for (size_t i = 0; i < numArgs; ++i)
     {
-        SyscallArgType argType = type->args[i];
-        if (argType.record == fd_record)
+        const SyscallArgType *argType = &type->args[i];
+        if (argType->record == fd_record)
         {
             //LOG("syscall type %lu: %s", i, type->name.c_str());
             //LOG("Argval equals: %s", args[i].getValue().c_str());
@@ -239,7 +241,7 @@ bool SystemCall::isUserInput() const
             // XXX: Do we interact both device and network?
             if (fileTy == device || fileTy == network)
             {
-                LOG("User input found: %s", toString().c_str());
+                //LOG("User input found: %s", toString().c_str());
                 return true;
             }
         }

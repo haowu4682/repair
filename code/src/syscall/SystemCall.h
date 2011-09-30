@@ -119,7 +119,7 @@ class SystemCall : public Action
 
     private:
         // Get an aux value for determing an argument
-        static SystemCallArgumentAuxilation getAux(long args[], SyscallArgType &argType, int i,
+        static SystemCallArgumentAuxilation getAux(long args[], const SyscallArgType &argType, int i,
                 long ret, int nargs, pid_t pid, bool usage);
         // If the system call is valid
         bool valid;
@@ -128,7 +128,6 @@ class SystemCall : public Action
         // The system call type
         const SyscallType *type;
         // The system call args
-        // `6' is not hard-coded here now.
         SystemCallArgument args[SYSCALL_MAX_ARGS];
         // The return value of the system call
         long ret;

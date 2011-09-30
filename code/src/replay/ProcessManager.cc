@@ -201,10 +201,12 @@ int ProcessManager::traceProcess(pid_t pid)
         // The child process is at the point **before** a syscall.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
         SystemCall syscall(regs, pid, false, fdManager);
+        //LOG("Arg Type Pointer: %p", syscall.getArg(0).getType());
 
         // If the system call is user input or output, we need to act quite differently.
         if (syscall.isUserInput())
         {
+            //LOG("Arg Type Pointer: %p", syscall.getArg(0).getType());
             LOG("User input found: %s", syscall.toString().c_str());
             //SystemCall syscallMatch = syscallList->search(syscall);
             SystemCall syscallMatch;
@@ -216,7 +218,7 @@ int ProcessManager::traceProcess(pid_t pid)
             // syscall is executed as usual.
             if (matchFound)
             {
-                LOG("Match Found!");
+                //LOG("Match Found!");
                 // Get the user input from syscallMatch
                 // Use ptrace to put the user input back
                 writeMatchedSyscall(syscallMatch, pid);
