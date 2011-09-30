@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
+#include <sys/ptrace.h>
 
 #include <common/common.h>
 #include <common/util.h>
@@ -282,12 +283,18 @@ int SystemCall::exec()
 }
 
 // Overwrite the syscall result into a process
-int SystemCall::overwrite(pid_t pid, const user_regs_struct &regs)
+int SystemCall::overwrite(pid_t pid)
 {
     int ret;
+    user_regs_struct regs;
     if (usage)
     {
-        //TODO
+        // Achieve current regs list
+        ptrace(PTRACE_GETREGS, pid, 0, &regs);
+        // Overwrite arguments
+        // Overwrite return value
+        // Write back the regs list
+        ptrace(PTRACE_SETREGS, pid, 0, &regs);
     }
     else
     {

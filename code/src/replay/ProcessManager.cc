@@ -297,9 +297,9 @@ int ProcessManager::writeMatchedSyscall(SystemCall &syscall, pid_t pid)
 
     long pret;
     int ret;
-    struct user_regs_struct regs;
+    //struct user_regs_struct regs;
 
-    ret = syscall.overwrite(pid, regs);
+    ret = syscall.overwrite(pid);
     if (ret < 0)
     {
         LOG1("Cannot put the return value into registers!");

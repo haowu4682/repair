@@ -121,7 +121,7 @@ class SystemCall : public Action
         virtual int exec();
 
         // Overwrite return value of the system call into a process
-        int overwrite(pid_t pid, const user_regs_struct &regs);
+        int overwrite(pid_t pid);
 
     private:
         // Get an aux value for determing an argument
