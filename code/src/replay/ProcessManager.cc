@@ -179,6 +179,7 @@ int ProcessManager::traceProcess(pid_t pid)
     int status;
     int ret;
     long pret;
+    long inputSeqNum = 0;
     struct user_regs_struct regs;
     PidManager *pidManager = process.getPidManager();
     SystemCallList *syscallList = process.getSyscallList();
@@ -210,7 +211,7 @@ int ProcessManager::traceProcess(pid_t pid)
             LOG("User input found: %s", syscall.toString().c_str());
             //SystemCall syscallMatch = syscallList->search(syscall);
             SystemCall syscallMatch;
-            pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid);
+            pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, inputSeqNum);
             bool matchFound = (pret >= 0);
 
             // If a match has been found, we'll change the syscall result
@@ -219,6 +220,7 @@ int ProcessManager::traceProcess(pid_t pid)
             if (matchFound)
             {
                 LOG("Match Found! Match is: %s", syscallMatch.toString().c_str());
+                inputSeqNum = pret;
                 // Get the user input from syscallMatch
                 // Use ptrace to put the user input back
                 writeMatchedSyscall(syscallMatch, pid);
