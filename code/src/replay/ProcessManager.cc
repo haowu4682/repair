@@ -286,7 +286,7 @@ int ProcessManager::skipSyscall(pid_t pid)
     // HW: "PTRACE_SYSEMU" is in "linux/ptrace.h" x64, but not in "sys/ptrace.h".
     // Thus I am not sure if it is supported fully by x64
     long pret;
-    pret = ptrace(PTRACE_SYSEMU_SINGLESTEP, pid, NULL, NULL);
+    pret = ptrace(PTRACE_SYSEMU, pid, NULL, NULL);
     return (int) pret;
 }
 
@@ -294,26 +294,22 @@ int ProcessManager::writeMatchedSyscall(SystemCall &syscall, pid_t pid)
 {
 
     // TODO: Implement
-    // Comment away obsoleted code
-#if 0
+
     long pret;
     int ret;
     struct user_regs_struct regs;
 
-    ptrace(PTRACE_GETREGS, pid, 0, &regs);
-    ret = syscall.overwrite(regs);
+    ret = syscall.overwrite(pid, regs);
     if (ret < 0)
     {
         LOG1("Cannot put the return value into registers!");
         return ret;
     }
-    pret = ptrace(PTRACE_SETREGS, pid, 0, &regs);
     if (pret < 0)
     {
         LOG1("Cannot overwrite the return value!");
         return (int) pret;
     }
-#endif
     return 0;
 }
 

@@ -269,15 +269,31 @@ bool SystemCall::isOutput() const
 // Execute the syscall manually
 int SystemCall::exec() 
 {
+    int ret;
     if (!usage)
     {
-        //LOG("Trying to replay: %s", toString().c_str());
-        return type->exec(this);
+        ret = type->exec(this);
     }
     else
     {
-        return 0;
+        ret = -1;
     }
+    return ret;
+}
+
+// Overwrite the syscall result into a process
+int SystemCall::overwrite(pid_t pid, const user_regs_struct &regs)
+{
+    int ret;
+    if (usage)
+    {
+        //TODO
+    }
+    else
+    {
+        return -1;
+    }
+    return ret;
 }
 
 // An aux function to parse a syscall arg.
@@ -468,7 +484,6 @@ bool SystemCall::operator ==(const SystemCall &another) const
             {
                 int oldFD = atoi(another.args[i].getValue().c_str());
                 int newFD = atoi(args[i].getValue().c_str());
-                //LOG("oldFD=%d; newFD=%d", oldFD, newFD);
                 if (!fdManager->equals(oldFD, newFD, another.seqNum))
                 {
                     return false;
