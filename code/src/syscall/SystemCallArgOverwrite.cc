@@ -1,5 +1,7 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
+// TODO: Implement everything
 
+#include <common/util.h>
 #include <syscall/SystemCallArg.h>
 
 SYSARGOVERWRITE_(void)
@@ -39,12 +41,19 @@ SYSARGOVERWRITE_(pid_t)
 
 SYSARGOVERWRITE_(buf)
 {
+    long pret;
+    // Modify the buf value
+    String str = sysarg->getValue();
+    writeToProcess(str.c_str(), argVal, str.size(), pid);
+    // Modify the length by modifying the return value.
+    // This part should be done by SystemCall::overwrite. We do not execute it
+    // here.
     return 0;
 }
 
 SYSARGOVERWRITE_(sha1)
 {
-    return 0;
+    return buf_overwrite(sysarg, pid, argVal);
 }
 
 SYSARGOVERWRITE_(string)

@@ -74,7 +74,8 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
     long argsList[SYSCALL_MAX_ARGS];
     getRegsList(regs, argsList);
     int numArgs = type->numArgs;
-    ret = regs.rax;
+    //ret = regs.rax;
+    ret = getArgFromReg(regs, SYSCALL_MAX_ARGS);
     for (int i = 0; i < numArgs; i++)
     {
         const SyscallArgType *argType = &type->args[i];
@@ -128,6 +129,66 @@ void SystemCall::getRegsList(const user_regs_struct &regs, long args[])
     args[3] = regs.r10;
     args[4] = regs.r8;
     args[5] = regs.r9;
+}
+
+// This is a utility function to get a single arg from sets of regs
+long SystemCall::getArgFromReg(const user_regs_struct &regs, int num)
+{
+    long retVal;
+    switch (num)
+    {
+        case 0:
+            retVal = regs.rdi;
+            break;
+        case 1:
+            retVal = regs.rsi;
+            break;
+        case 2:
+            retVal = regs.rdx;
+            break;
+        case 3:
+            retVal = regs.r10;
+            break;
+        case 4:
+            retVal = regs.r8;
+            break;
+        case 5:
+            retVal = regs.r9;
+            break;
+        default:
+            retVal = regs.rax;
+            break;
+    }
+    return retVal;
+}
+
+// This is a utility function to get a single arg from sets of regs
+void SystemCall::setArgToReg(user_regs_struct &regs, int num, long val)
+{
+    switch (num)
+    {
+        case 0:
+            regs.rdi = val;
+            break;
+        case 1:
+            regs.rsi = val;
+            break;
+        case 2:
+            regs.rdx = val;
+            break;
+        case 3:
+            regs.r10 = val;
+            break;
+        case 4:
+            regs.r8 = val;
+            break;
+        case 5:
+            regs.r9 = val;
+            break;
+        default:
+            regs.rax = val;
+            break;
+    }
 }
 
 // This is an adpation of similar kernel-mode code in retro. But this one is in user-mode.
@@ -219,15 +280,12 @@ bool SystemCall::isUserInput() const
     bool ifUserInput = isInput();
     if (!ifUserInput)
         return false;
-    //LOG("Input found: %s", toString().c_str());
     size_t numArgs = type->numArgs;
     for (size_t i = 0; i < numArgs; ++i)
     {
         const SyscallArgType *argType = &type->args[i];
         if (argType->record == fd_record)
         {
-            //LOG("syscall type %lu: %s", i, type->name.c_str());
-            //LOG("Argval equals: %s", args[i].getValue().c_str());
             int fd = atoi(args[i].getValue().c_str());
             // XXX: Hard code for ``new syscall'' here.
             File *file = fdManager->searchNew(fd);
@@ -242,12 +300,10 @@ bool SystemCall::isUserInput() const
             // XXX: Do we interact both device and network?
             if (fileTy == device || fileTy == network)
             {
-                //LOG("User input found: %s", toString().c_str());
                 return true;
             }
         }
     }
-    //LOG("HERE");
     return false;
 }
 
@@ -292,7 +348,13 @@ int SystemCall::overwrite(pid_t pid)
         // Achieve current regs list
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
         // Overwrite arguments
+        for (int i = 0; i < type->numArgs; i++)
+        {
+            long argVal = getArgFromReg(regs, i);
+            args[i].overwrite(pid, argVal);
+        }
         // Overwrite return value
+        setArgToReg(regs, SYSCALL_MAX_ARGS, ret);
         // Write back the regs list
         ptrace(PTRACE_SETREGS, pid, 0, &regs);
     }

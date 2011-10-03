@@ -6,11 +6,11 @@
 
 // Since PTRACE is quite low level, we need to use these functions to peek/poke data.
 // Some architecture-specified code is applied in the function.
-long writeToProcess(void *buf, long addr, size_t len, pid_t pid)
+long writeToProcess(const void *buf, long addr, size_t len, pid_t pid)
 {
     long pret = 0;
     long startAddr, endAddr;
-    char *charBuf = (char *) buf;
+    const char *charBuf = static_cast<const char *>(buf);
 
     if (len <= 0)
     {

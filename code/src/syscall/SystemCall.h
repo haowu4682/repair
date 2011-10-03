@@ -106,6 +106,23 @@ class SystemCall : public Action
         // We do not check it here.
         static void getRegsList(const user_regs_struct &regs, long args[]);
 
+        // Get the value of certain syscall arg. It returns the relative
+        // value in the register, not the actual argument. For example, if an
+        // argument is buf = "Hello World", the return value should be &buf.
+        // @param regs the current register frame
+        // @param num the sequence number of the argument. If it's out of
+        // range(0...5), it in fact returns the ``return value''. This is
+        // something to be aware of.
+        static long getArgFromReg(const user_regs_struct &regs, int num);
+        
+        // Set the value of certain syscall arg to a register frame. The
+        // function is similar with getArgFromReg.
+        // @param regs the current register frame
+        // @param num the sequence number of the argument. If it's out of
+        // range(0...5), it in fact means the ``return value''. This is
+        // something to be aware of.
+        static void setArgToReg(user_regs_struct &regs, int num, long value);
+
         // Get fd manager
         FDManager *getFDManager() const { return fdManager; }
 
