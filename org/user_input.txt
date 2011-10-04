@@ -41,6 +41,8 @@ For a network input, it's easy to record since they use unique system calls.
 For a read from I/O device, we need to track the path of a file descriptor,
 if it's something in "/dev" we will consider the path to be a mapping to
 an I/O device.
+UPDATE: the judgement is obsoleted. Currently a ``stat'' system call will be
+executed, and whether a file is a device will be judged accordingly.
 
 Problems here:
 (1) What will happen when someone sends something to ``localhost''?
@@ -49,7 +51,7 @@ no difference with packets from another machine.
 
 (2) What will happen when someone wants to read from virtual device like
 "/dev/zero"?
-A: We skiped the actual execution of the action, and put the recorded value
+A: We skipped the actual execution of the action, and put the recorded value
 instead. So it has no difference between using the recorded value and actually
 reading from the device.
 
@@ -117,7 +119,7 @@ might interfere the behavior of a process.
     The interesting point here is that in we can look at the problem in a
     user's point of view. When some information is input into the system, it is
     not distinguishable that which thread actually takes it. So no matter how
-    the threads are scheduled, a user cannot see throught the difference, thus
+    the threads are scheduled, a user cannot see through the difference, thus
     the user usually will not input something differently.] 
 
 ------------------------------------------
@@ -138,3 +140,48 @@ What will happen if a process asks the user ``What is the current time?'' and
 modifies the system time according to the user's input?
 Current Approach: in replaying, modify system time to the recorded value. The
 behavior does not look like quite reasonable.
+
+------------------------------------------
+------------ Select and poll -------------
+------------------------------------------
+Select and poll are system calls regarding i/o. For example, when vim wants to
+read something from stdin, it first uses ``select'' to wait until stdin is able
+to prove some input value, and then calls ``read'' to get the values. As a
+result, we must deal with these two system calls, otherwise we cannot handle
+user inputs in most cases.
+
+The most simple way to deal with that is to treat select and poll as if they are
+user inputs. Thus we can replace the return value of them to a recorded value
+and solves the issue. Matching and replacement should be the same. We just need
+to define the detection process. 
+
+The detection process is not trivial: both system calls could be used to
+determine the status of fd used as either an input or an output fd. In our
+design, input actions and output actions must be treated differently: If an
+input action is a user input stated above, we replace the action result with a
+recorded action's value if possible. If an output action is taken, we usually do
+not replace it. However if the action is different from previous recorded
+action, we may need to report a conflict.
+
+Only detecting whether a user input fd is placed in the input is not quite
+enough: perhaps the system call is used with multiple fd's, and one of the fd's
+that are not a user input is ready. At the time, replcing the return value with
+the recorded value is not quite fair. For example, previous a user input fd f1
+and another fd(say an output fd f2) are ready. However, in the replay process,
+f2 is not ready. If we replace the return value of the system call with
+recorded, the process will think f2 is ready falsely and do some undefined
+things (like writing to a bad fd, etc).
+
+As a result, here is a design for these system calls:
+(1) Detection: Check that at least one of the ``read'' fd's satisfies the
+condition in ``Detection'' section.
+(2) Matching: A recorded system call matches the current system call if
+  a. The OpCode is the same.
+  b. The recorded system call is after any previously matched system call in the
+  same process.
+  c. The user input device set of the current system call and the recorded
+  system call are the same. The other fd's do not matter.
+(3) Replacement: Instead of putting everything into the current system call
+return, we only put the user input fd's in the recorded system call back. All
+the other fd's will not be put back.
+
