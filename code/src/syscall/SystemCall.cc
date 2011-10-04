@@ -313,7 +313,9 @@ bool SystemCall::isInput() const
             type->nr == 0 ||        // read
             type->nr == 17 ||       // pread
             type->nr == 45 ||       // recvfrom
-            type->nr == 47          // recvmsg
+            type->nr == 47 ||       // recvmsg
+            type->nr == 7 ||        // poll
+            type->nr == 23          // select
             );
 }
 
