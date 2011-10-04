@@ -275,7 +275,52 @@ bool SystemCall::isPipe() const
     return valid && (type->nr == 22);
 }
 
+bool SystemCall::isSelect() const
+{
+    return valid && (type->nr == 23);
+}
+
+bool SystemCall::isPoll() const
+{
+    return valid && (type->nr == 7);
+}
+
+bool SystemCall::isInput() const
+{
+    return valid && (
+            type->nr == 0 ||        // read
+            type->nr == 17 ||       // pread
+            type->nr == 45 ||       // recvfrom
+            type->nr == 47 ||       // recvmsg
+            type->nr == 23          // select
+            );
+}
+
+bool SystemCall::isOutput() const
+{
+    //TODO: Implement
+    return false;
+}
+
 bool SystemCall::isUserInput() const
+{
+    return isRegularUserInput() ||
+           isUserSelect() ||
+           isUserPoll();
+}
+
+bool SystemCall::isUserSelect() const
+{
+    return false;
+}
+
+bool SystemCall::isUserPoll() const
+{
+    // TODO: implement
+    return false;
+}
+
+bool SystemCall::isRegularUserInput() const
 {
     bool ifUserInput = isInput();
     if (!ifUserInput)
@@ -304,24 +349,6 @@ bool SystemCall::isUserInput() const
             }
         }
     }
-    return false;
-}
-
-bool SystemCall::isInput() const
-{
-    return valid && (
-            type->nr == 0 ||        // read
-            type->nr == 17 ||       // pread
-            type->nr == 45 ||       // recvfrom
-            type->nr == 47 ||       // recvmsg
-            type->nr == 7 ||        // poll
-            type->nr == 23          // select
-            );
-}
-
-bool SystemCall::isOutput() const
-{
-    //TODO: Implement
     return false;
 }
 
