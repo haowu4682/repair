@@ -257,7 +257,6 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallArgTyp
 // Tell whether the syscall is a ``fork'' or ``vfork'' or ``clone''
 bool SystemCall::isFork() const
 {
-    // XXX: Hard code the syscall number for x86_64 here now.
     return valid && (type->nr == 56 // clone
                 ||   type->nr == 57 // fork
                 ||   type->nr == 58 // vfork
@@ -266,7 +265,6 @@ bool SystemCall::isFork() const
 
 bool SystemCall::isExec() const
 {
-    // XXX: Hard code the syscall number for x86_64 here now.
     return valid && (type->nr == 59);
 }
 
@@ -311,6 +309,7 @@ bool SystemCall::isUserInput() const
 
 bool SystemCall::isUserSelect() const
 {
+    // TODO: implement
     return false;
 }
 

@@ -3,6 +3,8 @@
 #ifndef __SYSCALL_SYSCALLARG_H__
 #define __SYSCALL_SYSCALLARG_H__
 
+#include <sys/select.h>
+
 #include <common/common.h>
 
 class SystemCallArgument;
@@ -62,6 +64,7 @@ SYSARG_(execve);
 extern sysarg_type_t sysarg_type_list[];
 
 Pair<int, int> fd2_derecord(String value);
+fd_set fd_set_derecord(String value);
 
 SYSARGOVERWRITE_(void);
 SYSARGOVERWRITE_(sint);

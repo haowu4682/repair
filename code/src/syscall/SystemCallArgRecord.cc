@@ -1,5 +1,6 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <sstream>
@@ -311,5 +312,30 @@ Pair<int, int> fd2_derecord(String value)
     is >> aux;
     is >> fd2.second;
     return fd2;
+}
+
+fd_set fd_set_derecord(String value)
+{
+    fd_set result;
+    size_t i = 0;
+    size_t size = value.size();
+    FD_ZERO(&result);
+
+    while (i < size)
+    {
+        size_t j = i;
+        while (j < size && value[j] != ',' && value[j] != '}')
+        {
+            ++j;
+        }
+        if (j == size)
+        {
+            LOG("Parenthesis does not match in %s", value.c_str());
+        }
+        String item = value.substr(i, j);
+        int fd = atoi(item.c_str());
+        FD_SET(fd, &result);
+    }
+    return result;
 }
 
