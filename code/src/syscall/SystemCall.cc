@@ -570,16 +570,19 @@ bool SystemCall::operator ==(const SystemCall &another) const
 String SystemCall::toString() const
 {
     ostringstream ss;
-    ss << "name=" << type->name << ", ";
     ss << "valid=" << valid << ", ";
-    ss << "usage=" << usage << ", ";
-    ss << "args=(";
-    for (int i = 0; i < type->numArgs; i++)
+    if (valid)
     {
-        ss << args[i].toString() << ", ";
+        ss << "name=" << type->name << ", ";
+        ss << "usage=" << usage << ", ";
+        ss << "args=(";
+        for (int i = 0; i < type->numArgs; i++)
+        {
+            ss << args[i].toString() << ", ";
+        }
+        ss << "), ";
+        ss << "ret=" << ret;
     }
-    ss << "), ";
-    ss << "ret=" << ret;
     return ss.str();
 }
 
