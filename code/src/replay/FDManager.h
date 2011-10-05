@@ -23,17 +23,17 @@ class FDManager
         //int removeNewFile(int fd);
         //int removeNewFile(File *file);
 
-        File *searchOld(int fd, long seqNum);
+        File *searchOld(int fd, long seqNum) const;
         // Always return the most recent one
-        File *searchNew(int fd);
+        File *searchNew(int fd) const;
         // If we can find a fd mapping, return the mapped fd. Otherwise return the old fd.
-        int oldToNew(int oldFd, long seqNum);
+        int oldToNew(int oldFd, long seqNum) const;
         // If we can find a fd mapping, return the mapped fd. Otherwise return the new fd.
         // XXX: temporarily invalid
         // int newToOld(int newFd, long seqNum);
         // The seqNum is used for old-fd, the new fd does not need a seqNum
-        bool equals(int oldFd, int newFd, long seqNum);
-        String toString();
+        bool equals(int oldFd, int newFd, long seqNum) const;
+        String toString() const;
 
         // Clone the FDMap from another FDManager
         void clone(FDManager *another);

@@ -74,7 +74,6 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
     long argsList[SYSCALL_MAX_ARGS];
     getRegsList(regs, argsList);
     int numArgs = type->numArgs;
-    //ret = regs.rax;
     ret = getArgFromReg(regs, SYSCALL_MAX_ARGS);
     for (int i = 0; i < numArgs; i++)
     {
@@ -300,6 +299,29 @@ bool SystemCall::isOutput() const
     return false;
 }
 
+bool isFDUserInput(int fd, const FDManager *fdManager, bool isNew = true, long seqNum = 0)
+{
+    File *file;
+    if (isNew)
+    {
+        file = fdManager->searchNew(fd);
+    }
+    else
+    {
+        file = fdManager->searchOld(fd, seqNum);
+    }
+    if (file == NULL)
+    {
+        // Unknown fd, we do not treat it as user input.
+        // XXX: might need to assert(file != NULL)
+        LOG("Unknown fd: %d", fd);
+        return false;
+    }
+    FileType fileTy = file->getType();
+    // XXX: Do we interact both device and network?
+    return ((fileTy == device) || (fileTy == network));
+}
+
 bool SystemCall::isUserInput() const
 {
     return isRegularUserInput() ||
@@ -310,6 +332,20 @@ bool SystemCall::isUserInput() const
 bool SystemCall::isUserSelect() const
 {
     // TODO: implement
+    if (!isSelect())
+        return false;
+    size_t numArgs = type->numArgs;
+    // HARD CODE FOR X86_64
+    for (size_t i = 1; i < 4; ++i)
+    {
+        const SyscallArgType *argType = &type->args[i];
+        if (argType->record != struct_record)
+        {
+            LOG("System call cannot be interpreted as select: %s", toString().c_str());
+            break;
+        }
+        fd_set fds = fd_set_derecord(args[i].getValue().c_str());
+    }
     return false;
 }
 
@@ -332,18 +368,8 @@ bool SystemCall::isRegularUserInput() const
         {
             int fd = atoi(args[i].getValue().c_str());
             // XXX: Hard code for ``new syscall'' here.
-            File *file = fdManager->searchNew(fd);
-            if (file == NULL)
-            {
-                // Unknown fd, we do not treat it as user input.
-                // XXX: might need to assert(file != NULL)
-                LOG("Unknown fd: %d", fd);
-                continue;
-            }
-            FileType fileTy = file->getType();
-            // XXX: Do we interact both device and network?
-            if (fileTy == device || fileTy == network)
-            {
+            if (isFDUserInput(fd, fdManager, true))
+            { 
                 return true;
             }
         }

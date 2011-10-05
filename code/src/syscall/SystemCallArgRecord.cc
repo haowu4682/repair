@@ -307,7 +307,6 @@ Pair<int, int> fd2_derecord(String value)
     Pair<int, int> fd2;
     istringstream is(value);
 
-    // XXX: might cause trouble when the format has changed
     is >> aux2 >> fd2.first;
     is >> aux;
     is >> fd2.second;
@@ -316,6 +315,9 @@ Pair<int, int> fd2_derecord(String value)
 
 fd_set fd_set_derecord(String value)
 {
+    // XXX: Wrong! the actual record is the bits set to represent the required
+    // fd's, not the fd set. For example, if a fd set is {0,2}, the recorded
+    // value is 5 = (101)_2
     fd_set result;
     size_t i = 0;
     size_t size = value.size();

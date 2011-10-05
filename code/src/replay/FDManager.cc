@@ -45,14 +45,14 @@ int FDManager::removeNew(int fd)
 }
 */
 
-File *FDManager::searchOld(int fd, long seqNum)
+File *FDManager::searchOld(int fd, long seqNum) const
 {
     File *str = NULL;
-    mapType::iterator it;
+    mapType::const_iterator it;
     it = oldFDMap.find(fd);
     if (it != oldFDMap.end())
     {
-        for (Vector<FDItem>::iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
+        for (Vector<FDItem>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
         {
             if (jt->seqNum < seqNum)
             {
@@ -67,10 +67,10 @@ File *FDManager::searchOld(int fd, long seqNum)
     return str;
 }
 
-File *FDManager::searchNew(int fd)
+File *FDManager::searchNew(int fd) const
 {
     File *str = NULL;
-    mapType::iterator it;
+    mapType::const_iterator it;
     it = newFDMap.find(fd);
     if (it != newFDMap.end())
     {
@@ -79,12 +79,12 @@ File *FDManager::searchNew(int fd)
     return str;
 }
 
-int FDManager::oldToNew(int oldFd, long seqNum)
+int FDManager::oldToNew(int oldFd, long seqNum) const
 {
     File *file = searchOld(oldFd, seqNum);
     if (file != NULL)
     {
-        for (mapType::iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
+        for (mapType::const_iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
         {
             // XXX: Use the most recent one now. It may cause a problem if it is called
             //      while the most recent one has expired.
@@ -112,7 +112,7 @@ int FDManager::newToOld(int newFd, long seqNum)
 }
 */
 
-bool FDManager::equals(int oldFd, int newFd, long seqNum)
+bool FDManager::equals(int oldFd, int newFd, long seqNum) const
 {
     File *oldPath = searchOld(oldFd, seqNum);
     File *newPath = searchNew(newFd);
@@ -125,21 +125,21 @@ bool FDManager::equals(int oldFd, int newFd, long seqNum)
     return true;
 }
 
-String FDManager::toString()
+String FDManager::toString() const
 {
     ostringstream sout;
     sout << "Old FDs" << endl;
-    for (mapType::iterator it = oldFDMap.begin(); it != oldFDMap.end(); ++it)
+    for (mapType::const_iterator it = oldFDMap.begin(); it != oldFDMap.end(); ++it)
     {
-        for (Vector<FDItem>::iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
+        for (Vector<FDItem>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
         {
             sout << it->first << "\t" << jt->seqNum << "\t" << jt->file << endl;
         }
     }
     sout << "New FDs" << endl;
-    for (mapType::iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
+    for (mapType::const_iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
     {
-        for (Vector<FDItem>::iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
+        for (Vector<FDItem>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
         {
             sout << it->first << "\t" << jt->seqNum << "\t" << jt->file << endl;
         }
