@@ -172,7 +172,8 @@ f2 is not ready. If we replace the return value of the system call with
 recorded, the process will think f2 is ready falsely and do some undefined
 things (like writing to a bad fd, etc).
 
-As a result, here is a design for these system calls:
+In order to overcome the issue, we changes the design of re-execution the select
+and poll to be the following:
 (1) Detection: Check that at least one of the ``read'' fd's satisfies the
 condition in ``Detection'' section.
 (2) Matching: A recorded system call matches the current system call if
@@ -181,7 +182,28 @@ condition in ``Detection'' section.
   same process.
   c. The user input device set of the current system call and the recorded
   system call are the same. The other fd's do not matter.
+(3) Replacement: We need to know two parts of results here.
+  a. The status of a user input fd should be acquired according to the matched
+  record.
+  b. The status of a non-user-input fd should be acquired by running a
+  ``select'' system call seperately. The system call will be executed in a
+  no-timeout fashion, since we have at least one available fd if we found a
+  matched system call.
+  We can combine the result of these two system calls, and return the result to
+  the user program.
+
+------------------------------------------
+------------ Epoll Issue -----------------
+------------------------------------------
+Not sure currently. TODO: Figure out more stuff for epoll.
+
+------------------------------------------
+------------ Obsoleted Designs -----------
+------------------------------------------
+******************************************
+** Obsoleted Design for select and poll **
+The old replacement mechanism has obsoleted, which is stated below:
 (3) Replacement: Instead of putting everything into the current system call
 return, we only put the user input fd's in the recorded system call back. All
 the other fd's will not be put back.
-
+******************************************
