@@ -321,7 +321,7 @@ fd_set fd_set_derecord(String value)
     fd_set result;
     size_t i = 0;
     size_t size = value.size();
-    FD_ZERO(&result);
+    int count = 0;
 
     while (i < size)
     {
@@ -335,8 +335,10 @@ fd_set fd_set_derecord(String value)
             LOG("Parenthesis does not match in %s", value.c_str());
         }
         String item = value.substr(i, j);
-        int fd = atoi(item.c_str());
-        FD_SET(fd, &result);
+        int fd_description = atoi(item.c_str());
+        // XXX: This is not defined by POSIX, usage of this command may be
+        // undefined.
+        (__FDS_BITS(&result))[count++] = fd_description;
     }
     return result;
 }
