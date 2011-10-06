@@ -1,5 +1,6 @@
 //Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <climits>
 #include <sstream>
 
 #include <replay/FDManager.h>
@@ -79,9 +80,9 @@ File *FDManager::searchNew(int fd) const
     return str;
 }
 
-int FDManager::oldToNew(int oldFd, long seqNum) const
+int FDManager::oldToNew(int oldFD, long seqNum) const
 {
-    File *file = searchOld(oldFd, seqNum);
+    File *file = searchOld(oldFD, seqNum);
     if (file != NULL)
     {
         for (mapType::const_iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
@@ -95,27 +96,39 @@ int FDManager::oldToNew(int oldFd, long seqNum) const
     return -1;
 }
 
-// XXX: temporarily invalid
-/*
-int FDManager::newToOld(int newFd, long seqNum)
+int FDManager::newToOld(int newFD, long seqNum) const
 {
-    String file = searchNew(newFd);
-    if (!file.empty())
+    File *file = searchNew(newFD);
+    int oldFD;
+    int leastSeqNum = INT_MAX;
+    if (file != NULL)
     {
-        for (mapType::iterator it = oldFDMap.begin(); it != oldFDMap.end(); ++it)
+        // The approach is not efficient
+        for (mapType::const_iterator it = oldFDMap.begin(); it != oldFDMap.end(); ++it)
         {
-            if (it->second == file)
-                return it->first;
+            for (Vector<FDItem>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
+            {
+                // Three conditions:
+                // 1. points to the same file
+                // 2. the sequential number is not expired
+                // 3. the record has the least sequential number among the files
+                // which satisfy the two conditions above.
+                if (jt->file == file && jt->seqNum >= seqNum
+                        && jt->seqNum < leastSeqNum)
+                {
+                    leastSeqNum = jt->seqNum;
+                    oldFD = it->first;
+                }
+            }
         }
     }
-    return newFd;
+    return oldFD;
 }
-*/
 
-bool FDManager::equals(int oldFd, int newFd, long seqNum) const
+bool FDManager::equals(int oldFD, int newFD, long seqNum) const
 {
-    File *oldPath = searchOld(oldFd, seqNum);
-    File *newPath = searchNew(newFd);
+    File *oldPath = searchOld(oldFD, seqNum);
+    File *newPath = searchNew(newFD);
     if (oldPath == NULL)
         return false;
     if (newPath == NULL)

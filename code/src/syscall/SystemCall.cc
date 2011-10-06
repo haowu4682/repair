@@ -4,6 +4,7 @@
 #include <cstring>
 #include <sstream>
 #include <sys/ptrace.h>
+#include <sys/select.h>
 
 #include <common/common.h>
 #include <common/util.h>
@@ -625,7 +626,33 @@ bool SystemCall::matchUserInput(const SystemCall &another) const
 {
     if (isSelect())
     {
-        //TODO:
+        // The method is not super fast, but it should work.
+        if (!valid || !another.valid)
+            return false;
+        if (usage != another.usage)
+            return false;
+        if (type != another.type)
+            return false;
+
+        // We assume that only read fds matter here.
+        // write fds do not matter because they will not be used as an input.
+        fd_set read_fds1 = fd_set_derecord(args[1].getValue());
+        fd_set read_fds2 = fd_set_derecord(another.args[1].getValue());
+        int nfds = atoi(args[0].getValue().c_str());
+        for (int newFD = 0; newFD < nfds; ++newFD)
+        {
+            int oldFD = fdManager->newToOld(newFD, another.seqNum);
+            bool fdset1 = FD_ISSET(newFD, &read_fds1);
+            bool fdset2 = FD_ISSET(oldFD, &read_fds2);
+            if ((fdset1 && !fdset2) || (!fdset1 && fdset2))
+            {
+                if (isFDUserInput(newFD, fdManager, true))
+                { 
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     else
     {

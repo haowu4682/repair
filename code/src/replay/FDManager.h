@@ -14,8 +14,8 @@ class FDManager
 {
     public:
         FDManager() { init(); }
-        // XXX: ASSUME item with lower seq number will always be inserted in the first place
-        //      here.
+        // XXX: ASSUME item with lower seq number will always be inserted in the
+        // first place here.
         int addOldFile(File *file, long seqNum);
         //int removeOldFile(int fd);
         //int removeOldFile(File *file);
@@ -27,12 +27,11 @@ class FDManager
         // Always return the most recent one
         File *searchNew(int fd) const;
         // If we can find a fd mapping, return the mapped fd. Otherwise return the old fd.
-        int oldToNew(int oldFd, long seqNum) const;
+        int oldToNew(int oldFD, long seqNum) const;
         // If we can find a fd mapping, return the mapped fd. Otherwise return the new fd.
-        // XXX: temporarily invalid
-        // int newToOld(int newFd, long seqNum);
+        int newToOld(int newFD, long seqNum) const;
         // The seqNum is used for old-fd, the new fd does not need a seqNum
-        bool equals(int oldFd, int newFd, long seqNum) const;
+        bool equals(int oldFD, int newFD, long seqNum) const;
         String toString() const;
 
         // Clone the FDMap from another FDManager

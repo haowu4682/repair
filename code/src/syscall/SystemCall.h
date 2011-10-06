@@ -60,7 +60,7 @@ class SystemCall : public Action
         // Whether the system call is valid.
         // A valid system call is a system with its code and args provided.
         // @author haowu
-        bool isValid() const { return valid;}
+        bool isValid() const { return valid; }
 
         // Init a system call from a record
         // @param record The record
