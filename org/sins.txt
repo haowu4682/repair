@@ -1,1 +1,2 @@
 1. We do not support ``epoll'' currently.
+2. a slow method is used in detecting whether 2 ``select'' system calls are equal.
