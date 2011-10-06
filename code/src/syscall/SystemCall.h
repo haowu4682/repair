@@ -51,6 +51,11 @@ class SystemCall : public Action
         // Whether two syscalls are equal. Two syscalls are equal if their usages are equal, and
         // each available arguments and return value(if usage==true) are equal
         bool operator == (const SystemCall &) const;
+        bool match(const SystemCall &) const;
+        // Whether two syscalls are equalivant in USER_INPUT sense. If the
+        // syscall cannot contain a user input, it just returns to regular
+        // match.
+        bool matchUserInput(const SystemCall &) const;
 
         // Whether the system call is valid.
         // A valid system call is a system with its code and args provided.
@@ -86,6 +91,16 @@ class SystemCall : public Action
 
         // Tell whether the system call is a ``poll''
         bool isPoll() const;
+
+        // This function returns if a user input is a regular user input(i.e.
+        // read or recvfrom)
+        bool isRegularUserInput() const;
+
+        // This function returns if a user input is a `select' for a user input.
+        bool isUserSelect() const;
+
+        // This function returns if a user input is a `poll' for a user input.
+        bool isUserPoll() const;
 
         // Get return value
         long getReturn() const { return ret; }
@@ -150,14 +165,6 @@ class SystemCall : public Action
         // Get an aux value for determing an argument
         static SystemCallArgumentAuxilation getAux(long args[], const SyscallArgType &argType, int i,
                 long ret, int nargs, pid_t pid, bool usage);
-
-        // This function returns if a user input is a regular user input(i.e.
-        // read or recvfrom)
-        bool isRegularUserInput() const;
-        // This function returns if a user input is a `select' for a user input.
-        bool isUserSelect() const;
-        // This function returns if a user input is a `poll' for a user input.
-        bool isUserPoll() const;
 
         // If the system call is valid
         bool valid;

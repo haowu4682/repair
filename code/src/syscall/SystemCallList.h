@@ -24,8 +24,10 @@ class SystemCallList
         const static int MATCH_NOT_FOUND = -1;
 
         // The constructor, requires a pid manager
-        SystemCallList(PidManager *pidManager, SystemManager *systemManager)
-            { this->pidManager = pidManager; this->systemManager = systemManager;}
+        SystemCallList(PidManager *pidManager, SystemManager *systemManager,
+                FDManager *fdManager) : pidManager(pidManager), 
+                                        systemManager(systemManager),
+                                        fdManager(fdManager) {}
 
         // Search for a system call **same** or **similar** with the given system call.
         // @param syscall the given system call
@@ -44,9 +46,14 @@ class SystemCallList
         long searchMatchInput(SystemCall &match, const SystemCall &source,
                 pid_t pid, size_t seq = 0);
 
+        // Search for a matching select system call. Parameters are similar with
+        // searchMatchInput.
+        //long searchMatchSelect(SystemCall &match, const SystemCall &source,
+        //        pid_t pid, size_t seq = 0);
+
         // Init the system call list from an input stream.
         // @param in the input stream
-        void init(std::istream &in, FDManager *fdManager = NULL);
+        void init(std::istream &in);
 
         // to string
         String toString();
@@ -59,6 +66,9 @@ class SystemCallList
         
         // A pid manager use to manage processes mapping
         PidManager *pidManager;
+
+        // An FD Manager to manager file descriptors
+        FDManager *fdManager;
 
         // A system manager to store all the process to be directed `exec'-ed in replaying
         SystemManager *systemManager;

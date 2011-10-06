@@ -590,7 +590,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     }
 }
 
-bool SystemCall::operator ==(const SystemCall &another) const
+bool SystemCall::match(const SystemCall &another) const
 {
     if (!valid || !another.valid)
         return false;
@@ -619,6 +619,23 @@ bool SystemCall::operator ==(const SystemCall &another) const
         }
     }
     return true;
+}
+
+bool SystemCall::matchUserInput(const SystemCall &another) const
+{
+    if (isSelect())
+    {
+        //TODO:
+    }
+    else
+    {
+        return match(another);
+    }
+}
+
+bool SystemCall::operator ==(const SystemCall &another) const
+{
+    return match(another);
 }
 
 String SystemCall::toString() const

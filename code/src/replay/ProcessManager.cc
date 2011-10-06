@@ -97,7 +97,9 @@ int ProcessManager::executeProcess()
     args[commandList->size()] = NULL;
 
     // Execute pre-actions
-    // XXX: Temporarily canceled for debugging
+    // XXX: Temporarily canceled for debugging, if bash command could be
+    // implemented as user input, we finally do not need to deal with
+    // pre-actions.
 #if 0
     LOG("Before executing pre-actions %s", process.getCommand()->toString().c_str());
     Vector<Action *> *preActions = process.getPreActions();
@@ -201,16 +203,45 @@ int ProcessManager::traceProcess(pid_t pid)
 
         // The child process is at the point **before** a syscall.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
+        SystemCall syscallMatch;
         SystemCall syscall(regs, pid, false, fdManager);
         LOG("syscall: %s", syscall.toString().c_str());
 
         // If the system call is user input or output, we need to act quite differently.
-        if (syscall.isUserInput())
+        if (syscall.isUserSelect())
         {
-            //LOG("Arg Type Pointer: %p", syscall.getArg(0).getType());
+            LOG("User select found: %s", syscall.toString().c_str());
+            pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, inputSeqNum);
+            bool matchFound = (pret >= 0);
+
+            // If a match has been found, we'll change the syscall result
+            // accordingly and cancel the syscall execution. Otherwise the
+            // syscall is executed as usual.
+            if (matchFound)
+            {
+                LOG("Match Found! Match is: %s", syscallMatch.toString().c_str());
+                inputSeqNum = pret;
+                // Get the user input from syscallMatch
+                // Use ptrace to put the user input back
+                // TODO: modify writeMatchedSyscall or here.
+                writeMatchedSyscall(syscallMatch, pid);
+
+                // Skip executing the system call
+                if (skipSyscall(pid) < 0)
+                {
+                    LOG("Skip syscall failed: %s", syscall.toString().c_str());
+                }
+            }
+            else
+            {
+                LOG("No Match Found!");
+                pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+                waitpid(pid, &status, 0);
+            }
+        }
+        else if (syscall.isRegularUserInput())
+        {
             LOG("User input found: %s", syscall.toString().c_str());
-            //SystemCall syscallMatch = syscallList->search(syscall);
-            SystemCall syscallMatch;
             pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, inputSeqNum);
             bool matchFound = (pret >= 0);
 
