@@ -161,6 +161,12 @@ class SystemCall : public Action
         // Overwrite return value of the system call into a process
         int overwrite(pid_t pid);
 
+        // The function is used to merge the result of two different syscalls. Currently
+        // it is only used for dealing with select, poll, and epoll.
+        // @param src The source system call. We will merge the result of user input fds
+        // in src into dst
+        int merge(const SystemCall &src);
+
     private:
         // Get an aux value for determing an argument
         static SystemCallArgumentAuxilation getAux(long args[], const SyscallArgType &argType, int i,

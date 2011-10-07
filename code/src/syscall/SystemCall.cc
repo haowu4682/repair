@@ -1,5 +1,6 @@
 // Original Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
@@ -389,6 +390,36 @@ int SystemCall::exec()
     else
     {
         ret = -1;
+    }
+    return ret;
+}
+
+// Merge two system calls
+int SystemCall::merge(const SystemCall &src)
+{
+    int ret;
+    if (isSelect() && src.isSelect())
+    {
+        int nfds_dst = atoi(args[0].getValue().c_str());
+        int nfds_src = atoi(src.args[0].getValue().c_str());
+        int nfds_max = max(nfds_dst, nfds_src);
+        fd_set fd_set_dst = fd_set_derecord(args[1].getValue());
+        fd_set fd_set_src = fd_set_derecord(src.args[1].getValue());
+        for (int oldFD = 0; oldFD < nfds_max; ++oldFD)
+        {
+            if (isFDUserInput(oldFD, fdManager, false, src.seqNum))
+            {
+                int newFD = fdManager->oldToNew(oldFD, src.seqNum);
+                if (FD_ISSET(oldFD, &fd_set_src))
+                {
+                    FD_SET(newFD, &fd_set_dst);
+                }
+                else
+                {
+                    FD_CLR(newFD, &fd_set_dst);
+                }
+            }
+        }
     }
     return ret;
 }

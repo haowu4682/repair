@@ -1,5 +1,6 @@
 //Author: Hao Wu <haowu@cs.utexas.edu> 
 #include <cstring>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -221,16 +222,26 @@ int ProcessManager::traceProcess(pid_t pid)
             {
                 LOG("Match Found! Match is: %s", syscallMatch.toString().c_str());
                 inputSeqNum = pret;
+                // We do not skip executing the system call! We hack it to
+                // execute in no-timeout way.
+                timeval zeroTime = {0, 0};
+                writeToProcess(&zeroTime, SystemCall::getArgFromReg(regs, 4),
+                        sizeof(timeval), pid);
+                pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+                waitpid(pid, &status, 0);
+
+                // Achieve the result of the execution
+                ptrace(PTRACE_GETREGS, pid, 0, &regs);
+                SystemCall syscallReturn(regs, pid, true, fdManager);
+                
+                // Merge the result with recorded result
+                //mergeSystemCall(syscallReturn, syscallMatch);
+                syscallReturn.merge(syscallMatch);
+                
+                // Write matched system call
                 // Get the user input from syscallMatch
                 // Use ptrace to put the user input back
-                // TODO: modify writeMatchedSyscall or here.
-                writeMatchedSyscall(syscallMatch, pid);
-
-                // Skip executing the system call
-                if (skipSyscall(pid) < 0)
-                {
-                    LOG("Skip syscall failed: %s", syscall.toString().c_str());
-                }
+                writeMatchedSyscall(syscallReturn, pid);
             }
             else
             {
