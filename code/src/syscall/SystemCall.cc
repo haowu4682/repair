@@ -397,9 +397,13 @@ int SystemCall::exec()
 // Merge two system calls
 int SystemCall::merge(const SystemCall &src)
 {
-    int ret;
     if (isSelect() && src.isSelect())
     {
+        if (ret < 0)
+        {
+            LOG("Select call has failed");
+            return ret;
+        }
         int nfds_dst = atoi(args[0].getValue().c_str());
         int nfds_src = atoi(src.args[0].getValue().c_str());
         int nfds_max = max(nfds_dst, nfds_src);
@@ -410,12 +414,14 @@ int SystemCall::merge(const SystemCall &src)
             if (isFDUserInput(oldFD, fdManager, false, src.seqNum))
             {
                 int newFD = fdManager->oldToNew(oldFD, src.seqNum);
-                if (FD_ISSET(oldFD, &fd_set_src))
+                if (FD_ISSET(oldFD, &fd_set_src) && !FD_ISSET(newFD, &fd_set_dst))
                 {
+                    ++ret;
                     FD_SET(newFD, &fd_set_dst);
                 }
-                else
+                else if (!FD_ISSET(oldFD, &fd_set_src) && FD_ISSET(newFD, &fd_set_dst))
                 {
+                    --ret;
                     FD_CLR(newFD, &fd_set_dst);
                 }
             }
