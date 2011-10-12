@@ -6,8 +6,9 @@ from sysarg import *
 syscall = namedtuple("syscall", "nr name ret args")
 sysarg  = namedtuple("sysarg", "name ty usage aux")
 
-ENTER    = 0       # trace
-EXIT     = 1       # trace
+ENTER    = 1       # trace
+EXIT     = 2       # trace
+BOTH     = 3       # trace
 
 READ     = 1 << 1  # fd/namei
 WRITE    = 1 << 2  # fd/namei
@@ -376,7 +377,6 @@ _syscalls = [
         [ NR_read       , "read"        , sysarg_ssize_t,       [
                         [ "fd"          , sysarg_fd     , READ, OFFSET  ],
                         [ "buf"         , sysarg_buf_det   , EXIT  ],
-                       #[ "buf"         , sysarg_ignore         ],
                         [ "count"       , sysarg_size_t         ]]],
         [ NR_write      , "write"       , sysarg_ssize_t,       [
                         [ "fd"          , sysarg_fd     , WRITE, OFFSET ],
@@ -401,7 +401,6 @@ _syscalls = [
         [ NR_pread64    , "pread"       , sysarg_ssize_t,       [
                         [ "fd"          , sysarg_fd     , READ  ],
                         [ "buf"         , sysarg_sha1   , EXIT  ],
-                       #[ "buf"         , sysarg_buf    , EXIT  ],
                         [ "count"       , sysarg_size_t         ],
                         [ "offset"      , sysarg_off_t          ]]],
         [ NR_pwrite64   , "pwrite"      , sysarg_ssize_t,       [
@@ -670,7 +669,7 @@ def _sort_syscalls(raw_cs):
                         padding = [None] * (len(sysarg._fields) - len(raw_arg))
                         a = sysarg._make(raw_arg + padding)
                         if a.usage is None:
-                                a = a._replace(usage=0)
+                                a = a._replace(usage=ENTER)
                         if a.aux is None:
                                 a = a._replace(aux=0)
                         sc.args[i] = a

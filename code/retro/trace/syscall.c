@@ -65,6 +65,9 @@ enum { reserve_bytes = 128*1024 };
 
 extern struct file *fget_light(unsigned int fd, int *fput_needed);
 
+// TODO: modify this function.
+// usage can only be SYSARG_IFENTRY or SYSARG_IFEXIT here. Otherwise the
+// behavior is not defined!
 static long _record(int usage, pid_t pid, int nr, long args[6],
 		    long ret, long *retp, uint64_t *sidp)
 {
@@ -108,7 +111,7 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
 	}
 
 	/* record the index of the open inode by open() syscall */
-	if (unlikely(nr == __NR_open && usage == 1 && ret >= 0)) {
+	if (unlikely(nr == __NR_open && (usage & SYSARG_IFEXIT) && ret >= 0)) {
 		struct file *file;
 		int fput_needed;
 		struct inode *inode;
@@ -134,7 +137,7 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
    * are tracing only sysexits, this function is only called with usage=0, so
    * *sidp will contain garbage!
    */
-	if (usage == 0) {
+	if (usage & SYSARG_IFENTRY) {
 		static DEFINE_PER_CPU_SHARED_ALIGNED(uint64_t, sid_ctr);
 		uint64_t *ctrp = &__get_cpu_var(sid_ctr);
 		*sidp = (((uint64_t) cpu) << 48) | ((*ctrp)++);
@@ -159,7 +162,7 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
 	memcpy(buf + len, sidp, sizeof(uint64_t));
 	len += sizeof(uint64_t);
 
-	if (usage == 1 && sc->nr == __NR_execve) {
+	if ((usage & SYSARG_IFEXIT) && sc->nr == __NR_execve) {
 		len += uvarint(current->cred->uid, buf + len);
 		len += uvarint(current->cred->gid, buf + len);
 		len += uvarint(current->cred->euid, buf + len);
@@ -178,103 +181,103 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
 	arg = sc->args;
 	for (i = 0; i < sc->nargs; ++i, ++arg) {
 		struct sysarg a = *arg;
-		if (a.usage != usage || used[i])
+		if (!(a.usage & usage) || used[i])
 			continue;
 		if (a.ty == sysarg_iovec) {
-			if (a.usage) {
+			if (usage & SYSARG_IFEXIT) {
 				if (ret > 0) {
 					a.aux = args[i+1];
 					a.ret = ret;
 				}
 			} else {
-				/* very vulnerable from user inputs */
+				// very vulnerable from user inputs
 				used[i+1] = 1;
 				a.aux = args[i+1];
 				a.ret = UIO_MAXIOV*PAGE_SIZE;
-			}
-		}
-		if (a.ty == sysarg_buf || a.ty == sysarg_buf_det) {
-			if (a.usage) {
-        // Length of the buffer depends on the kernel.
-				if (ret > 0) {
-					used[6] = 1;
-					a.aux = ret;
-				} else
-					a.aux = 0;
-			} else {
-        // Length of the buffer is passed in by the user.
-				used[i+1] = 1;
-				a.aux = args[i+1];
-			}
-		} else if (a.ty == sysarg_struct) {
-			if (a.usage) {
-				a.aux = 0;
-				if (ret == 0) {
-					if (sc->args[i+1].ty == sysarg_psize_t) {
-						int size = 0;
-						get_user(size, (int *)args[i+1]);
-						a.aux = size;
-					}
-				}
-			} else {
-				if (sc->args[i+1].ty == sysarg_uint) {
-					used[i+1] = 1;
-					a.aux = args[i+1];
-				}
-			}
-		} else if (a.ty == sysarg_sha1) {
-      // Akin to the case of sysarg_buf.
-			if (a.usage) {
-				a.aux = ret;
-			} else {
-				a.aux = args[i+1];
-			}
-		} else if (a.ty == sysarg_path_at || a.ty == sysarg_rpath_at) {
-			/* test AT_SYMLINK_(NO)FOLLOW, always the last argument */
-			if (a.aux && (a.aux & args[sc->nargs - 1])) {
-				/* toggle */
-				if (a.ty == sysarg_path_at)
-					a.ty = sysarg_rpath_at;
-				else
-					a.ty = sysarg_path_at;
-			}
-			a.aux = args[i-1];
-		}
-		a.ty(args[i], &a);
-	}
+            }
+        }
+        if (a.ty == sysarg_buf || a.ty == sysarg_buf_det) {
+            if (usage & SYSARG_IFEXIT) {
+                // Length of the buffer depends on the kernel.
+                if (ret > 0) {
+                    used[6] = 1;
+                    a.aux = ret;
+                } else
+                    a.aux = 0;
+            } else {
+                // Length of the buffer is passed in by the user.
+                used[i+1] = 1;
+                a.aux = args[i+1];
+            }
+        } else if (a.ty == sysarg_struct) {
+            if (usage & SYSARG_IFEXIT) {
+                a.aux = 0;
+                if (ret == 0) {
+                    if (sc->args[i+1].ty == sysarg_psize_t) {
+                        int size = 0;
+                        get_user(size, (int *)args[i+1]);
+                        a.aux = size;
+                    }
+                }
+            } else {
+                if (sc->args[i+1].ty == sysarg_uint) {
+                    used[i+1] = 1;
+                    a.aux = args[i+1];
+                }
+            }
+        } else if (a.ty == sysarg_sha1) {
+            // Akin to the case of sysarg_buf.
+            if (usage & SYSARG_IFEXIT) {
+                a.aux = ret;
+            } else {
+                a.aux = args[i+1];
+            }
+        } else if (a.ty == sysarg_path_at || a.ty == sysarg_rpath_at) {
+            /* test AT_SYMLINK_(NO)FOLLOW, always the last argument */
+            if (a.aux && (a.aux & args[sc->nargs - 1])) {
+                /* toggle */
+                if (a.ty == sysarg_path_at)
+                    a.ty = sysarg_rpath_at;
+                else
+                    a.ty = sysarg_path_at;
+            }
+            a.aux = args[i-1];
+        }
+        a.ty(args[i], &a);
+    }
 
-	if (usage && !used[6])
-		sc->ret(ret, NULL);
+    if ((usage & SYSARG_IFEXIT) && !used[6])
+        sc->ret(ret, NULL);
 
-  /* ipopov:
-   * At this point, hopefully we're done.
-   */
+    /* ipopov:
+     * At this point, hopefully we're done.
+     */
 
-	preempt_enable();
+    preempt_enable();
 
-	if (usage == 0 && retp) {
-		if (handle_inode_drop(sc->nr, args) >= 0) {
-			*retp = 0;
-			return HOOK_SKIP;
-		}
-	}
+    if ((usage & SYSARG_IFENTRY) && retp) {
+        if (handle_inode_drop(sc->nr, args) >= 0) {
+            *retp = 0;
+            return HOOK_SKIP;
+        }
+    }
 
-	if (sc->nr == NR_snapshot && retp) {
-		*retp = take_snapshot((const char *) args[0],
-				      (const char *) args[1],
-				      (const char *) args[2]);
-		return HOOK_SKIP;
-	}
+    if (sc->nr == NR_snapshot && retp) {
+        *retp = take_snapshot((const char *) args[0],
+                (const char *) args[1],
+                (const char *) args[2]);
+        return HOOK_SKIP;
+    }
 
-	return HOOK_CONT;
+    return HOOK_CONT;
 }
 
 long syscall_enter(pid_t pid, int nr, long args[6], long *retp, uint64_t *sidp)
 {
-	return _record(0, pid, nr, args, 0, retp, sidp);
+    return _record(SYSARG_IFENTRY, pid, nr, args, 0, retp, sidp);
 }
 
 void syscall_exit(pid_t pid, int nr, long args[6], long ret, uint64_t sid)
 {
-	_record(1, pid, nr, args, ret, 0, &sid);
+    _record(SYSARG_IFEXIT, pid, nr, args, ret, 0, &sid);
 }
