@@ -40,7 +40,7 @@ def main(fn):
 				size, count, time, time_cnt = stats.setdefault(key, (0, 0, 0, 0))
 
 				# exit
-				if r.usage and cache[0] != -1:
+				if (r.usage & EXIT) and cache[0] != -1:
 					if r.nr == cache[0]:
 						time_cnt += 1
 						time += r.ts[0] - cache[1]
@@ -79,7 +79,7 @@ def last():
 		results.sort(reverse=True)
 		sys.stderr.write("\n     size   cnt   ave       time  #cnt     syscall\n")
 		sys.stderr.write("=" * 70 + "\n")
-		syms = [">", "<"]
+		syms = ["", ">", "<", "<>"]
 		for (size, count, time, time_cnt), (nr, usage) in results:
 			name = syscalls[nr].name
 			avr_time = (time/time_cnt if time_cnt != 0 else time)

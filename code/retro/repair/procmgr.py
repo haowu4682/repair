@@ -101,7 +101,7 @@ class Rerun:
     (r, p) = self.proc.load(True , None)
     (r, p) = self.proc.load(False, None)
 
-    assert r.usage == 1 and r.nr == syscall.NR_execve
+    assert r.usage & EXIT and r.nr == syscall.NR_execve
 
     # virtualize pid
     self.pids[pid] = r.pid
@@ -113,7 +113,7 @@ class Rerun:
   def clone(self, vpid, child_pid):
     pid = self.pids[vpid]
     (r, p) = self.proc.load(False, pid.pid)
-    assert r.usage == 1 and r.nr == syscall.NR_clone
+    assert r.usage & EXIT and r.nr == syscall.NR_clone
 
     # Virtualize child pid. It's possible that this clone syscall takes place
     # during expansion, in which case the child pid cannot be matched up to a
@@ -262,7 +262,7 @@ class ProcessActor(mgrapi.ActorNode):
     if r:
       assert isinstance(r, record.SyscallRecord)
       if r.nr == syscall.NR_execve:
-        if r.usage == 0:
+        if r.usage & ENTER:
           self.r_arg = r
         else:
           self.r_ret = r
@@ -359,7 +359,7 @@ class ProcSysCall(mgrapi.Action):
       if r == None:
         dbg.syscall('Aborting syscall; rerun returned no record')
         return
-      assert r.usage == 0
+      assert r.usage & ENTER
 
       # special treatment of wait4
       # (see note in wait4.doc)
@@ -375,12 +375,12 @@ class ProcSysCall(mgrapi.Action):
         # wait4() again, at this time we should be able
         # to fetch child exit status
         (r, p) = rerun.next(False, self.actor.pid)
-        assert r.usage == 1 and r.nr == syscall.NR_wait4
+        assert r.usage & ENTER and r.nr == syscall.NR_wait4
 
         # this is a real system call we should execute
         # on this action node
         (r, p) = rerun.next(True, self.actor.pid)
-        assert r.usage == 0
+        assert r.usage & ENTER
 
       # match up
       if (self.argsnode.origdata.nr == r.nr and
@@ -464,7 +464,7 @@ class ProcSysRet(mgrapi.Action):
       (r, p) = self.actor.rerun.next(True, pid)
       if r == None:
         return
-      assert r.usage == 0
+      assert r.usage & ENTER
 
       # pass rerun object to the bumped process
       if r.pid != self.retnode.data.pid:
@@ -695,7 +695,7 @@ class SyscallAction(ISyscallAction):
           for childpid in rerun.pids:
             dbg.info("reviewing: %s" % childpid)
             (childr, childp) = rerun.next(True, childpid)
-            assert childr.usage == 0
+            assert childr.usage & ENTER
             self.osloader.parse_record(childr)
         return
       else:
@@ -706,7 +706,7 @@ class SyscallAction(ISyscallAction):
       # Is this actually true?:
       # Vestigial, from Taesoo: r is None with exit_group()-like
       # syscalls
-      assert not r or (r and r.usage == 1)
+      assert not r or (r and r.usage & EXIT)
       if r:
         # self.retnode exists iff the exit record has already been
         # parsed for the syscall in question, i.e. iff this syscall

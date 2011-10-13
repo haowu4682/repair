@@ -41,7 +41,7 @@ def load(n):
 		retnode_parent = None
 		is_clone = r.nr in [NR_clone, NR_fork, NR_vfork]
 
-		if r.usage == 0:
+		if r.usage & ENTER:
 			actor_call = procname(r.pid)
 			argsname = actor_call + ('sysarg', r.sid)
 			set_obj("ProcessActor", actor_call)
@@ -49,7 +49,7 @@ def load(n):
 				set_obj("ProcSysCall", argsname + ('pcall',))
 				set_obj("BufferNode" , argsname)
 
-		if r.usage == 1:
+		if r.usage & EXIT:
 			if not is_clone or (is_clone and r.ret < 0):
 				actor_ret = procname(r.pid)
 				retname = actor_ret + ('sysret', r.sid)
@@ -86,7 +86,7 @@ def load(n):
 			set_obj("SyscallAction", name)
 			set_obj("StatelessActor", name + ('sysactor',))
 
-			if r.usage == 0:
+			if r.usage & ENTER:
 				(rs, ws) = nrdep.nrdep(r)
 
 				for x in rs | ws:

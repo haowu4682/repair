@@ -633,10 +633,10 @@ _syscalls = [
                         [ "flags"       , sysarg_int            ]]],
         [ NR_select     , "select"      , sysarg_int,           [
                         [ "nfds"        , sysarg_int            ],
-                        [ "readfds"     , sysarg_struct , ENTER  , fd_set  ],
-                        [ "writeds"     , sysarg_struct , ENTER  , fd_set  ],
-                        [ "execptds"    , sysarg_struct , ENTER  , fd_set  ],
-                        [ "timeval"     , sysarg_struct , ENTER  , timeval ]]],
+                        [ "readfds"     , sysarg_struct , BOTH  , fd_set  ],
+                        [ "writeds"     , sysarg_struct , BOTH  , fd_set  ],
+                        [ "execptds"    , sysarg_struct , BOTH  , fd_set  ],
+                        [ "timeval"     , sysarg_struct , BOTH  , timeval ]]],
         [ NR_connect    , "connect"     , sysarg_int,           [
                         [ "fd"          , sysarg_fd     , READ  ],
                         [ "addr"        , sysarg_struct , ENTER  , sockaddr ],
