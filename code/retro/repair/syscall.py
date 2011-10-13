@@ -6,11 +6,11 @@ from sysarg import *
 syscall = namedtuple("syscall", "nr name ret args")
 sysarg  = namedtuple("sysarg", "name ty usage aux")
 
-ENTER    = 1       # trace
-EXIT     = 2       # trace
-BOTH     = 3       # trace
+ENTER    = 1 << 0  # trace
+EXIT     = 1 << 1  # trace
+BOTH     = ENTER | EXIT # trace
 
-READ     = 1 << 1  # fd/namei
+READ     = 1 << 4  # fd/namei
 WRITE    = 1 << 2  # fd/namei
 TRUNCATE = 1 << 3  # fd/namei
 CREATE   = 1 << 10 # namei
