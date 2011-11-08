@@ -1,6 +1,7 @@
 CPP             := g++
 CXXFLAGS        := -Isrc/ -g
-LDFLAGS         := -lrt -lssl -g
+LDFLAGS         := -g
+LDADD			:= -lrt -lssl
 PYTHONPATH      := src/python_include
 
 COMMONHDR       := $(wildcard src/common/*.h)
@@ -24,7 +25,7 @@ bin: $(REPLAYBIN)
 
 $(REPLAYBIN): $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ)
 	mkdir -p bin;
-	$(CPP) $(LDFLAGS) -o $@ $^
+	$(CPP) $(LDFLAGS) -o $@ $^ $(LDADD)
 
 obj: $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ)
 

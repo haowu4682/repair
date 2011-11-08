@@ -234,7 +234,7 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallArgTyp
             a.aux = 0;
             if (ret == 0) {
                 int size = 0;
-                readFromProcess((void *)size, args[i+1], sizeof(int), pid);
+                readFromProcess((void *)&size, args[i+1], sizeof(int), pid);
                 a.aux = size;
             }
         } else {
@@ -616,15 +616,16 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
             }
         }
         // close
+        // No need to do any in close phase any more
+#if 0
         if (type->nr == 3)
         {
-            /*
             if (!usage)
             {
                 fdManager->removeOld(atoi(args[0].getValue().c_str()));
             }
-            */
         }
+#endif
     }
 }
 

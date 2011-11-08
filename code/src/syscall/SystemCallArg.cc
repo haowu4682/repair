@@ -75,7 +75,7 @@ bool SystemCallArgument::operator < (const SystemCallArgument &another) const
 String SystemCallArgument::toString() const
 {
     String str;
-    str = name + "=" + value;
+    str = type->name + "=" + value;
     return str;
 }
 

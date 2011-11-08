@@ -6,10 +6,10 @@
 #include <replay/FDManager.h>
 using namespace std;
 
-File FDManager::standardFiles[] = {
-        File::STDIN,
-        File::STDOUT,
-        File::STDERR
+File* FDManager::standardFiles[] = {
+        &File::STDIN,
+        &File::STDOUT,
+        &File::STDERR
 };
 unsigned FDManager::standardFilesSize = 3;
 
@@ -17,8 +17,8 @@ void FDManager::init()
 {
     for (unsigned i = 0; i < standardFilesSize; i++)
     {
-        addOldFile(&standardFiles[i], 0);
-        addNewFile(&standardFiles[i], 0);
+        addOldFile(standardFiles[i], 0);
+        addNewFile(standardFiles[i], 0);
     }
 }
 

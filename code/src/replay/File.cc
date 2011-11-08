@@ -7,8 +7,8 @@
 using namespace std;
 
 File File::STDIN(0, device, "/dev/stdin");
-File File::STDOUT(0, device, "/dev/stdout");
-File File::STDERR(0, device, "/dev/stderr");
+File File::STDOUT(1, device, "/dev/stdout");
+File File::STDERR(2, device, "/dev/stderr");
 
 File::File(int fd, FileType type, String path)
 {

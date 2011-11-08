@@ -16,6 +16,9 @@
 // 
 
 int hmac_sha1(char *data_in , size_t dlen, unsigned char *hash_out) {
+    // XXX: We won't need sha1 in the future probably
+#if 0
     SHA1((unsigned char *)data_in, dlen, hash_out);
+#endif
     return 0;
 }

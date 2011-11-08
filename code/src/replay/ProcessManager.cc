@@ -97,11 +97,11 @@ int ProcessManager::executeProcess()
     }
     args[commandList->size()] = NULL;
 
+#if 0
     // Execute pre-actions
     // XXX: Temporarily canceled for debugging, if bash command could be
     // implemented as user input, we finally do not need to deal with
     // pre-actions.
-#if 0
     LOG("Before executing pre-actions %s", process.getCommand()->toString().c_str());
     Vector<Action *> *preActions = process.getPreActions();
     for (Vector<Action *>::iterator it = preActions->begin(); it != preActions->end(); ++it)

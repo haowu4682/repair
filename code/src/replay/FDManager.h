@@ -60,7 +60,7 @@ class FDManager
         mapType oldFDMap;
         mapType newFDMap;
 
-        static File standardFiles[];
+        static File *standardFiles[];
         static unsigned standardFilesSize;
 };
 
