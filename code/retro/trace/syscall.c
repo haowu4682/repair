@@ -211,7 +211,6 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
             }
         } else if (a.ty == sysarg_struct) {
             if (usage & SYSARG_IFEXIT) {
-                a.aux = 0;
                 if (ret == 0) {
                     if (sc->args[i+1].ty == sysarg_psize_t) {
                         int size = 0;
