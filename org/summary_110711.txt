@@ -1,0 +1,24 @@
+----------------------------------------------
+----------------- Basic Points ---------------
+----------------------------------------------
+The basic work of vm rebase is currently the following:
+1. Action-based record. We will record system calls while executing. We will record all the system calls while a vm is running. The system calls will used to analyze what happened in a vm. The record code is basically inherited from Retro, but we have several modifications to that according to our interest.
+2. Process-based rebase. Rebase means to replay all the processes, not all the actions. If a process takes a different action than in replaying, we will respect the new action. It might be found as a conflict. See conflict part.(Not written yet)
+3. Replay a virtual process. It means to replay all the actions owned by the process.
+4. Replay an actual process: previous discussions for pre-actions and post-actions do not need to be considered now if we handleuser input correctly.
+5. Track replaying an actual process. We use ptrace to track the actions by a replaying actual process. The purpose here is to handle user inputs and conflicts.
+6. Managers. Managers are used to manage objects in replaying. ProcessManager and SystemManager are used to manage replaying processes. Pid manager and Fd manager are used to manage pid's and fd's, which might have changed during replaying. Syscall Manager is used to record/re-execute system calls. PipeManager is temporarily not in use.
+7. User Inputs. There are 3 steps in dealing with user inputs: (1) detect (2) match (3) replace. Detection is pretty straight forward. From matching, we consider the recorded system calls which is from the same device and belongs to the corresponding process. For example, in the record there are 3 user inputs from stdin: "i", "a", and "q". In replaying, when the process is replayed and waits for a read from stdin, the system feeds "i" for it. Next time the system feeds "a", and then "q". If the process wants more input, the system will feed nothing to it and the process will block there. In order for the process to make progress, we need to unblock ``select'', ``poll'' and ``epoll'', since the process will block on those system calls when there is actually nothing from the keyboard.
+8. Unblock the blocking I/O system calls. Some system calls will block during the replay, e.g. ``select''. User programs often use them to determine whether any input devices have data to read in. In the case, the solution is the following: we check if there is a matching user input in the record. If there is no matching user input, the system call goes as usual. If there is a matching user input, the system will execute the same system call with timeout=0, combine the fds with the matched user input fds, and return the result to the user.(The part is still buggy currently)
+
+-----------------
+-- Definitions --
+-----------------
+action: Generally, an action is an information exchange between an application and the OS. In our system, an action is equivalent to a system call currently.
+actor: An application which is able to execute an action. In our system, it's equivalent to a process currently.
+process: A process is a set of actions which could interfere the status of a vm. There are 2 kinds of processes currently. An ``actual'' process is a process which has a ``exec'' command, which runs an actual executable file. A ``virtual'' process is a process which does not have a ``exec'' command, and only contains some other actions.
+rebase: Rebase branch C on branch B means to re-execute all the processes of branch C on the head of branch B.
+root-process: A virtual process which owns any processes which is not owned by other processes.
+sub-process: A process which is owned by another process. In our system, a process other than root-process must have an owner.
+user-input: A user input is defined as a system call(or an action) that reads information in from an I/O device, except for a disk file. There are 2 kinds of user-input: local device user input and network user input.
+
