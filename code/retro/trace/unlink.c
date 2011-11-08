@@ -34,14 +34,21 @@ int (*fn_user_path_parent)(int dfd, const char __user *path,
 static
 fn_user_path_parent user_path_parent = (fn_user_path_parent) NM_user_path_parent;
 
-static struct dentry *(*fn___lookup_hash) (struct qstr *name,
-		       struct dentry *base, struct nameidata *nd)
-	= NM___lookup_hash;
+//static struct dentry *(*fn___lookup_hash) (struct qstr *name,
+//		       struct dentry *base, struct nameidata *nd)
+//	= NM___lookup_hash;
 
-static struct dentry *
-fn_lookup_hash(struct nameidata *nd) {
-    return fn___lookup_hash(&nd->last, nd->path.dentry, nd);
-}
+//static struct dentry *
+//fn_lookup_hash(struct nameidata *nd) {
+//    return fn___lookup_hash(&nd->last, nd->path.dentry, nd);
+//}
+
+
+typedef
+struct dentry *(*fn_lookup_hash)(struct nameidata *nd);
+
+static
+fn_lookup_hash _lookup_hash = (fn_lookup_hash) NM_lookup_hash;
 
 /*
  * dirty version of sys_linkat call, the newname parameter should be in
@@ -137,7 +144,7 @@ long sys_renameat(int olddfd, const char __user * oldname,
 
 	trap = lock_rename(new_dir, old_dir);
 
-	old_dentry = fn_lookup_hash(&oldnd);
+	old_dentry = _lookup_hash(&oldnd);
 	error = PTR_ERR(old_dentry);
 	if (IS_ERR(old_dentry))
 		goto exit3;
@@ -161,7 +168,7 @@ long sys_renameat(int olddfd, const char __user * oldname,
 	if (old_dentry == trap)
 		goto exit4;
 
-	new_dentry = fn_lookup_hash(&newnd);
+	new_dentry = _lookup_hash(&newnd);
 	error = PTR_ERR(new_dentry);
 	if (IS_ERR(new_dentry))
 		goto exit4;
@@ -224,7 +231,7 @@ long get_ino(int dfd, const char * name)
 		return error;
 
 	mutex_lock_nested(&nd.path.dentry->d_inode->i_mutex, I_MUTEX_PARENT);
-	dentry = fn_lookup_hash(&nd);
+	dentry = _lookup_hash(&nd);
 	error = PTR_ERR(dentry);
 	if (!IS_ERR(dentry) && dentry->d_inode) {
 		ino = dentry->d_inode->i_ino;
