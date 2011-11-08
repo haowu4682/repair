@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from syscall import syscalls
+from syscall import *
 import osloader
 
 import os.path
