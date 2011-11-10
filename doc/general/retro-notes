@@ -1,0 +1,53 @@
+1. What does Retro do?
+(According to the Retro paper)
+On a high level, Retro repairs from intrusion by taking away the intrusion
+actions and re-execute other actions.
+In the repair phase, Retro ``rolls back to a previous checkpoint, and re-execute
+those(HW: the actions influenced by an intrusion) actions in the corrected
+environment''.
+
+2. Why can't directly applying Retro solve our problem?
+2.1 Trivial approach to apply Retro to our system
+Since Retro has a different setting from our problem, applying Retro directly
+will not work. We need to tune Retro a little bit. Here is a trivial way to do
+that:
+(1) Use Retro's recording in normal execution in one branch(called work branch
+    in the future);
+(2) Replay the recorded actions on another branch(called base branch in the
+    future);
+
+2.2 Will the trivial approach work?
+If the machine is a deterministic machine without interactions with any device,
+the approach probably works. It shall also work even if the machine is
+non-deterministic. But the reason is that without interactions with devices, we
+cannot tell the machine's state so the execution should be exactly the same.
+
+But if the machine talks with a device, something bad might happen. Here are
+several cases that simply applying Retro will not handle:
+(1) If on base branch, someone upgrades or changes a program, and in the work
+branch the program is executed. The program may execute a quite different set of
+actions.
+(2) If on work branch, an action requires a read from keyboard or other input
+devices, Retro will be stuck there unless the user repeats the input pattern
+again.
+(3) If in replaying the work branch, some actions write different output to a
+disk file or some devices, the user does not always notice that, which causes
+inconsistency between the user's mind and the machine's state. Retro has
+terminal managers and network managers to report some of them, but other
+conflicts are not likely to be reported by Retro.
+
+2.3 Insight
+Retro is mainly designed to ``take things off the system'', not to ``add things
+to the system'', while rebase is the opposite. As a result, (1) does not happen
+very often in Retro and can be manually resolved, while an upgrade which changes
+the system often happens in rebase case, especially when it is used in Repair
+from Chair since many computer problems can be resolved by software upgrade.
+
+For (2), Retro is basically used to handle intrusions in servers, which usually
+do not have user input other than network input. We are targeting desktop, which
+accepts many user input data from keyboard, mouse, etc.
+
+For (3), I think Retro does not have a good abstraction. They have two
+seperate managers to handle a single problem - conflict, and do not handle
+everything.
+
