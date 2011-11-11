@@ -22,6 +22,7 @@ the approach probably works. It shall also work even if the machine is
 non-deterministic. But the reason is that without interactions with devices, we
 cannot tell the machine's state so the execution should be exactly the same.
 [MW: "cannot tell" or "CAN tell"?]
+[HW: we cannot tell the difference, if we do not interact with devices.]
 
 But if the machine talks with a device, something bad might happen. Here are
 several cases that simply applying Retro will not handle:
@@ -29,10 +30,13 @@ several cases that simply applying Retro will not handle:
 branch the program is executed. The program may execute a quite different set of
 actions.
 [MW: What happens in HaoRebase in the above case?]
+[HW: Unlike Retro, we don't care what actions are executed, so the program will
+execute the new actions.]
 (2) If on work branch, an action requires a read from keyboard or other input
 devices, Retro will be stuck there unless the user repeats the input pattern
 again.
 [MW: Is that because Retro handles only network inputs?]
+[HW: Yes. See 2.3 below]
 (3) If in replaying the work branch, some actions write different output to a
 disk file or some devices, the user does not always notice that, which causes
 inconsistency between the user's mind and the machine's state. Retro has
