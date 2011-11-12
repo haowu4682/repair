@@ -1,0 +1,56 @@
+1. Basic points for Collective
+Collective[1] is a system provides managed and reliable remote desktop to PC
+users. It caches part of the data in a user's local machine and backup it in a
+remote machine. When a crash happens it will recover from the remote side. The
+system itself is not quite related to our system. I guess the actual related to
+our work is a tool used to evaluate the performance of Collective, which is
+called VNCPlay[2].
+
+2. Basic points of VNCPlay
+VNCPlay is a tool to record a user's interactions with a system, and replay the
+interactions later. It is basically used to repeat a behavior for many times in
+order to test the performance of a system, so it is designed to replay the
+actions based on exactly the same environment with the record phase.
+
+The basic idea of VNCPlay is to record and replay the actions in a real-time
+based way, with a mechanism to deliver the mouse and keyboard events to the
+correct process during replaying.
+
+3. The difference between VNCPlay and our system
+The most important difference between VNCPlay and our system is that VNCPlay
+replays based on real-time, while we do not. In desktop applications, the actual
+CPU time only composes a very small amount of the total time, most of the time
+the CPU is idle, and we don't need to simulate the idle time in replaying. This
+is also claimed in Section 4.1 in the VNCPlay paper when the paper tries to
+explain why the running doesn't change while CPU frequency has changed by
+roughly 7 times:
+
+``This is because the interactive sessions consist of considerable amount of
+idle time between events (i.e., user think time).''
+
+The reason why VNCPlay replays based on real-time is that VNCPlay has no
+knowledge about the running status of processes, and cannot determine the
+appropriate time to send user inputs to processes, while we can determine it
+since we have knowledge about the running processes(using ptrace).
+
+4. Additional things:
+Since VNCPlay is used to replay the actions based on exactly the same
+envioronment of the record phase, it is not quite tolerable to environmental
+change. For example, if the position of desktop icons have changed, the behavior
+of double-clicking an icon will probably changed since it may point to a
+different program while replaying. Our system will face the same problem
+currently.(Retro will not, because it's replaying actions) A possible solution
+is to treat the desktop as a virtual process, but it doesn't look like a clean
+way. Another possible solution is to report it as a conflict, but since this
+may happen very often since the positions of icons are changing frequently, it is
+perhaps not a good idea.
+
+References
+[1] The Collective: A Cache-Based System Management Architecture. Ramesh
+Chandra, Nickolai Zeldovich, Constantine Sapuntzakis, and Monica S. Lam.
+In Proceedings of the 2nd USENIX Symposium on Networked Systems Design and
+Implementation (NSDI 2005), Boston, MA, pages 259-272, May 2005.
+[2] Interactive Performance Measurement with VNCplay. Nickolai Zeldovich and
+Ramesh Chandra. In Proceedings of the FREENIX Track: 2005 USENIX Annual
+Technical Conference, Anaheim, CA, pages 189-198, April 2005.
+
