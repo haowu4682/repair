@@ -5,5 +5,14 @@ amount of data. The basic idea is data sharing among different versions of
 storage branches.
 
 2. What's the difference?
-(1) Olive provides 
+(1) Olive only provides branch storage, which it does not provide anyway to
+merge the branches together.
+(2) Olive is a storage system, rather than an OS. Some operations cannot be
+executed only with a storage system(e.g talking with a hardware clock).
+(3) Olive is a distributed system, not a local system.
+
+(1) is the most important. Olive is not designed for two users to work on the
+same repository, it is designed for a user to do something temporarily without
+harm of the main repository. As a result, merging is not very necessary, and is
+too difficult to be implemented on a distributed system in my opinion.
 
