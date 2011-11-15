@@ -16,6 +16,16 @@ The basic idea of VNCPlay is to record and replay the actions in a real-time
 based way, with a mechanism to deliver the mouse and keyboard events to the
 correct process during replaying.
 
+[MW: what is the technical challenge in delivering mouse and keybd
+events to the correct process? Doesn't VNCPlay, at record time, already
+know which events went to which processes? Or no? (And is this related
+to your ptrace point below?)]
+[HW: VNCPlay does not have knowledge about processes, it just send the events to
+the OS, and the OS should deliver the events to the proper process. However the
+active process at the time might not be exactly the same process in the record,
+which causes VNCplay might deliver the events to a wrong process. VNCPlay solves
+it by checking the snapshot of screen to see if it changes.]
+
 3. The difference between VNCPlay and our system
 The most important difference between VNCPlay and our system is that VNCPlay
 replays based on real-time, while we do not. In desktop applications, the actual
@@ -25,6 +35,21 @@ is also claimed in Section 4.1 in the VNCPlay paper when the paper tries to
 explain why the running doesn't change while CPU frequency has changed by
 roughly 7 times:
 
+[MW: Does VNCPlay speed up or slow down time as needed, or does a replay
+literally take exactly as much time as the original session? Also, how
+do they handle non-determinism? Meaning, how do they ensure that the
+process to which they're sending the kybd and mouse events itself
+behaves *exactly* the same during replay?]
+[HW: it takes roughly the same time, since most of the time is just idle time.
+Ideally, VNCPlay checks the screen snapshot at record and replay time, and makes sure
+that they are the same before sending the events. However, this approach never
+works since the undeteminism. As a result, VNCPlay matches the areas around the
+cursor during a mouse event. For example, if the user clicks an ``OK'' button,
+VNCPlay will take a snapshot around the button, and will make sure that the
+mouse click event to be delivered to click on the same button. For keyboard
+event, VNCPlay does not handle correctly, and the problem is claimed as a future
+work in the paper.]
+
 ``This is because the interactive sessions consist of considerable amount of
 idle time between events (i.e., user think time).''
 
@@ -33,17 +58,52 @@ knowledge about the running status of processes, and cannot determine the
 appropriate time to send user inputs to processes, while we can determine it
 since we have knowledge about the running processes(using ptrace).
 
+[MW: Can you unpack the above paragraph a bit, and flesh out the points
+a little? The ptrace refers to the replay stage, right? Or no?] 
+[HW: VNCPlay has no knowledge about the process, thus it cannot know when a
+process needs a user input. However, when we use ptrace in replaying, the
+process will issue a system call, and our system will catch that and knows that
+the process needs a user input.]
+
+[MW: Also, if we don't replay based on real time, then what do we do
+about Ivo's excellent point that there may be implicit timing
+dependencies? That is, as you know, Ivo had observed that a process may
+wait for, say, a minute while some other process completes in the
+background. During replay, the process won't wait for a minute, so the
+other process may not have completed at the end of the "waiting".]
+[HW: If a process uses a system call to do that, we will wait for that time
+during replaying. So in our replay, the wait will still work as an implicit way
+to make sure another process has completed. However if a user comes in with real
+time then we cannot solve it now. I think we discussed the problem in September,
+an example here is ``I'm a user who runs some Falcon experiments, and hits
+Ctrl+C after 1 hour since we have got enough samples.'']
+
 4. Additional things:
 Since VNCPlay is used to replay the actions based on exactly the same
 envioronment of the record phase, it is not quite tolerable to environmental
 change. For example, if the position of desktop icons have changed, the behavior
 of double-clicking an icon will probably changed since it may point to a
-different program while replaying. Our system will face the same problem
+different program while replaying. 
+[MW: interesting. However, I thought VNCPlay only makes sense if it
+applies a transcript to an identical environment, no?]
+[HW: you're absolutely right.]
+Our system will face the same problem
 currently.(Retro will not, because it's replaying actions) A possible solution
 is to treat the desktop as a virtual process, but it doesn't look like a clean
 way. Another possible solution is to report it as a conflict, but since this
 may happen very often since the positions of icons are changing frequently, it is
 perhaps not a good idea.
+
+[MW: Hmm... This seems like a bummer. Why can't we take the Retro
+approach here and replay the action? Because then we would have a system
+that does not properly handle user input? Does this mean that there is a
+fundamental conflict between, say, handling user input and capturing the
+semantics of actions? If there is not a fundamental conflict, then can
+we possibly handle both problems?]
+[HW: The Retro approach is to replay the fork-exec actions, our approach is to
+treat the mouse-events as user inputs. These two approaches cannot be executed
+together, otherwise the single action will be executed twice even the
+environment does not change.]
 
 References
 [1] The Collective: A Cache-Based System Management Architecture. Ramesh
