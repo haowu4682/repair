@@ -1,0 +1,9 @@
+1. What is Olive?
+Olive is a distributed branching storage system. The main purpose is to provide
+an efficient branch service: a branch can be created without copying large
+amount of data. The basic idea is data sharing among different versions of
+storage branches.
+
+2. What's the difference?
+(1) Olive provides 
+
