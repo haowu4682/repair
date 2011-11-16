@@ -86,7 +86,7 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, int usage, FDMana
         }
         else
         {
-            SystemCallArgumentAuxilation aux = getAux(argsList, *argType, i, ret, numArgs, pid, usage);
+            SystemCallArgumentAuxilation aux = getAux(argsList, *type, i, ret, numArgs, pid, usage);
             args[i].setArg(argsList[i], &aux, argType);
         }
         //LOG("arg type pointer: %d %p", i, getArg(i).getType());
@@ -184,16 +184,19 @@ void SystemCall::setArgToReg(user_regs_struct &regs, int num, long val)
 }
 
 // This is an adpation of similar kernel-mode code in retro. But this one is in user-mode.
-SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallArgType &type, int i,
+SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallType &syscallType, int i,
         long ret, int nargs, pid_t pid, int usage)
 {
     SystemCallArgumentAuxilation a;
     a.pid = pid;
     a.usage = usage;
+    const SyscallArgType &argType = syscallType.args[i];
+    a.aux = argType.aux;
+
     // TODO: Implement the following arguments
     int used[SYSCALL_MAX_ARGS + 1] = {0};
 
-    if (type.record == iovec_record) {
+    if (argType.record == iovec_record) {
         if (usage & SYSARG_IFEXIT) {
             if (ret > 0) {
                 a.aux = args[i+1];
@@ -206,8 +209,8 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallArgTyp
             a.ret = UIO_MAXIOV*PAGE_SIZE;
         }
     }
-    if (type.record == buf_record || type.record == buf_det_record
-            || type.record == sha1_record) {
+    if (argType.record == buf_record || argType.record == buf_det_record
+            || argType.record == sha1_record) {
         if (usage & SYSARG_IFEXIT) {
             // Length of the buffer depends on the kernel.
             if (ret > 0) {
@@ -220,26 +223,28 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallArgTyp
             used[i+1] = 1;
             a.aux = args[i+1];
         }
-    } else if (type.record == struct_record) {
+    } else if (argType.record == struct_record) {
         if (usage & SYSARG_IFEXIT) {
-            a.aux = 0;
             if (ret == 0) {
                 int size = 0;
                 readFromProcess((void *)&size, args[i+1], sizeof(int), pid);
                 a.aux = size;
             }
         } else {
-            used[i+1] = 1;
-            a.aux = args[i+1];
+            if (syscallType.args[i+1].record == uint_record)
+            {
+                used[i+1] = 1;
+                a.aux = args[i+1];
+            }
         }
-    } else if (type.record == path_at_record || type.record == rpath_at_record) {
+    } else if (argType.record == path_at_record || argType.record == rpath_at_record) {
         /* test AT_SYMLINK_(NO)FOLLOW, always the last argument */
         /*
         if (a.aux && (a.aux & args[nargs - 1])) {
-            if (type.record == path_at_record)
-                type.record = rpath_at_record;
+            if (argType.record == path_at_record)
+                argType.record = rpath_at_record;
             else
-                type.record = path_at_record;
+                argType.record = path_at_record;
         }*/
         a.aux = args[i-1];
     }

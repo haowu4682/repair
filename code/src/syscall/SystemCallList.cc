@@ -35,7 +35,7 @@ SystemCall SystemCallList::search(SystemCall &syscall)
     return result;
 }
 
-long SystemCallList::searchMatchInput(SystemCall &match, 
+long SystemCallList::searchMatchInput(SystemCall &match,
         const SystemCall &source, pid_t pid, size_t seq /* = 0 */)
 {
     SyscallMapType::iterator it;
@@ -49,10 +49,13 @@ long SystemCallList::searchMatchInput(SystemCall &match,
     SystemCallListItem &listItem = it->second;
     Vector<SystemCall> &syscalls = listItem.syscalls;
 
+    LOG("%s", source.toString().c_str());
     for (size_t pos = seq, end = syscalls.size(); pos < end; ++pos)
     {
+        LOG("%ld: %s", pos, syscalls[pos].toString().c_str());
         if (source.matchUserInput(syscalls[pos]))
         {
+            LOG("HERE2");
             if ((++pos) < syscalls.size())
             {
                 match = syscalls[pos];
@@ -74,6 +77,7 @@ long SystemCallList::searchMatchInput(SystemCall &match,
 
     return MATCH_NOT_FOUND;
 }
+
 #if 0
 long SystemCallList::searchMatchSelect(SystemCall &match, 
         const SystemCall &source, pid_t pid, size_t seq /* = 0 */)

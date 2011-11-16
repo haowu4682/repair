@@ -284,8 +284,9 @@ String buf_det_record(long argValue, SystemCallArgumentAuxilation *argAux)
 
 String struct_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
-    String str;
-    return str;
+    if (argValue == 0)
+        return uint_record(0, argAux);
+    return buf_record(argValue, argAux);
 }
 
 String psize_t_record(long argValue, SystemCallArgumentAuxilation *argAux)

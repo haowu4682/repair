@@ -169,7 +169,7 @@ class SystemCall : public Action
 
     private:
         // Get an aux value for determing an argument
-        static SystemCallArgumentAuxilation getAux(long args[], const SyscallArgType &argType, int i,
+        static SystemCallArgumentAuxilation getAux(long args[], const SyscallType &syscallType, int i,
                 long ret, int nargs, pid_t pid, int usage);
 
         // If the system call is valid

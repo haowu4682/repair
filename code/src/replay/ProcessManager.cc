@@ -208,13 +208,13 @@ int ProcessManager::traceProcess(pid_t pid)
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
         SystemCall syscallMatch;
         SystemCall syscall(regs, pid, SYSARG_IFENTER, fdManager);
-        //LOG("syscall: %s", syscall.toString().c_str());
 
         // If the system call is user input or output, we need to act quite differently.
         if (syscall.isUserSelect(true))
         {
             LOG("User select found: %s", syscall.toString().c_str());
             pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, inputSeqNum);
+            LOG("match return value = %ld", pret);
             bool matchFound = (pret >= 0);
 
             // If a match has been found, we'll change the syscall result
