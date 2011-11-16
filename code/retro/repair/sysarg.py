@@ -268,6 +268,7 @@ def sysarg_intp(f, arg = None):
 
 def sysarg_buf(f, arg = None):
   n = sysarg_size_t(f)
+  #print "buf size: ", n
   return f.read(n)
 
 def sysarg_buf_det(f, arg = None):
