@@ -310,21 +310,20 @@ bool isFDUserInput(int fd, const FDManager *fdManager, bool isNew = true, long s
         LOG("Unknown fd: %d", fd);
         return false;
     }
-    FileType fileTy = file->getType();
-    // XXX: Do we interact both device and network?
-    return ((fileTy == device) || (fileTy == network));
+    return file->isUserInput();
 }
 
+#if 0
 bool SystemCall::isUserInput() const
 {
     return isRegularUserInput() ||
            isUserSelect() ||
            isUserPoll();
 }
+#endif
 
-bool SystemCall::isUserSelect() const
+bool SystemCall::isUserSelect(bool isNew) const
 {
-    // TODO: implement
     if (!isSelect())
         return false;
     size_t numArgs = type->numArgs;
@@ -338,6 +337,26 @@ bool SystemCall::isUserSelect() const
             break;
         }
         fd_set fds = fd_set_derecord(args[i].getValue().c_str());
+        int nfds = atoi(args[0].getValue().c_str());
+        for (int fd = 0; fd < nfds; ++fd)
+        {
+            if (FD_ISSET(fd, &fds))
+            {
+                File *file;
+                if (isNew)
+                {
+                    file = fdManager->searchNew(fd);
+                }
+                else
+                {
+                    file = fdManager->searchOld(fd, seqNum);
+                }
+                if (file != NULL && file->isUserInput())
+                {
+                    return true;
+                }
+            }
+        }
     }
     return false;
 }

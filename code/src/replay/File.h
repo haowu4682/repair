@@ -29,6 +29,12 @@ class File
         FileType getType() { return type; }
         String getPath() { return path; }
 
+        bool isUserInput()
+        {
+            // XXX: Do we interact both device and network?
+            return ((type == device) || (type == network));
+        }
+
         friend std::ostream& operator <<(std::ostream&, File&);
         friend std::ostream& operator <<(std::ostream&, File*);
 
