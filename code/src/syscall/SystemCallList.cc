@@ -139,7 +139,7 @@ void SystemCallList::init(istream &in)
         {
             // This is the updated version
             // XXX: If the exec is executed by a `exec'-ed process, we shall not add it to the list here
-            if (!syscall.getUsage()) // && !pidManager->isForked(syscall.getPid()))
+            if (syscall.getUsage() && SYSARG_IFENTER) // && !pidManager->isForked(syscall.getPid()))
             {
                 Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
                 if (it == processMap.end())
@@ -152,13 +152,12 @@ void SystemCallList::init(istream &in)
                 {
                     it->second->setCommand(&syscall);
                 }
-                //systemManager->togglePreActionsOff(oldPid);
                 preActionRecordEnabled[oldPid] = false;
             }
         }
         else if (syscall.isFork())
         {
-            if (syscall.getUsage())
+            if (syscall.getUsage() && SYSARG_IFEXIT)
             {
                 pid_t newPid = syscall.getReturn();
                 Process *parent = root->searchProcess(oldPid);
@@ -173,13 +172,11 @@ void SystemCallList::init(istream &in)
                 {
                     pidManager->addForked(newPid);
                 }
-                //systemManager->togglePreActionsOn(newPid);
                 preActionRecordEnabled[newPid] = true;
             }
         }
         else if (syscall.isPipe())
         {
-            // XXX: memory leak
             SystemCall *newSyscall = new SystemCall(syscall);
             Process *proc;
             Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
@@ -192,13 +189,9 @@ void SystemCallList::init(istream &in)
                 proc = it->second;
             }
             proc->addPreAction(newSyscall);
-            //systemManager->togglePreActionsOn(oldPid);
-            //systemManager->recordPreAction(oldPid, newSyscall);
-            //systemManager->togglePreActionsOff(oldPid);
         }
         else
         {
-            // XXX: memory leak
             Map<pid_t, bool>::iterator jt = preActionRecordEnabled.find(oldPid);
             if (jt != preActionRecordEnabled.end() && jt->second)
             {
@@ -214,7 +207,6 @@ void SystemCallList::init(istream &in)
                     proc = it->second;
                 }
                 proc->addPreAction(newSyscall);
-                //systemManager->recordPreAction(oldPid, newSyscall);
             }
         }
     }

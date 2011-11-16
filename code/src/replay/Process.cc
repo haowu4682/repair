@@ -10,6 +10,7 @@ using namespace std;
 
 int Process::exec()
 {
+    LOG("Executing process %ld", subProcessList.size());
     if (isVirtual)
     {
         execVirtual();

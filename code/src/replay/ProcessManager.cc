@@ -1,4 +1,4 @@
-//Author: Hao Wu <haowu@cs.utexas.edu> 
+//Author: Hao Wu <haowu@cs.utexas.edu>
 #include <cstring>
 #include <ctime>
 #include <fstream>
@@ -175,6 +175,7 @@ void dealWithConflict()
 {
     if (isConflict())
     {
+        // TODO: implement
     }
 }
 
@@ -234,11 +235,11 @@ int ProcessManager::traceProcess(pid_t pid)
                 // Achieve the result of the execution
                 ptrace(PTRACE_GETREGS, pid, 0, &regs);
                 SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
-                
+
                 // Merge the result with recorded result
                 //mergeSystemCall(syscallReturn, syscallMatch);
                 syscallReturn.merge(syscallMatch);
-                
+
                 // Write matched system call
                 // Get the user input from syscallMatch
                 // Use ptrace to put the user input back
@@ -340,7 +341,6 @@ int ProcessManager::writeMatchedSyscall(SystemCall &syscall, pid_t pid)
 
     long pret;
     int ret;
-    //struct user_regs_struct regs;
 
     ret = syscall.overwrite(pid);
     if (ret < 0)
@@ -361,20 +361,13 @@ String ProcessManager::toString()
     // We only output the command line currently.
     stringstream ss;
     // TODO: implement
-    /*
-    for (Vector<String>::iterator it = commandList->begin(); it != commandList->end(); it++)
-    {
-        ss << (*it) << ", ";
-    }
-    ss << endl;
-    */
     return ss.str();
 }
 
 // The main function is used for development and debugging only.
 // It will be removed in the released version
 // @author haowu
-/*
+#if 0
 int old_main(int argc, char **argv)
 {
     // Init the ProcessManager
@@ -402,4 +395,5 @@ int old_main(int argc, char **argv)
     list.init(fin, manager.getFDManager());
     return 0;
 }
-*/
+#endif
+

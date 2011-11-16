@@ -103,6 +103,7 @@ int main(int argc, char **argv)
     sysManager.setRoot(&rootProcess);
 
     list.init(fin);
+    //LOG1(list.toString().c_str());
     LOG("init finished");
     sysManager.execAll();
     LOG("execution finished");
