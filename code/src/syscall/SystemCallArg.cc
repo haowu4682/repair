@@ -81,7 +81,7 @@ String SystemCallArgument::toString() const
 
 int SystemCallArgument::overwrite(pid_t pid, long argVal) const
 {
-    if (type->usage)
+    if (type->usage & SYSARG_IFEXIT)
     {
         return type->overwrite(this, pid, argVal);
     }

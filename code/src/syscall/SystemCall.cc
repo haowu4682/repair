@@ -48,13 +48,13 @@ const SyscallType *getSyscallType(String name)
     return NULL;
 }
 
-SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager,
+SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, int usage, FDManager *fdManager,
         PidManager *pidManager)
 {
     init(regs, pid, usage, fdManager, pidManager);
 }
 
-void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager,
+void SystemCall::init(const user_regs_struct &regs, pid_t pid, int usage, FDManager *fdManager,
         PidManager *pidManager)
 {
     this->fdManager = fdManager;
@@ -80,8 +80,7 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
     for (int i = 0; i < numArgs; i++)
     {
         const SyscallArgType *argType = &type->args[i];
-        //LOG("arg type pointer original: %d %s %p", i, type->name.c_str(), argType);
-        if (argType->usage != usage)
+        if (argType->usage & usage == 0)
         {
             args[i].setArg(argType);
         }
@@ -99,7 +98,7 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
         // open
         if (type->nr == 2)
         {
-            if (usage)
+            if (usage & SYSARG_IFEXIT)
             {
                 File *file = new File(ret, lastOpenFilePath);
                 fdManager->addNewFile(file);
@@ -107,14 +106,6 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
             else
             {
                 lastOpenFilePath = args[0].getValue();
-            }
-        }
-        // close
-        if (type->nr == 3)
-        {
-            if (!usage)
-            {
-                //fdManager->removeNew(atoi(args[0].getValue().c_str()));
             }
         }
     }
@@ -194,7 +185,7 @@ void SystemCall::setArgToReg(user_regs_struct &regs, int num, long val)
 
 // This is an adpation of similar kernel-mode code in retro. But this one is in user-mode.
 SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallArgType &type, int i,
-        long ret, int nargs, pid_t pid, bool usage)
+        long ret, int nargs, pid_t pid, int usage)
 {
     SystemCallArgumentAuxilation a;
     a.pid = pid;
@@ -203,7 +194,7 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallArgTyp
     int used[SYSCALL_MAX_ARGS + 1] = {0};
 
     if (type.record == iovec_record) {
-        if (usage) {
+        if (usage & SYSARG_IFEXIT) {
             if (ret > 0) {
                 a.aux = args[i+1];
                 a.ret = ret;
@@ -217,7 +208,7 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallArgTyp
     }
     if (type.record == buf_record || type.record == buf_det_record
             || type.record == sha1_record) {
-        if (usage) {
+        if (usage & SYSARG_IFEXIT) {
             // Length of the buffer depends on the kernel.
             if (ret > 0) {
                 used[6] = 1;
@@ -230,7 +221,7 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallArgTyp
             a.aux = args[i+1];
         }
     } else if (type.record == struct_record) {
-        if (usage) {
+        if (usage & SYSARG_IFEXIT) {
             a.aux = 0;
             if (ret == 0) {
                 int size = 0;
@@ -383,7 +374,7 @@ bool SystemCall::isRegularUserInput() const
 int SystemCall::exec() 
 {
     int ret;
-    if (!usage)
+    if (usage & SYSARG_IFENTER)
     {
         ret = type->exec(this);
     }
@@ -435,7 +426,7 @@ int SystemCall::overwrite(pid_t pid)
 {
     int ret;
     user_regs_struct regs;
-    if (usage)
+    if (usage & SYSARG_IFEXIT)
     {
         // Achieve current regs list
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
@@ -536,7 +527,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
 
     // Read the first part of the record.
     is >> addr >> seqNum >> statusChar >> pid;
-    usage = ((statusChar == '<') ? true : false);
+    usage = ((statusChar == '<') ? SYSARG_IFEXIT : SYSARG_IFENTER);
     // Now we are going to parse the args, we need some string operations here.
     is.get();
     getline(is, auxStr);
@@ -577,7 +568,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
         if (auxStr[endPos] == ')')
         {
             // The args part has finished
-            if (usage)
+            if (usage & SYSARG_IFEXIT)
             {
                 pos = endPos + 2;
                 pos = pos + 2;
@@ -605,7 +596,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
         // open
         if (type->nr == 2)
         {
-            if (usage)
+            if (usage & SYSARG_IFEXIT)
             {
                 File *file = new File(ret, lastOpenFilePath);
                 fdManager->addOldFile(file, seqNum);
@@ -615,17 +606,6 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
                 lastOpenFilePath = args[0].getValue();
             }
         }
-        // close
-        // No need to do any in close phase any more
-#if 0
-        if (type->nr == 3)
-        {
-            if (!usage)
-            {
-                fdManager->removeOld(atoi(args[0].getValue().c_str()));
-            }
-        }
-#endif
     }
 }
 
@@ -639,7 +619,7 @@ bool SystemCall::match(const SystemCall &another) const
         return false;
     for (int i = 0; i < type->numArgs; i++)
     {
-        if (usage == type->args[i].usage && usage == another.type->args[i].usage)
+        if ((usage & type->args[i].usage) && (usage & another.type->args[i].usage))
         {
             // If it's a FD argument, use FDManager
             if (fdManager != NULL && type->args[i].record == fd_record)

@@ -15,6 +15,7 @@
 #include <common/util.h>
 #include <replay/ProcessManager.h>
 #include <syscall/SystemCall.h>
+#include <syscall/SystemCallArg.h>
 using namespace std;
 
 // Function for pthread
@@ -205,7 +206,7 @@ int ProcessManager::traceProcess(pid_t pid)
         // The child process is at the point **before** a syscall.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
         SystemCall syscallMatch;
-        SystemCall syscall(regs, pid, false, fdManager);
+        SystemCall syscall(regs, pid, SYSARG_IFENTER, fdManager);
         LOG("syscall: %s", syscall.toString().c_str());
 
         // If the system call is user input or output, we need to act quite differently.
@@ -232,7 +233,7 @@ int ProcessManager::traceProcess(pid_t pid)
 
                 // Achieve the result of the execution
                 ptrace(PTRACE_GETREGS, pid, 0, &regs);
-                SystemCall syscallReturn(regs, pid, true, fdManager);
+                SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
                 
                 // Merge the result with recorded result
                 //mergeSystemCall(syscallReturn, syscallMatch);
@@ -305,7 +306,7 @@ int ProcessManager::traceProcess(pid_t pid)
             ptrace(PTRACE_GETREGS, pid, 0, &regs);
             // We might not need the return value, but we need the side
             // effect for pid manager and fd manager.
-            SystemCall syscallReturn(regs, pid, true, fdManager);
+            SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
 
             //dealWithConflict();
 

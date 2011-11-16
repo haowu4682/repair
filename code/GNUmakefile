@@ -2,7 +2,6 @@ CPP             := g++
 CXXFLAGS        := -Isrc/ -g
 LDFLAGS         := -g
 LDADD			:= -lrt -lssl
-PYTHONPATH      := src/python_include
 
 COMMONHDR       := $(wildcard src/common/*.h)
 COMMONSRC       := $(wildcard src/common/*.cc)
@@ -15,7 +14,9 @@ SYSCALLSRC      := $(wildcard src/syscall/*.cc)
 SYSCALLOBJ      := $(patsubst src/syscall/%.cc, bin/syscall/%.o, $(SYSCALLSRC))
 INCSRC          := $(wildcard src/gen_include/*.py)
 INCOBJ          := $(patsubst src/gen_include/%.py, src/gen_include/%.inc, $(INCSRC))
-PYTHONSRC       := $(wildcard src/python_include/*.py)
+#PYTHONPATH      := src/python_include
+PYTHONPATH      := retro/repair
+PYTHONSRC       := $(wildcard $(PYTHONPATH)/*.py)
 
 REPLAYBIN       := bin/SystemReplay
 

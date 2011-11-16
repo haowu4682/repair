@@ -43,7 +43,7 @@ class SystemCall : public Action
     public:
         SystemCall() : valid(false), fdManager(NULL) {}
         // Construct the system call from registers
-        SystemCall(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager = NULL,
+        SystemCall(const user_regs_struct &regs, pid_t pid, int usage, FDManager *fdManager = NULL,
                 PidManager *pidManager = NULL);
         SystemCall(String record, FDManager *fdManager = NULL, PidManager *pidManager = NULL)
         { this->init(record, fdManager, pidManager); }
@@ -65,7 +65,7 @@ class SystemCall : public Action
         // Init a system call from a record
         // @param record The record
         int init(String record, FDManager *fdManager = NULL, PidManager *pidManager = NULL);
-        void init(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager = NULL,
+        void init(const user_regs_struct &regs, pid_t pid, int usage, FDManager *fdManager = NULL,
                 PidManager *pidManager = NULL);
 
         // Tell whether the system call is a ``fork'' or ``vfork''
@@ -108,7 +108,7 @@ class SystemCall : public Action
         // Get pid which owns the syscall
         pid_t getPid() const { return pid; }
 
-        bool getUsage() const { return usage;}
+        int getUsage() const { return usage;}
 
         // Get arguments;
         const SystemCallArgument *getArgs() const { return args;}
@@ -170,12 +170,12 @@ class SystemCall : public Action
     private:
         // Get an aux value for determing an argument
         static SystemCallArgumentAuxilation getAux(long args[], const SyscallArgType &argType, int i,
-                long ret, int nargs, pid_t pid, bool usage);
+                long ret, int nargs, pid_t pid, int usage);
 
         // If the system call is valid
         bool valid;
         // When the syscall is taken *before* at a syscall entry, it is false. Else it is true
-        bool usage;
+        int usage;
         // The system call type
         const SyscallType *type;
         // The system call args

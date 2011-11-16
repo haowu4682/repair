@@ -9,11 +9,14 @@
 
 class SystemCallArgument;
 
+#define SYSARG_IFENTER 0x1
+#define SYSARG_IFEXIT 0x2
+
 // This struct declares some helpful information in recording a system call argument.
 struct SystemCallArgumentAuxilation
 {
     pid_t pid;
-    bool usage;
+    int usage;
     long aux;
     long ret;
 };
@@ -26,7 +29,7 @@ struct SyscallArgType
     String name;
     sysarg_type_t record;
     sysarg_overwrite_t overwrite;
-    bool usage;
+    int usage;
     long aux;
     bool operator == (const SyscallArgType &another) const
         { return name == another.name; }
