@@ -226,9 +226,12 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallType &
     } else if (argType.record == struct_record) {
         if (usage & SYSARG_IFEXIT) {
             if (ret == 0) {
+                //The following approach does not work now.
+#if 0
                 int size = 0;
                 readFromProcess((void *)&size, args[i+1], sizeof(int), pid);
                 a.aux = size;
+#endif
             }
         } else {
             if (syscallType.args[i+1].record == uint_record)
@@ -347,16 +350,7 @@ bool SystemCall::isUserSelect(bool isNew) const
         {
             if (FD_ISSET(fd, &fds))
             {
-                File *file;
-                if (isNew)
-                {
-                    file = fdManager->searchNew(fd);
-                }
-                else
-                {
-                    file = fdManager->searchOld(fd, seqNum);
-                }
-                if (file != NULL && file->isUserInput())
+                if (isFDUserInput(fd, fdManager, isNew, seqNum))
                 {
                     return true;
                 }
