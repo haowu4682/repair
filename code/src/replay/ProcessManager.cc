@@ -254,7 +254,7 @@ int ProcessManager::traceProcess(pid_t pid)
         }
         else if (syscall.isRegularUserInput())
         {
-            LOG("User input found: %s", syscall.toString().c_str());
+            //LOG("User input found: %s", syscall.toString().c_str());
             pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, inputSeqNum);
             bool matchFound = (pret >= 0);
 
