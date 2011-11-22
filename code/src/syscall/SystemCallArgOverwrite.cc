@@ -1,12 +1,23 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
 // TODO: Implement everything
 
+#include <cstdlib>
+#include <cstring>
+#include <sys/ptrace.h>
+
 #include <common/util.h>
+#include <syscall/SystemCall.h>
 #include <syscall/SystemCallArg.h>
 
 SYSARGOVERWRITE_(void)
 {
     return 0;
+}
+
+inline long writeInt(long value, pid_t pid, user_regs_struct &regs, int i)
+{
+    SystemCall::setArgToReg(regs, i, value);
+    return ptrace(PTRACE_SETREGS, pid, 0, &regs);
 }
 
 SYSARGOVERWRITE_(sint)
@@ -16,7 +27,9 @@ SYSARGOVERWRITE_(sint)
 
 SYSARGOVERWRITE_(uint)
 {
-    return 0;
+    //TODO: not necessarily to be correct
+    long value = atoi(sysarg->getValue().c_str());
+    return writeInt(value, pid, regs, i);
 }
 
 SYSARGOVERWRITE_(sint32)
@@ -44,6 +57,7 @@ SYSARGOVERWRITE_(buf)
     long pret;
     // Modify the buf value
     String str = sysarg->getValue();
+    long argVal = SystemCall::getArgFromReg(regs, i);
     writeToProcess(str.c_str(), argVal, str.size(), pid);
     // Modify the length by modifying the return value.
     // This part should be done by SystemCall::overwrite. We do not execute it
@@ -53,7 +67,7 @@ SYSARGOVERWRITE_(buf)
 
 SYSARGOVERWRITE_(sha1)
 {
-    return buf_overwrite(sysarg, pid, argVal);
+    return buf_overwrite(sysarg, pid, regs, i);
 }
 
 SYSARGOVERWRITE_(string)
@@ -108,11 +122,27 @@ SYSARGOVERWRITE_(rpath_at)
 
 SYSARGOVERWRITE_(buf_det)
 {
+    buf_overwrite(sysarg, pid, regs, i);
     return 0;
 }
 
 SYSARGOVERWRITE_(struct)
 {
+    // XXX: ad-hoc
+    long pret;
+    if (sysarg->getValue() == "None")
+    {
+        SystemCallArgument fakeArg;
+        fakeArg.setArg("0", NULL);
+        uint_overwrite(sysarg, pid, regs, i);
+    }
+    else if (sysarg->getType()->aux == 128)
+    {
+        fd_set fds = fd_set_derecord(sysarg->getValue());
+        long argVal = SystemCall::getArgFromReg(regs, i);
+        pret = writeToProcess(&fds, argVal, sizeof(fds), pid);
+        return pret;
+    }
     return 0;
 }
 

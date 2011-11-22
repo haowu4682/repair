@@ -286,7 +286,23 @@ String struct_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     if (argValue == 0)
         return uint_record(0, argAux);
-    return buf_record(argValue, argAux);
+    //LOG("len=%ld", argAux->aux);
+    String str = buf_record(argValue, argAux);
+    stringstream ss;
+    // XXX: fix it no ad-hoc
+    if (argAux->aux == 128)
+    {
+        ss << "{";
+        const unsigned long *fds;
+        fds = reinterpret_cast<const unsigned long *>(str.c_str());
+        for (int i = 0; i < 1; i++)
+        {
+            ss << (*fds++);
+        }
+        ss << "}";
+    }
+    //LOG("str=%s", ss.str().c_str());
+    return ss.str();
 }
 
 String psize_t_record(long argValue, SystemCallArgumentAuxilation *argAux)
@@ -331,6 +347,7 @@ fd_set fd_set_derecord(String value)
         if (j == size)
         {
             LOG("Parenthesis does not match in %s", value.c_str());
+            break;
         }
         String item = value.substr(i, j);
         int fd_description = atoi(item.c_str());

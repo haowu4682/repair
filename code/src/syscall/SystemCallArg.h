@@ -22,7 +22,7 @@ struct SystemCallArgumentAuxilation
 };
 
 typedef String (*sysarg_type_t) (long argValue, SystemCallArgumentAuxilation *argAux);
-typedef int (*sysarg_overwrite_t) (const SystemCallArgument *sysarg, pid_t pid, long argVal);
+typedef int (*sysarg_overwrite_t) (const SystemCallArgument *sysarg, pid_t pid, user_regs_struct &regs, int i);
 // The type for a sysarg record
 struct SyscallArgType
 {
@@ -36,7 +36,7 @@ struct SyscallArgType
 };
 
 #define SYSARG_(type) String type##_record(long argValue, SystemCallArgumentAuxilation *argAux)
-#define SYSARGOVERWRITE_(type) int type##_overwrite(const SystemCallArgument *sysarg, pid_t pid, long argVal)
+#define SYSARGOVERWRITE_(type) int type##_overwrite(const SystemCallArgument *sysarg, pid_t pid, user_regs_struct &regs, int i)
 
 SYSARG_(void);
 SYSARG_(sint);
@@ -119,11 +119,13 @@ class SystemCallArgument
         String toString() const;
         // get value
         String getValue() const;
+        // set value
+        void setValue(String newValue) { value = newValue; }
         // get type
         const SyscallArgType *getType() const { return type; }
 
         // overwrite syscall argument
-        int overwrite(pid_t, long argVal) const;
+        int overwrite(pid_t, user_regs_struct &regs, int i) const;
     private:
         // The name
         String name;

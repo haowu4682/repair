@@ -214,7 +214,6 @@ int ProcessManager::traceProcess(pid_t pid)
         {
             LOG("User select found: %s", syscall.toString().c_str());
             pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, inputSeqNum);
-            LOG("match return value = %ld", pret);
             bool matchFound = (pret >= 0);
 
             // If a match has been found, we'll change the syscall result
@@ -226,24 +225,41 @@ int ProcessManager::traceProcess(pid_t pid)
                 inputSeqNum = pret;
                 // We do not skip executing the system call! We hack it to
                 // execute in no-timeout way.
+#if 0
+                timeval tmpTime;
                 timeval zeroTime = {0, 0};
-                writeToProcess(&zeroTime, SystemCall::getArgFromReg(regs, 4),
-                        sizeof(timeval), pid);
+                long timeval_addr = SystemCall::getArgFromReg(regs, 4);
+                readFromProcess(&tmpTime, timeval_addr, sizeof(zeroTime), pid);
+                LOG("before time: %ld:%ld", tmpTime.tv_sec, tmpTime.tv_usec);
+                writeToProcess(&zeroTime, timeval_addr, sizeof(zeroTime), pid);
+                readFromProcess(&tmpTime, timeval_addr, sizeof(zeroTime), pid);
+                LOG("after time: %ld:%ld", tmpTime.tv_sec, tmpTime.tv_usec);
                 pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
                 waitpid(pid, &status, 0);
+#endif
 
                 // Achieve the result of the execution
-                ptrace(PTRACE_GETREGS, pid, 0, &regs);
-                SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
+                //ptrace(PTRACE_GETREGS, pid, 0, &regs);
+                //SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
 
                 // Merge the result with recorded result
-                //mergeSystemCall(syscallReturn, syscallMatch);
-                syscallReturn.merge(syscallMatch);
+                //syscallReturn.merge(syscallMatch);
 
                 // Write matched system call
                 // Get the user input from syscallMatch
                 // Use ptrace to put the user input back
-                writeMatchedSyscall(syscallReturn, pid);
+                //LOG("poke system call: %s", syscallReturn.toString().c_str());
+                //writeMatchedSyscall(syscallReturn, pid);
+                LOG("Before match written");
+                writeMatchedSyscall(syscallMatch, pid);
+                LOG("After match written");
+
+                // Skip executing the system call
+                if (skipSyscall(pid) < 0)
+                {
+                    LOG("Skip syscall failed: %s", syscall.toString().c_str());
+                }
+                LOG("After skipping");
             }
             else
             {
@@ -255,6 +271,7 @@ int ProcessManager::traceProcess(pid_t pid)
         else if (syscall.isRegularUserInput())
         {
             //LOG("User input found: %s", syscall.toString().c_str());
+            LOG("User input found: %s", syscall.toString().c_str());
             pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, inputSeqNum);
             bool matchFound = (pret >= 0);
 
@@ -290,11 +307,10 @@ int ProcessManager::traceProcess(pid_t pid)
 #endif
         else
         {
-            //LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
-            //if (syscall.isValid())
-            //{
+            if (syscall.isValid())
+            {
                 //LOG("syscall: %s", syscall.toString().c_str());
-            //}
+            }
 
             pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
             waitpid(pid, &status, 0);
@@ -330,7 +346,22 @@ int ProcessManager::skipSyscall(pid_t pid)
     // HW: "PTRACE_SYSEMU" is in "linux/ptrace.h" x64, but not in "sys/ptrace.h".
     // Thus I am not sure if it is supported fully by x64
     long pret;
-    pret = ptrace(PTRACE_SYSEMU, pid, NULL, NULL);
+    int status;
+
+    user_regs_struct regs;
+    pret = ptrace(PTRACE_GETREGS, pid, 0, &regs);
+    if (pret < 0)
+        LOG("get regs failed!");
+
+    // XXX: ad-hoc
+    regs.orig_rax = 39;
+    pret = ptrace(PTRACE_SETREGS, pid, 0, &regs);
+    if (pret < 0)
+        LOG("set regs failed!");
+    pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+    waitpid(pid, &status, 0);
+
+    //pret = ptrace(PTRACE_SYSEMU, pid, NULL, NULL);
     return (int) pret;
 }
 

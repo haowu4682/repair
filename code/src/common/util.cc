@@ -10,7 +10,7 @@ long writeToProcess(const void *buf, long addr, size_t len, pid_t pid)
 {
     long pret = 0;
     long startAddr, endAddr;
-    const char *charBuf = static_cast<const char *>(buf);
+    const char *charBuf = reinterpret_cast<const char *>(buf);
 
     if (len <= 0)
     {
@@ -18,7 +18,8 @@ long writeToProcess(const void *buf, long addr, size_t len, pid_t pid)
     }
     startAddr = addr & (~WORD_ALIGN);
     endAddr = (addr + len - 1) & (~WORD_ALIGN);
-    for (int alignAddr = startAddr; alignAddr <= endAddr; alignAddr += WORD_BYTES)
+    //LOG("startAddr=%p, endAddr=%p", startAddr, endAddr);
+    for (long alignAddr = startAddr; alignAddr <= endAddr; alignAddr += WORD_BYTES)
     {
         long wordBuf;
         char *byteBuf = (char *) &wordBuf;
@@ -55,6 +56,8 @@ long writeToProcess(const void *buf, long addr, size_t len, pid_t pid)
         {
             byteBuf[i] = *charBuf++;
         }
+        //LOG("startAlign = %ld, endAlign = %ld, wordBuf = %ld", startAlign, endAlign, wordBuf);
+        //LOG("alignAddr=%p, byteBuf=%s", alignAddr, byteBuf);
         pret = ptrace(PTRACE_POKEDATA, pid, alignAddr, byteBuf);
         if (pret < 0)
         {
@@ -83,6 +86,7 @@ long readFromProcess(void *buf, long addr, size_t len, pid_t pid)
         //LOG("%lu", alignAddr);
         long wordBuf;
         wordBuf = ptrace(PTRACE_PEEKDATA, pid, alignAddr, NULL);
+        //LOG("alignAddr=%p, wordBuf=%ld", alignAddr, wordBuf);
         char *byteBuf = (char *) &wordBuf;
         long startAlign, endAlign;
         if (startAddr == endAddr)

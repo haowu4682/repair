@@ -49,13 +49,12 @@ long SystemCallList::searchMatchInput(SystemCall &match,
     SystemCallListItem &listItem = it->second;
     Vector<SystemCall> &syscalls = listItem.syscalls;
 
-//    LOG("%s", source.toString().c_str());
+    //LOG("%s", source.toString().c_str());
     for (size_t pos = seq, end = syscalls.size(); pos < end; ++pos)
     {
-//        LOG("%ld: %s", pos, syscalls[pos].toString().c_str());
+        //LOG("%ld: %s", pos, syscalls[pos].toString().c_str());
         if (source.matchUserInput(syscalls[pos]))
         {
-//            LOG("HERE2");
             if ((++pos) < syscalls.size())
             {
                 match = syscalls[pos];

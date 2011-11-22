@@ -77,6 +77,7 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, int usage, FDMana
     getRegsList(regs, argsList);
     int numArgs = type->numArgs;
     ret = getArgFromReg(regs, SYSCALL_MAX_ARGS);
+    //LOG("name=%s", type->name.c_str());
     for (int i = 0; i < numArgs; i++)
     {
         const SyscallArgType *argType = &type->args[i];
@@ -314,7 +315,6 @@ bool isFDUserInput(int fd, const FDManager *fdManager, bool isNew = true, long s
     if (file == NULL)
     {
         // Unknown fd, we do not treat it as user input.
-        // XXX: might need to assert(file != NULL)
         LOG("Unknown fd: %d", fd);
         return false;
     }
@@ -334,11 +334,13 @@ bool SystemCall::isUserSelect(bool isNew) const
 {
     if (!isSelect())
         return false;
+    //LOG1(toString().c_str());
     size_t numArgs = type->numArgs;
     // HARD CODE FOR X86_64
     for (size_t i = 1; i < 4; ++i)
     {
         const SyscallArgType *argType = &type->args[i];
+        //LOG1(args[1].toString().c_str());
         if (argType->record != struct_record)
         {
             LOG("System call cannot be interpreted as select: %s", toString().c_str());
@@ -451,8 +453,8 @@ int SystemCall::overwrite(pid_t pid)
         // Overwrite arguments
         for (int i = 0; i < type->numArgs; i++)
         {
-            long argVal = getArgFromReg(regs, i);
-            args[i].overwrite(pid, argVal);
+            //long argVal = getArgFromReg(regs, i);
+            args[i].overwrite(pid, regs, i);
         }
         // Overwrite return value
         setArgToReg(regs, SYSCALL_MAX_ARGS, ret);
@@ -675,16 +677,22 @@ bool SystemCall::matchUserInput(const SystemCall &another) const
         fd_set read_fds1 = fd_set_derecord(args[1].getValue());
         fd_set read_fds2 = fd_set_derecord(another.args[1].getValue());
         int nfds = atoi(args[0].getValue().c_str());
+        //LOG("nfds=%d", nfds);
         for (int newFD = 0; newFD < nfds; ++newFD)
         {
+            //LOG1("HERE2");
             int oldFD = fdManager->newToOld(newFD, another.seqNum);
-            bool fdset1 = FD_ISSET(newFD, &read_fds1);
-            bool fdset2 = FD_ISSET(oldFD, &read_fds2);
-            if ((fdset1 && !fdset2) || (!fdset1 && fdset2))
+            //LOG("newFD=%d, oldFD=%d", newFD, oldFD);
+            if (oldFD >= 0 && oldFD < nfds)
             {
-                if (isFDUserInput(newFD, fdManager, true))
-                { 
-                    return false;
+                bool fdset1 = FD_ISSET(newFD, &read_fds1);
+                bool fdset2 = FD_ISSET(oldFD, &read_fds2);
+                if ((fdset1 && !fdset2) || (!fdset1 && fdset2))
+                {
+                    if (isFDUserInput(newFD, fdManager, true))
+                    { 
+                        return false;
+                    }
                 }
             }
         }
