@@ -52,7 +52,7 @@ long SystemCallList::searchMatchInput(SystemCall &match,
     //LOG("%s", source.toString().c_str());
     for (size_t pos = seq, end = syscalls.size(); pos < end; ++pos)
     {
-        //LOG("%ld: %s", pos, syscalls[pos].toString().c_str());
+        LOG("%ld: %s", pos, syscalls[pos].toString().c_str());
         if (source.matchUserInput(syscalls[pos]))
         {
             if ((++pos) < syscalls.size())

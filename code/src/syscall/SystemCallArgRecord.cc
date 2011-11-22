@@ -290,6 +290,8 @@ String struct_record(long argValue, SystemCallArgumentAuxilation *argAux)
     String str = buf_record(argValue, argAux);
     stringstream ss;
     // XXX: fix it no ad-hoc
+    if (argAux->aux == 0)
+        ss << "None";
     if (argAux->aux == 128)
     {
         ss << "{";
@@ -337,6 +339,7 @@ fd_set fd_set_derecord(String value)
     size_t size = value.size();
     int count = 0;
 
+    FD_ZERO(&result);
     while (i < size)
     {
         j = i;

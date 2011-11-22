@@ -16,6 +16,7 @@ SYSARGOVERWRITE_(void)
 
 inline long writeInt(long value, pid_t pid, user_regs_struct &regs, int i)
 {
+    ptrace(PTRACE_GETREGS, pid, 0, &regs);
     SystemCall::setArgToReg(regs, i, value);
     return ptrace(PTRACE_SETREGS, pid, 0, &regs);
 }

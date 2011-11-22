@@ -81,12 +81,14 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, int usage, FDMana
     for (int i = 0; i < numArgs; i++)
     {
         const SyscallArgType *argType = &type->args[i];
-        if (argType->usage & usage == 0)
+        if ((argType->usage & usage) == 0)
         {
+            //LOG("NOMATCH usage=%d, argtype=%s", usage, argType->name.c_str());
             args[i].setArg(argType);
         }
         else
         {
+            //LOG("match usage=%d, argTypeUsage=%d, argtype=%s", usage, argType->usage, argType->name.c_str());
             SystemCallArgumentAuxilation aux = getAux(argsList, *type, i, ret, numArgs, pid, usage);
             args[i].setArg(argsList[i], &aux, argType);
         }
@@ -444,12 +446,13 @@ int SystemCall::merge(const SystemCall &src)
 // Overwrite the syscall result into a process
 int SystemCall::overwrite(pid_t pid)
 {
-    int ret;
+    int pret = 0;
     user_regs_struct regs;
     if (usage & SYSARG_IFEXIT)
     {
         // Achieve current regs list
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
+        LOG("regs=%s", regsToStr(regs).c_str());
         // Overwrite arguments
         for (int i = 0; i < type->numArgs; i++)
         {
@@ -457,6 +460,9 @@ int SystemCall::overwrite(pid_t pid)
             args[i].overwrite(pid, regs, i);
         }
         // Overwrite return value
+        ptrace(PTRACE_GETREGS, pid, 0, &regs);
+        regs.orig_rax = type->nr;
+        LOG("ret=%ld", ret);
         setArgToReg(regs, SYSCALL_MAX_ARGS, ret);
         // Write back the regs list
         ptrace(PTRACE_SETREGS, pid, 0, &regs);
@@ -465,7 +471,7 @@ int SystemCall::overwrite(pid_t pid)
     {
         return -1;
     }
-    return ret;
+    return pret;
 }
 
 // An aux function to parse a syscall arg.
@@ -662,7 +668,34 @@ bool SystemCall::match(const SystemCall &another) const
 
 bool SystemCall::matchUserInput(const SystemCall &another) const
 {
-    if (isSelect())
+    if (isRegularUserInput())
+    {
+        // The method is not super fast, but it should work.
+        if (!valid || !another.valid)
+            return false;
+        if (usage != another.usage)
+            return false;
+        if (type != another.type)
+            return false;
+
+        if (fdManager != NULL && type->args[0].record == fd_record)
+        {
+            int oldFD = atoi(another.args[0].getValue().c_str());
+            int newFD = atoi(args[0].getValue().c_str());
+            LOG("oldFD=%d, newFD=%d, seqNum=%d", oldFD, newFD, another.seqNum);
+            if (!fdManager->equals(oldFD, newFD, another.seqNum))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        return args[0] == another.args[0];
+    }
+
+    else if (isSelect())
     {
         // The method is not super fast, but it should work.
         if (!valid || !another.valid)
@@ -680,7 +713,6 @@ bool SystemCall::matchUserInput(const SystemCall &another) const
         //LOG("nfds=%d", nfds);
         for (int newFD = 0; newFD < nfds; ++newFD)
         {
-            //LOG1("HERE2");
             int oldFD = fdManager->newToOld(newFD, another.seqNum);
             //LOG("newFD=%d, oldFD=%d", newFD, oldFD);
             if (oldFD >= 0 && oldFD < nfds)

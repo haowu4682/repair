@@ -1,5 +1,6 @@
 // Author: Hao Wu <haowu@cs.utexas.edu.cn>
 
+#include <sstream>
 #include <sys/ptrace.h>
 
 #include <common/util.h>
@@ -22,7 +23,7 @@ long writeToProcess(const void *buf, long addr, size_t len, pid_t pid)
     for (long alignAddr = startAddr; alignAddr <= endAddr; alignAddr += WORD_BYTES)
     {
         long wordBuf;
-        char *byteBuf = (char *) &wordBuf;
+        char *byteBuf = reinterpret_cast<char *>(&wordBuf);
         long startAlign, endAlign;
         // When the word is not aligned, we must not damage any origin data.
         if (startAddr == endAddr)
@@ -57,8 +58,8 @@ long writeToProcess(const void *buf, long addr, size_t len, pid_t pid)
             byteBuf[i] = *charBuf++;
         }
         //LOG("startAlign = %ld, endAlign = %ld, wordBuf = %ld", startAlign, endAlign, wordBuf);
-        //LOG("alignAddr=%p, byteBuf=%s", alignAddr, byteBuf);
-        pret = ptrace(PTRACE_POKEDATA, pid, alignAddr, byteBuf);
+        LOG("alignAddr=%ld, wordBuf=%ld", alignAddr, wordBuf);
+        pret = ptrace(PTRACE_POKEDATA, pid, alignAddr, wordBuf);
         if (pret < 0)
         {
             LOG("Ptrace Poke data failed, errno=%ld", pret);
@@ -172,5 +173,19 @@ int parseArgv(Vector<String> &command, String str)
         return -1;
     }
     return 0;
+}
+
+String regsToStr(user_regs_struct &regs)
+{
+    std::stringstream ss;
+    ss << "nr=" << regs.orig_rax
+       << ", arg[0]=" << regs.rdi
+       << ", arg[1]=" << regs.rsi
+       << ", arg[2]=" << regs.rdx
+       << ", arg[3]=" << regs.r10
+       << ", arg[4]=" << regs.r9
+       << ", arg[5]=" << regs.r8
+       << ", ret=" << regs.rax;
+    return ss.str();
 }
 

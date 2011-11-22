@@ -35,5 +35,8 @@ long writeToProcess(const void *buf, long addr, size_t len, pid_t pid);
 // by the current process!
 long readFromProcess(void *buf, long addr, size_t len, pid_t pid);
 
+/// Convert register information to string, for debug use
+String regsToStr(user_regs_struct &regs);
+
 #endif //__COMMON_UTIL_H__
 

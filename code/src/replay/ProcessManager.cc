@@ -209,6 +209,11 @@ int ProcessManager::traceProcess(pid_t pid)
         SystemCall syscallMatch;
         SystemCall syscall(regs, pid, SYSARG_IFENTER, fdManager);
 
+        if (syscall.isValid())
+        {
+            LOG("syscall: %s", syscall.toString().c_str());
+        }
+
         // If the system call is user input or output, we need to act quite differently.
         if (syscall.isUserSelect(true))
         {
@@ -223,6 +228,8 @@ int ProcessManager::traceProcess(pid_t pid)
             {
                 LOG("Match Found! Match is: %s", syscallMatch.toString().c_str());
                 inputSeqNum = pret;
+                LOG("inputSeqNum=%ld", inputSeqNum);
+                LOG("regs=%s", regsToStr(regs).c_str());
                 // We do not skip executing the system call! We hack it to
                 // execute in no-timeout way.
 #if 0
@@ -250,16 +257,35 @@ int ProcessManager::traceProcess(pid_t pid)
                 // Use ptrace to put the user input back
                 //LOG("poke system call: %s", syscallReturn.toString().c_str());
                 //writeMatchedSyscall(syscallReturn, pid);
-                LOG("Before match written");
-                writeMatchedSyscall(syscallMatch, pid);
-                LOG("After match written");
 
                 // Skip executing the system call
+                LOG("Before skipping");
                 if (skipSyscall(pid) < 0)
                 {
                     LOG("Skip syscall failed: %s", syscall.toString().c_str());
                 }
                 LOG("After skipping");
+
+#if 0
+                ptrace(PTRACE_GETREGS, pid, 0, &regs);
+                LOG("regs=%s", regsToStr(regs).c_str());
+                SystemCall syscallFake(regs, pid, SYSARG_IFEXIT, fdManager);
+                LOG("fake return syscall is: %s", syscallFake.toString().c_str());
+#endif
+
+                // write back result
+                LOG("Before match written");
+                writeMatchedSyscall(syscallMatch, pid);
+                LOG("After match written");
+
+#if 0
+                ptrace(PTRACE_GETREGS, pid, 0, &regs);
+                LOG("regs=%s", regsToStr(regs).c_str());
+                tmp = ptrace(PTRACE_PEEKDATA, pid, regs.rsi, 0);
+                LOG("firstbyte=%ld", tmp);
+                SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
+                LOG("return syscall is: %s", syscallReturn.toString().c_str());
+#endif
             }
             else
             {
@@ -282,15 +308,20 @@ int ProcessManager::traceProcess(pid_t pid)
             {
                 LOG("Match Found! Match is: %s", syscallMatch.toString().c_str());
                 inputSeqNum = pret;
-                // Get the user input from syscallMatch
-                // Use ptrace to put the user input back
-                writeMatchedSyscall(syscallMatch, pid);
+                LOG("inputSeqNum=%ld", inputSeqNum);
 
                 // Skip executing the system call
+                LOG("Before skipping");
                 if (skipSyscall(pid) < 0)
                 {
                     LOG("Skip syscall failed: %s", syscall.toString().c_str());
                 }
+                LOG("After skipping");
+
+                // write back result
+                LOG("Before match written");
+                writeMatchedSyscall(syscallMatch, pid);
+                LOG("After match written");
             }
             else
             {
@@ -307,11 +338,6 @@ int ProcessManager::traceProcess(pid_t pid)
 #endif
         else
         {
-            if (syscall.isValid())
-            {
-                //LOG("syscall: %s", syscall.toString().c_str());
-            }
-
             pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
             waitpid(pid, &status, 0);
 
