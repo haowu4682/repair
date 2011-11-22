@@ -58,7 +58,7 @@ long writeToProcess(const void *buf, long addr, size_t len, pid_t pid)
             byteBuf[i] = *charBuf++;
         }
         //LOG("startAlign = %ld, endAlign = %ld, wordBuf = %ld", startAlign, endAlign, wordBuf);
-        LOG("alignAddr=%ld, wordBuf=%ld", alignAddr, wordBuf);
+        LOG("alignAddr=%ld, wordBuf=%ld, byteBuf=%c", alignAddr, wordBuf, *byteBuf);
         pret = ptrace(PTRACE_POKEDATA, pid, alignAddr, wordBuf);
         if (pret < 0)
         {

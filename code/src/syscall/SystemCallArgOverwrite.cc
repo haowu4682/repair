@@ -59,7 +59,14 @@ SYSARGOVERWRITE_(buf)
     // Modify the buf value
     String str = sysarg->getValue();
     long argVal = SystemCall::getArgFromReg(regs, i);
-    writeToProcess(str.c_str(), argVal, str.size(), pid);
+    if (str[0] == '\"')
+    {
+        writeToProcess(str.c_str()+1, argVal, str.size()-2, pid);
+    }
+    else
+    {
+        writeToProcess(str.c_str(), argVal, str.size(), pid);
+    }
     // Modify the length by modifying the return value.
     // This part should be done by SystemCall::overwrite. We do not execute it
     // here.
