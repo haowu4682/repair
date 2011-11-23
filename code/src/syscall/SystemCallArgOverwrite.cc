@@ -57,7 +57,9 @@ SYSARGOVERWRITE_(buf)
 {
     long pret;
     // Modify the buf value
-    String str = sysarg->getValue();
+    String escapedStr = sysarg->getValue();
+    String str = removeEscapeSequence(escapedStr);
+    LOG("escaped str is: %s, after escape: %s", escapedStr.c_str(), str.c_str());
     long argVal = SystemCall::getArgFromReg(regs, i);
     if (str[0] == '\"')
     {

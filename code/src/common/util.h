@@ -38,5 +38,8 @@ long readFromProcess(void *buf, long addr, size_t len, pid_t pid);
 /// Convert register information to string, for debug use
 String regsToStr(user_regs_struct &regs);
 
+/// Convert out escape sequences
+String removeEscapeSequence(const String &src);
+
 #endif //__COMMON_UTIL_H__
 
