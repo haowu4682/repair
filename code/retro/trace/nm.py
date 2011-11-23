@@ -23,7 +23,7 @@ symbols = ["sys_call_table"] \
 	+ ["__d_lookup", "lookup_mnt"] \
 	+ ["kallsyms_lookup_name", "module_kallsyms_lookup_name"] \
 	+ ["ext4_iget", "sys_ioctl", "sys_unlinkat", "do_path_lookup"] \
-	+ ["ptrace_notify", "__lookup_hash"] \
+	+ ["ptrace_notify", "lookup_hash"] \
 	+ ["user_path_parent", "socket_file_ops"]
 symbols_optional = ["btrfs_iget", "btrfs_inode_cachep", "dummy_symbol"]
 

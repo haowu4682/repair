@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from syscall import syscalls
+from syscall import syscalls, BOTH
 from ctypes import sizeof, Structure
 
 # generate C code for _syscalls
@@ -17,7 +17,7 @@ def print_syscalls():
 			if isinstance(aux, type):
 				assert issubclass(aux, Structure)
 				aux = sizeof(aux)
-			print('\t\t{ "%s", %s, %s, %s },' % (arg.name, ty, arg.usage & 1, aux))
+			print('\t\t{ "%s", %s, %s, %s },' % (arg.name, ty, arg.usage & BOTH, aux))
 		print("\t} },")
 
 if __name__ == "__main__":

@@ -35,7 +35,93 @@ SystemCall SystemCallList::search(SystemCall &syscall)
     return result;
 }
 
-void SystemCallList::init(istream &in, FDManager *fdManager)
+long SystemCallList::searchMatchInput(SystemCall &match,
+        const SystemCall &source, pid_t pid, size_t seq /* = 0 */)
+{
+    SyscallMapType::iterator it;
+    if ((it = syscallMap.find(pid)) == syscallMap.end())
+    {
+        // No syscall list found
+        LOG("No system call list found for %d", pid);
+        return MATCH_NOT_FOUND;
+    }
+
+    SystemCallListItem &listItem = it->second;
+    Vector<SystemCall> &syscalls = listItem.syscalls;
+
+    //LOG("%s", source.toString().c_str());
+    for (size_t pos = seq, end = syscalls.size(); pos < end; ++pos)
+    {
+        LOG("%ld: %s", pos, syscalls[pos].toString().c_str());
+        if (source.matchUserInput(syscalls[pos]))
+        {
+            if ((++pos) < syscalls.size())
+            {
+                match = syscalls[pos];
+                if (match.getType() != source.getType())
+                {
+                    LOG("Syscall record pair not matched.");
+                    --pos;
+                    continue;
+                }
+                return static_cast<int>(pos + 1);
+            }
+            else
+            {
+                LOG("Syscall record pair broken due to eof");
+                break;
+            }
+        }
+    }
+
+    return MATCH_NOT_FOUND;
+}
+
+#if 0
+long SystemCallList::searchMatchSelect(SystemCall &match, 
+        const SystemCall &source, pid_t pid, size_t seq /* = 0 */)
+{
+    SyscallMapType::iterator it;
+    if ((it = syscallMap.find(pid)) == syscallMap.end())
+    {
+        // No syscall list found
+        LOG("No system call list found for %d", pid);
+        return MATCH_NOT_FOUND;
+    }
+
+    SystemCallListItem &listItem = it->second;
+    Vector<SystemCall> &syscalls = listItem.syscalls;
+
+    for (size_t pos = seq, end = syscalls.size(); pos < end; ++pos)
+    {
+        if (!match.isSelect())
+            continue;
+        if (source == syscalls[pos])
+        {
+            if ((++pos) < syscalls.size())
+            {
+                match = syscalls[pos];
+                if (match.getType() != source.getType())
+                {
+                    LOG("Syscall record pair not matched.");
+                    --pos;
+                    continue;
+                }
+                return static_cast<int>(pos + 1);
+            }
+            else
+            {
+                LOG("Syscall record pair broken due to eof");
+                break;
+            }
+        }
+    }
+
+    return MATCH_NOT_FOUND;
+}
+#endif
+
+void SystemCallList::init(istream &in)
 {
     // '\n' is used as a delimeter between syscalls
     string syscallString;
@@ -56,7 +142,7 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
         {
             // This is the updated version
             // XXX: If the exec is executed by a `exec'-ed process, we shall not add it to the list here
-            if (!syscall.getUsage()) // && !pidManager->isForked(syscall.getPid()))
+            if (syscall.getUsage() && SYSARG_IFENTER) // && !pidManager->isForked(syscall.getPid()))
             {
                 Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
                 if (it == processMap.end())
@@ -69,13 +155,12 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
                 {
                     it->second->setCommand(&syscall);
                 }
-                //systemManager->togglePreActionsOff(oldPid);
                 preActionRecordEnabled[oldPid] = false;
             }
         }
         else if (syscall.isFork())
         {
-            if (syscall.getUsage())
+            if (syscall.getUsage() && SYSARG_IFEXIT)
             {
                 pid_t newPid = syscall.getReturn();
                 Process *parent = root->searchProcess(oldPid);
@@ -90,13 +175,11 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
                 {
                     pidManager->addForked(newPid);
                 }
-                //systemManager->togglePreActionsOn(newPid);
                 preActionRecordEnabled[newPid] = true;
             }
         }
         else if (syscall.isPipe())
         {
-            // XXX: memory leak
             SystemCall *newSyscall = new SystemCall(syscall);
             Process *proc;
             Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
@@ -109,13 +192,9 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
                 proc = it->second;
             }
             proc->addPreAction(newSyscall);
-            //systemManager->togglePreActionsOn(oldPid);
-            //systemManager->recordPreAction(oldPid, newSyscall);
-            //systemManager->togglePreActionsOff(oldPid);
         }
         else
         {
-            // XXX: memory leak
             Map<pid_t, bool>::iterator jt = preActionRecordEnabled.find(oldPid);
             if (jt != preActionRecordEnabled.end() && jt->second)
             {
@@ -131,7 +210,6 @@ void SystemCallList::init(istream &in, FDManager *fdManager)
                     proc = it->second;
                 }
                 proc->addPreAction(newSyscall);
-                //systemManager->recordPreAction(oldPid, newSyscall);
             }
         }
     }

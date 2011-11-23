@@ -1,5 +1,5 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
-// This file contians how to execute a syscall. 
+// This file contians how to execute a syscall.
 // TODO: implement everything
 
 #include <cstdlib>
@@ -30,7 +30,8 @@ SYSCALL_(open)
     int newFd = open(path.c_str(), flag, mode);
     LOG("path=%s, newFd=%d", path.c_str(), newFd);
     FDManager *fdManager = syscall->getFDManager();
-    fdManager->addNew(newFd, path);
+    File *file = new File(newFd, path);
+    fdManager->addNewFile(file);
     return 0;
 }
 

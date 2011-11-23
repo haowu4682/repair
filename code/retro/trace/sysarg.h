@@ -8,14 +8,18 @@ struct sysarg;
  */
 typedef void (*argtype_t)(long, const struct sysarg *);
 
+#define SYSARG_IFENTRY 0x1
+#define SYSARG_IFEXIT 0x2
+
 struct sysarg {
-	const char *name;
-  argtype_t ty;
-  int usage; /* specifies whether the sysarg should be written out with
-              * the entry record (usage == 0) or the exit record (usage == 1)
-              */
-	long aux;
-	long ret;
+    const char *name;
+    argtype_t ty;
+    int usage; /* specifies whether the sysarg should be written out with
+                * the entry record and/or the exit record. The possible values
+                * are bit combinations of SYSARG_IFENTRY and SYSARG_IFEXIT.
+                */
+    long aux;
+    long ret;
 };
 
 #define SYSARG_(type) void sysarg_##type(long v, const struct sysarg *arg)

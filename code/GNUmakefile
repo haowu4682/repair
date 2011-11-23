@@ -1,7 +1,7 @@
 CPP             := g++
 CXXFLAGS        := -Isrc/ -g
-LDFLAGS         := -lrt -lssl -g
-PYTHONPATH      := src/python_include
+LDFLAGS         := -g
+LDADD			:= -lrt -lssl
 
 COMMONHDR       := $(wildcard src/common/*.h)
 COMMONSRC       := $(wildcard src/common/*.cc)
@@ -14,7 +14,9 @@ SYSCALLSRC      := $(wildcard src/syscall/*.cc)
 SYSCALLOBJ      := $(patsubst src/syscall/%.cc, bin/syscall/%.o, $(SYSCALLSRC))
 INCSRC          := $(wildcard src/gen_include/*.py)
 INCOBJ          := $(patsubst src/gen_include/%.py, src/gen_include/%.inc, $(INCSRC))
-PYTHONSRC       := $(wildcard src/python_include/*.py)
+#PYTHONPATH      := src/python_include
+PYTHONPATH      := retro/repair
+PYTHONSRC       := $(wildcard $(PYTHONPATH)/*.py)
 
 REPLAYBIN       := bin/SystemReplay
 
@@ -24,7 +26,7 @@ bin: $(REPLAYBIN)
 
 $(REPLAYBIN): $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ)
 	mkdir -p bin;
-	$(CPP) $(LDFLAGS) -o $@ $^
+	$(CPP) $(LDFLAGS) -o $@ $^ $(LDADD)
 
 obj: $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ)
 

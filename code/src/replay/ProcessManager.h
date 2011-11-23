@@ -45,7 +45,11 @@ class ProcessManager
         // Overwrite the return value of a system call
         // @author haowu
         // @param syscall The syscall to overwrite
+        // @param pid
         static int writeMatchedSyscall(SystemCall &syscall, pid_t pid);
+        // Skip executing a syscall
+        // @param pid
+        static int skipSyscall(pid_t pid);
         // Deal with fork (manage pid, add a new proc manager for it.
         int dealWithFork(SystemCall &syscall, pid_t oldPid);
         // The process to be replayed

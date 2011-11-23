@@ -45,7 +45,7 @@ def check_rw(r):
   if hasattr(r, "ret") and nrsucc(r):
     if isinstance(r.ret, file):
       if r.nr in [NR_open, NR_openat]:
-        if r.usage == 1:
+        if r.usage & EXIT:
           ws = True
         else :
           inode = r.args["path"].inode

@@ -7,6 +7,7 @@ import nrdep
 import copy, struct
 import bsddb
 import dbg
+import sys
 
 import code
 
@@ -63,7 +64,7 @@ class SyscallRecord(Record):
         s = _q(v)
       args.append(x + s)
     if hasattr(self, "usage"):
-      prefix = [">", "<"][self.usage] + " "
+      prefix = ["", ">", "<", "<>"][self.usage] + " "
     else:
       prefix = ""
     s = prefix + " ".join([str(self.pid), self.name]) \
@@ -126,23 +127,26 @@ def _read_syscall(f):
   r.ts = _read_time(f)
   r.pid = sysarg_uint(f)
   r.usage = sysarg_uint(f)
-# assertion temporarily canceled here
-#  assert r.usage in [0, 1]
+#  XXX: do not check the usage currently since the record contains some invalid
+#  usage data. It is a bug, but we do not need to fix it now since it does not
+#  prevent the system from running.
+  #assert r.usage in range(BOTH)
   r.nr = sysarg_uint(f)
   r.sid = _read_sid(f)
+  #print r.ts, r.pid, r.usage, r.nr, r.sid
   r.args = {}
   args = []
 
   sc = syscalls[r.nr]
 
   # UIDs are logged for execve
-  if r.usage == 1 and r.nr == NR_execve:
+  if (r.usage & 2 != 0) and r.nr == NR_execve:
     r.uids = {}
     for uid in ["uid", "gid", "euid", "egid"]:
       r.uids[uid] = sysarg_uint(f)
 
   for i, a in enumerate(sc.args):
-    if a.usage & 1 != r.usage:
+    if (a.usage & r.usage == 0):
       assert i == len(args)
       args.append(None)
       continue
@@ -154,7 +158,7 @@ def _read_syscall(f):
       args.append(v)
     r.args[a.name] = v
     if a.ty in [sysarg_buf, sysarg_buf_det]:
-      if a.usage & 1:
+      if (a.usage & EXIT):
         assert sc.ret == sysarg_ssize_t
         if len(v) > 0:
           setattr(r, "ret", len(v))
@@ -162,18 +166,16 @@ def _read_syscall(f):
         assert sc.args[i+1].ty == sysarg_size_t
         args.append(len(v))
     elif a.ty == sysarg_struct:
-      if a.usage & 1:
-        pass
-      else:
+      if (a.usage & ENTER):
         if len(sc.args) > i+1 \
               and sc.args[i+1].ty == sysarg_size_t:
           args.append(0 if v is None else len(v))
     elif a.ty == sysarg_iovec:
-      if not a.usage & 1:
+      if (a.usage & ENTER):
         sc.args[i+1] == sysarg_int
         args.append(len(v))
 
-  if r.usage and not hasattr(r, "ret"):
+  if (r.usage & EXIT) and not hasattr(r, "ret"):
     v = sc.ret(f)
     assert v is not None
     if r.name == "execve":
@@ -281,7 +283,7 @@ def zopen(fn):
 
 def fix_r(r):
   """Syscall specific clean up."""
-  if r.usage == 0:
+  if (r.usage & ENTER):
     if r.nr == NR_open and not r.args["flags"] & os.O_CREAT:
       r.args["mode"] = 0
 
@@ -316,7 +318,7 @@ def load(dirp):
     pidd.fix(r)
     if r.pid not in psyscalls:
       psyscalls[r.pid] = []
-    if r.usage == 0:
+    if (r.usage & ENTER):
       # an enter record
       if r.nr not in [NR_exit, NR_exit_group]:
         psyscalls[r.pid].append(r)

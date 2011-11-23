@@ -1,5 +1,6 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <sstream>
@@ -283,8 +284,27 @@ String buf_det_record(long argValue, SystemCallArgumentAuxilation *argAux)
 
 String struct_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
-    String str;
-    return str;
+    if (argValue == 0)
+        return uint_record(0, argAux);
+    //LOG("len=%ld", argAux->aux);
+    String str = buf_record(argValue, argAux);
+    stringstream ss;
+    // XXX: fix it no ad-hoc
+    if (argAux->aux == 0)
+        ss << "None";
+    if (argAux->aux == 128)
+    {
+        ss << "{";
+        const unsigned long *fds;
+        fds = reinterpret_cast<const unsigned long *>(str.c_str());
+        for (int i = 0; i < 1; i++)
+        {
+            ss << (*fds++);
+        }
+        ss << "}";
+    }
+    //LOG("str=%s", ss.str().c_str());
+    return ss.str();
 }
 
 String psize_t_record(long argValue, SystemCallArgumentAuxilation *argAux)
@@ -306,10 +326,39 @@ Pair<int, int> fd2_derecord(String value)
     Pair<int, int> fd2;
     istringstream is(value);
 
-    // XXX: might cause trouble when the format has changed
     is >> aux2 >> fd2.first;
     is >> aux;
     is >> fd2.second;
     return fd2;
+}
+
+fd_set fd_set_derecord(String value)
+{
+    fd_set result;
+    size_t i = 1, j;
+    size_t size = value.size();
+    int count = 0;
+
+    FD_ZERO(&result);
+    while (i < size)
+    {
+        j = i;
+        while (j < size && value[j] != ',' && value[j] != '}')
+        {
+            ++j;
+        }
+        if (j == size)
+        {
+            LOG("Parenthesis does not match in %s", value.c_str());
+            break;
+        }
+        String item = value.substr(i, j);
+        int fd_description = atoi(item.c_str());
+        // XXX: This is not defined by POSIX, usage of this command may be
+        // undefined.
+        (__FDS_BITS(&result))[count++] = fd_description;
+        i = j + 1;
+    }
+    return result;
 }
 

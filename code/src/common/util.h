@@ -28,12 +28,18 @@ int parseArgv(Vector<String> &command, String str);
 // write some data to a user's memory using ptrace
 // We do NOT check that process `pid' is a child process in ptrace
 // by the current process!
-long writeToProcess(void *buf, long addr, size_t len, pid_t pid);
+long writeToProcess(const void *buf, long addr, size_t len, pid_t pid);
 
 // read some data from a user's memory using ptrace
 // We do NOT check that process `pid' is a child process in ptrace
 // by the current process!
 long readFromProcess(void *buf, long addr, size_t len, pid_t pid);
+
+/// Convert register information to string, for debug use
+String regsToStr(user_regs_struct &regs);
+
+/// Convert out escape sequences
+String removeEscapeSequence(const String &src);
 
 #endif //__COMMON_UTIL_H__
 

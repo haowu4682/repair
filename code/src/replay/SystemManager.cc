@@ -95,14 +95,15 @@ int main(int argc, char **argv)
     FDManager fdManager;
     Process rootProcess(true, NULL);
     rootProcess.setPreActions(new Vector<Action *>());
-    SystemCallList list(&pidManager, &sysManager);
+    SystemCallList list(&pidManager, &sysManager, &fdManager);
 
     sysManager.setSyscallList(&list);
     sysManager.setFDManager(&fdManager);
     sysManager.setPidManager(&pidManager);
     sysManager.setRoot(&rootProcess);
 
-    list.init(fin, &fdManager);
+    list.init(fin);
+    //LOG1(list.toString().c_str());
     LOG("init finished");
     sysManager.execAll();
     LOG("execution finished");

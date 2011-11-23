@@ -25,7 +25,8 @@ struct SyscallType
     String name;
     size_t numArgs;
     SyscallArgType args[6];
-    bool operator ==(SyscallType &another) { return nr == another.nr && name == another.name; }
+    bool operator ==(const SyscallType &another) const
+        { return nr == another.nr && name == another.name; }
     syscall_exec_t exec;
 };
 
@@ -42,30 +43,29 @@ class SystemCall : public Action
     public:
         SystemCall() : valid(false), fdManager(NULL) {}
         // Construct the system call from registers
-        SystemCall(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager = NULL,
+        SystemCall(const user_regs_struct &regs, pid_t pid, int usage, FDManager *fdManager = NULL,
                 PidManager *pidManager = NULL);
         SystemCall(String record, FDManager *fdManager = NULL, PidManager *pidManager = NULL)
         { this->init(record, fdManager, pidManager); }
 
         // Whether two syscalls are equal. Two syscalls are equal if their usages are equal, and
         // each available arguments and return value(if usage==true) are equal
-        bool operator == (SystemCall &);
+        bool operator == (const SystemCall &) const;
+        bool match(const SystemCall &) const;
+        // Whether two syscalls are equalivant in USER_INPUT sense. If the
+        // syscall cannot contain a user input, it just returns to regular
+        // match.
+        bool matchUserInput(const SystemCall &) const;
 
         // Whether the system call is valid.
         // A valid system call is a system with its code and args provided.
         // @author haowu
-        bool isValid() { return valid;}
-
-        // Given the current registers, overwrite the return value in the registers
-        // with current return values of the system call.
-        // @author haowu
-        // @param regs The current registers, will be modified.
-        int overwrite(user_regs_struct &regs);
+        bool isValid() const { return valid; }
 
         // Init a system call from a record
         // @param record The record
         int init(String record, FDManager *fdManager = NULL, PidManager *pidManager = NULL);
-        void init(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager = NULL,
+        void init(const user_regs_struct &regs, pid_t pid, int usage, FDManager *fdManager = NULL,
                 PidManager *pidManager = NULL);
 
         // Tell whether the system call is a ``fork'' or ``vfork''
@@ -76,13 +76,39 @@ class SystemCall : public Action
 
         bool isPipe() const;
 
+        // Tell whether the system call is a user input
+        // A user input is an input whose source is from user.
+        //bool isUserInput() const;
+
+        // Tell whether the system call is a input
+        bool isInput() const;
+
+        // Tell whether the system call is a output
+        bool isOutput() const;
+
+        // Tell whether the system call is a ``select''
+        bool isSelect() const;
+
+        // Tell whether the system call is a ``poll''
+        bool isPoll() const;
+
+        // This function returns if a user input is a regular user input(i.e.
+        // read or recvfrom)
+        bool isRegularUserInput() const;
+
+        // This function returns if a user input is a `select' for a user input.
+        bool isUserSelect(bool isNew) const;
+
+        // This function returns if a user input is a `poll' for a user input.
+        bool isUserPoll() const;
+
         // Get return value
         long getReturn() const { return ret; }
 
         // Get pid which owns the syscall
         pid_t getPid() const { return pid; }
 
-        bool getUsage() const { return usage;}
+        int getUsage() const { return usage;}
 
         // Get arguments;
         const SystemCallArgument *getArgs() const { return args;}
@@ -93,35 +119,66 @@ class SystemCall : public Action
         // Get the sequence number
         long getSeqNum() const { return seqNum; }
 
+        // Get the type
+        const SyscallType *getType() const { return type; }
+
         // Get syscall args list from regs
         // Warning: The size of the given list must be at least SYSCALL_MAX_ARGS!
         // We do not check it here.
         static void getRegsList(const user_regs_struct &regs, long args[]);
 
+        // Get the value of certain syscall arg. It returns the relative
+        // value in the register, not the actual argument. For example, if an
+        // argument is buf = "Hello World", the return value should be &buf.
+        // @param regs the current register frame
+        // @param num the sequence number of the argument. If it's out of
+        // range(0...5), it in fact returns the ``return value''. This is
+        // something to be aware of.
+        static long getArgFromReg(const user_regs_struct &regs, int num);
+        
+        // Set the value of certain syscall arg to a register frame. The
+        // function is similar with getArgFromReg.
+        // @param regs the current register frame
+        // @param num the sequence number of the argument. If it's out of
+        // range(0...5), it in fact means the ``return value''. This is
+        // something to be aware of.
+        static void setArgToReg(user_regs_struct &regs, int num, long value);
+
         // Get fd manager
-        FDManager *getFDManager() { return fdManager; }
+        FDManager *getFDManager() const { return fdManager; }
 
         // Get pid manager
-        PidManager *getPidManager() { return pidManager; }
+        PidManager *getPidManager() const { return pidManager; }
 
         // to string
         String toString() const;
+        //friend std::ostream &operator <<(std::ostream &os, SystemCall &syscall) 
+        //{ syscall.toString(os); }
 
         // execute the systemcall
         virtual int exec();
 
+        // Overwrite return value of the system call into a process
+        int overwrite(pid_t pid);
+
+        // The function is used to merge the result of two different syscalls. Currently
+        // it is only used for dealing with select, poll, and epoll.
+        // @param src The source system call. We will merge the result of user input fds
+        // in src into dst
+        int merge(const SystemCall &src);
+
     private:
         // Get an aux value for determing an argument
-        static SystemCallArgumentAuxilation getAux(long args[], SyscallArgType &argType, int i,
-                long ret, int nargs, pid_t pid, bool usage);
+        static SystemCallArgumentAuxilation getAux(long args[], const SyscallType &syscallType, int i,
+                long ret, int nargs, pid_t pid, int usage);
+
         // If the system call is valid
         bool valid;
         // When the syscall is taken *before* at a syscall entry, it is false. Else it is true
-        bool usage;
+        int usage;
         // The system call type
         const SyscallType *type;
         // The system call args
-        // `6' is not hard-coded here now.
         SystemCallArgument args[SYSCALL_MAX_ARGS];
         // The return value of the system call
         long ret;

@@ -1,23 +1,41 @@
 //Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <climits>
 #include <sstream>
 
 #include <replay/FDManager.h>
 using namespace std;
 
-int FDManager::addOld(int fd, String path, long seqNum)
+File* FDManager::standardFiles[] = {
+        &File::STDIN,
+        &File::STDOUT,
+        &File::STDERR
+};
+unsigned FDManager::standardFilesSize = 3;
+
+void FDManager::init()
 {
-    //oldFDMap.insert(valueType(fd, path));
-    oldFDMap[fd].push_back(FDItem(seqNum, path));
+    for (unsigned i = 0; i < standardFilesSize; i++)
+    {
+        addOldFile(standardFiles[i], 0);
+        addNewFile(standardFiles[i], 0);
+    }
 }
 
-int FDManager::addNew(int fd, String path, long seqNum)
+int FDManager::addOldFile(File *file, long seqNum)
 {
-    //newFDMap.insert(valueType(fd, path));
-    newFDMap[fd].push_back(FDItem(seqNum, path));
+    int fd = file->getFD();
+    oldFDMap[fd].push_back(FDItem(seqNum, file));
 }
 
-int FDManager::removeOld(int fd)
+int FDManager::addNewFile(File *file, long seqNum)
+{
+    int fd = file->getFD();
+    newFDMap[fd].push_back(FDItem(seqNum, file));
+}
+
+/*
+int FDManager::removeOldFile(int fd)
 {
     oldFDMap.erase(fd);
 }
@@ -26,19 +44,20 @@ int FDManager::removeNew(int fd)
 {
     newFDMap.erase(fd);
 }
+*/
 
-String FDManager::searchOld(int fd, long seqNum)
+File *FDManager::searchOld(int fd, long seqNum) const
 {
-    String str;
-    mapType::iterator it;
+    File *str = NULL;
+    mapType::const_iterator it;
     it = oldFDMap.find(fd);
     if (it != oldFDMap.end())
     {
-        for (Vector<FDItem>::iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
+        for (Vector<FDItem>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
         {
             if (jt->seqNum < seqNum)
             {
-                str = jt->path;
+                str = jt->file;
             }
             else
             {
@@ -49,82 +68,93 @@ String FDManager::searchOld(int fd, long seqNum)
     return str;
 }
 
-String FDManager::searchNew(int fd)
+File *FDManager::searchNew(int fd) const
 {
-    String str;
-    mapType::iterator it;
+    File *str = NULL;
+    mapType::const_iterator it;
     it = newFDMap.find(fd);
     if (it != newFDMap.end())
     {
-        str = it->second.back().path;
+        str = it->second.back().file;
     }
     return str;
 }
 
-int FDManager::oldToNew(int oldFd, long seqNum)
+int FDManager::oldToNew(int oldFD, long seqNum) const
 {
-    String path = searchOld(oldFd, seqNum);
-    //LOG1(path.c_str());
-    if (!path.empty())
+    File *file = searchOld(oldFD, seqNum);
+    if (file != NULL)
     {
-        for (mapType::iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
+        for (mapType::const_iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
         {
             // XXX: Use the most recent one now. It may cause a problem if it is called
             //      while the most recent one has expired.
-            if (it->second.back().path == path)
+            if (it->second.back().file == file)
                 return it->first;
         }
     }
-    return oldFd;
+    return -1;
 }
 
-// XXX: temporarily invalid
-/*
-int FDManager::newToOld(int newFd, long seqNum)
+int FDManager::newToOld(int newFD, long seqNum) const
 {
-    String path = searchNew(newFd);
-    if (!path.empty())
+    File *file = searchNew(newFD);
+    int oldFD;
+    int leastSeqNum = INT_MAX;
+    if (file != NULL)
     {
-        for (mapType::iterator it = oldFDMap.begin(); it != oldFDMap.end(); ++it)
+        // The approach is not efficient
+        for (mapType::const_iterator it = oldFDMap.begin(); it != oldFDMap.end(); ++it)
         {
-            if (it->second == path)
-                return it->first;
+            for (Vector<FDItem>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
+            {
+                // Three conditions:
+                // 1. points to the same file
+                // 2. the sequential number is not expired
+                // 3. the record has the least sequential number among the files
+                // which satisfy the two conditions above.
+                if (jt->file == file && jt->seqNum >= seqNum
+                        && jt->seqNum < leastSeqNum)
+                {
+                    leastSeqNum = jt->seqNum;
+                    oldFD = it->first;
+                }
+            }
         }
     }
-    return newFd;
+    return oldFD;
 }
-*/
 
-bool FDManager::equals(int oldFd, int newFd, long seqNum)
+bool FDManager::equals(int oldFD, int newFD, long seqNum) const
 {
-    String oldPath = searchOld(oldFd, seqNum);
-    String newPath = searchNew(newFd);
-    if (oldPath.empty())
+    File *oldPath = searchOld(oldFD, seqNum);
+    File *newPath = searchNew(newFD);
+    if (oldPath == NULL)
         return false;
-    if (newPath.empty())
+    if (newPath == NULL)
         return false;
     if (oldPath != newPath)
         return false;
     return true;
 }
 
-String FDManager::toString()
+String FDManager::toString() const
 {
     ostringstream sout;
     sout << "Old FDs" << endl;
-    for (mapType::iterator it = oldFDMap.begin(); it != oldFDMap.end(); ++it)
+    for (mapType::const_iterator it = oldFDMap.begin(); it != oldFDMap.end(); ++it)
     {
-        for (Vector<FDItem>::iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
+        for (Vector<FDItem>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
         {
-            sout << it->first << "\t" << jt->seqNum << "\t" << jt->path << endl;
+            sout << it->first << "\t" << jt->seqNum << "\t" << jt->file << endl;
         }
     }
     sout << "New FDs" << endl;
-    for (mapType::iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
+    for (mapType::const_iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
     {
-        for (Vector<FDItem>::iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
+        for (Vector<FDItem>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
         {
-            sout << it->first << "\t" << jt->seqNum << "\t" << jt->path << endl;
+            sout << it->first << "\t" << jt->seqNum << "\t" << jt->file << endl;
         }
     }
     return sout.str();

@@ -1,16 +1,18 @@
 // Author: Hao Wu <haowu@cs.utexas.edu.cn>
 
+#include <climits>
+#include <sstream>
 #include <sys/ptrace.h>
 
 #include <common/util.h>
 
 // Since PTRACE is quite low level, we need to use these functions to peek/poke data.
 // Some architecture-specified code is applied in the function.
-long writeToProcess(void *buf, long addr, size_t len, pid_t pid)
+long writeToProcess(const void *buf, long addr, size_t len, pid_t pid)
 {
     long pret = 0;
     long startAddr, endAddr;
-    char *charBuf = (char *) buf;
+    const char *charBuf = reinterpret_cast<const char *>(buf);
 
     if (len <= 0)
     {
@@ -18,10 +20,11 @@ long writeToProcess(void *buf, long addr, size_t len, pid_t pid)
     }
     startAddr = addr & (~WORD_ALIGN);
     endAddr = (addr + len - 1) & (~WORD_ALIGN);
-    for (int alignAddr = startAddr; alignAddr <= endAddr; alignAddr += WORD_BYTES)
+    //LOG("startAddr=%p, endAddr=%p", startAddr, endAddr);
+    for (long alignAddr = startAddr; alignAddr <= endAddr; alignAddr += WORD_BYTES)
     {
         long wordBuf;
-        char *byteBuf = (char *) &wordBuf;
+        char *byteBuf = reinterpret_cast<char *>(&wordBuf);
         long startAlign, endAlign;
         // When the word is not aligned, we must not damage any origin data.
         if (startAddr == endAddr)
@@ -55,7 +58,9 @@ long writeToProcess(void *buf, long addr, size_t len, pid_t pid)
         {
             byteBuf[i] = *charBuf++;
         }
-        pret = ptrace(PTRACE_POKEDATA, pid, alignAddr, byteBuf);
+        //LOG("startAlign = %ld, endAlign = %ld, wordBuf = %ld", startAlign, endAlign, wordBuf);
+        LOG("alignAddr=%ld, wordBuf=%ld, byteBuf=%c", alignAddr, wordBuf, *byteBuf);
+        pret = ptrace(PTRACE_POKEDATA, pid, alignAddr, wordBuf);
         if (pret < 0)
         {
             LOG("Ptrace Poke data failed, errno=%ld", pret);
@@ -83,6 +88,7 @@ long readFromProcess(void *buf, long addr, size_t len, pid_t pid)
         //LOG("%lu", alignAddr);
         long wordBuf;
         wordBuf = ptrace(PTRACE_PEEKDATA, pid, alignAddr, NULL);
+        //LOG("alignAddr=%p, wordBuf=%ld", alignAddr, wordBuf);
         char *byteBuf = (char *) &wordBuf;
         long startAlign, endAlign;
         if (startAddr == endAddr)
@@ -168,5 +174,138 @@ int parseArgv(Vector<String> &command, String str)
         return -1;
     }
     return 0;
+}
+
+String regsToStr(user_regs_struct &regs)
+{
+    std::stringstream ss;
+    ss << "nr=" << regs.orig_rax
+       << ", arg[0]=" << regs.rdi
+       << ", arg[1]=" << regs.rsi
+       << ", arg[2]=" << regs.rdx
+       << ", arg[3]=" << regs.r10
+       << ", arg[4]=" << regs.r9
+       << ", arg[5]=" << regs.r8
+       << ", ret=" << regs.rax;
+    return ss.str();
+}
+
+int atoiE(const char *src, int base = 10, int begin = 0, int end = INT_MAX)
+{
+    int res = 0;
+    for (int i = begin; i < end; ++i)
+    {
+        res *= base;
+        if (src[i] >= '0' && src[i] <= '9')
+            res += src[i] - '0';
+        else if (src[i] >= 'A' && src[i] <= 'F')
+            res += src[i] - 'A' + 10;
+        else if (src[i] >= 'a' && src[i] <= 'f')
+            res += src[i] - 'a' + 10;
+        else
+            break;
+    }
+    return res;
+}
+
+String removeEscapeSequence(const String &src)
+{
+    int i = 0, e = src.size();
+    long aux;
+    char c;
+    std::stringstream ss;
+    while (i < e)
+    {
+        if (src[i] == '\\')
+        {
+            if (i+1 == e)
+            {
+                LOG("Bad string: %s", src.c_str());
+                break;
+            }
+            switch (src[i+1])
+            {
+                case '\"':
+                    ss << '\"';
+                    i += 2;
+                    break;
+                case '\'':
+                    ss << '\'';
+                    i += 2;
+                    break;
+                case '\\':
+                    ss << '\\';
+                    i += 2;
+                    break;
+                case '0':
+                    ss << '\0';
+                    i += 2;
+                    break;
+                case 'a':
+                    ss << '\a';
+                    i += 2;
+                    break;
+                case 'b':
+                    ss << '\b';
+                    i += 2;
+                    break;
+                case 'f':
+                    ss << '\f';
+                    i += 2;
+                    break;
+                case 'n':
+                    ss << '\n';
+                    i += 2;
+                    break;
+                case 'r':
+                    ss << '\r';
+                    i += 2;
+                    break;
+                case 't':
+                    ss << '\t';
+                    i += 2;
+                    break;
+                case 'v':
+                    ss << '\v';
+                    i += 2;
+                    break;
+                case 'x':
+                case 'X':
+                    if (i+4 > e)
+                    {
+                        LOG("Bad string: %s", src.c_str());
+                        i += 4;
+                        break;
+                    }
+                    aux = atoiE(src.c_str(), 16, i+2, i+4);
+                    c = (char) aux;
+                    ss << c;
+                    i += 4;
+                    break;
+                default:
+                    if (src[i+1] >= 0 && src[i+1] <= 7)
+                    {
+                        if (i+4 > e)
+                        {
+                            LOG("Bad string: %s", src.c_str());
+                            i += 4;
+                            break;
+                        }
+                        aux = atoiE(src.c_str(), 8, i+1, i+4);
+                        c = (char) aux;
+                        ss << c;
+                        i += 4;
+                        break;
+                    }
+                    LOG("Unknown escape sequence inside: %s", src.c_str());
+                    break;
+            }
+        }
+        else
+        {
+            ss << src[i++];
+        }
+    }
+    return ss.str();
 }
 

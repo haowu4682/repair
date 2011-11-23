@@ -11,7 +11,8 @@ PWD  := `pwd`
 COMM_KHDRS  := trace_syscalls.inc hook_syscalls.inc nm.h dbg.h \
 		    config.h
 
-RETRO_KHDRS := $(COMM_KHDRS) syscall.h btrfs-ioctl.h namei.c
+RETRO_KHDRS := $(COMM_KHDRS) syscall.h btrfs-ioctl.h namei.c \
+			sysarg.h
 RETRO_KSRCS := ktrace.c sysarg.c syscall.c fs.c kprobes.c util.c \
 	       	unlink.c btrfs.c sha1.c pathid.c
 RETRO_KOBJS := $(RETRO_KSRCS:.c=.o)

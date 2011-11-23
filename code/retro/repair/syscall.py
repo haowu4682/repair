@@ -6,10 +6,11 @@ from sysarg import *
 syscall = namedtuple("syscall", "nr name ret args")
 sysarg  = namedtuple("sysarg", "name ty usage aux")
 
-ENTER    = 0       # trace
-EXIT     = 1       # trace
+ENTER    = 1 << 0  # trace
+EXIT     = 1 << 1  # trace
+BOTH     = ENTER | EXIT # trace
 
-READ     = 1 << 1  # fd/namei
+READ     = 1 << 4  # fd/namei
 WRITE    = 1 << 2  # fd/namei
 TRUNCATE = 1 << 3  # fd/namei
 CREATE   = 1 << 10 # namei
@@ -374,12 +375,11 @@ NR_snapshot                    = 177
 
 _syscalls = [
         [ NR_read       , "read"        , sysarg_ssize_t,       [
-                        [ "fd"          , sysarg_fd     , READ, OFFSET  ],
-                        [ "buf"         , sysarg_buf_det   , EXIT  ],
-                       #[ "buf"         , sysarg_ignore         ],
+                        [ "fd"          , sysarg_fd     , READ | ENTER, OFFSET  ],
+                        [ "buf"         , sysarg_buf, EXIT  ],
                         [ "count"       , sysarg_size_t         ]]],
         [ NR_write      , "write"       , sysarg_ssize_t,       [
-                        [ "fd"          , sysarg_fd     , WRITE, OFFSET ],
+                        [ "fd"          , sysarg_fd     , WRITE | ENTER, OFFSET ],
                         [ "buf"         , sysarg_buf_det        ],
                         [ "count"       , sysarg_size_t         ]]],
         [ NR_open       , "open"        , sysarg_fd,            [
@@ -399,22 +399,21 @@ _syscalls = [
                         [ "addr"        , sysarg_voidp          ],
                         [ "length"      , sysarg_size_t         ]]],
         [ NR_pread64    , "pread"       , sysarg_ssize_t,       [
-                        [ "fd"          , sysarg_fd     , READ  ],
+                        [ "fd"          , sysarg_fd     , READ | ENTER  ],
                         [ "buf"         , sysarg_sha1   , EXIT  ],
-                       #[ "buf"         , sysarg_buf    , EXIT  ],
                         [ "count"       , sysarg_size_t         ],
                         [ "offset"      , sysarg_off_t          ]]],
         [ NR_pwrite64   , "pwrite"      , sysarg_ssize_t,       [
-                        [ "fd"          , sysarg_fd, WRITE      ],
+                        [ "fd"          , sysarg_fd, WRITE | ENTER     ],
                         [ "buf"         , sysarg_buf_det        ],
                         [ "count"       , sysarg_size_t         ],
                         [ "offset"      , sysarg_off_t          ]]],
         [ NR_readv      , "readv"       , sysarg_ssize_t,       [
-                        [ "fd"          , sysarg_fd     , READ, OFFSET ],
+                        [ "fd"          , sysarg_fd     , READ | ENTER, OFFSET ],
                         [ "iov"         , sysarg_iovec  , EXIT  ],
                         [ "iovcnt"      , sysarg_int            ]]],
         [ NR_writev     , "writev"      , sysarg_ssize_t,       [
-                        [ "fd"          , sysarg_fd     , WRITE, OFFSET ],
+                        [ "fd"          , sysarg_fd     , WRITE | ENTER, OFFSET ],
                         [ "iov"         , sysarg_iovec          ],
                         [ "iovcnt"      , sysarg_int            ]]],
         [ NR_access     , "access"      , sysarg_int,           [
@@ -444,10 +443,10 @@ _syscalls = [
                         [ "options"     , sysarg_int            ],
                         [ "rusage"      , sysarg_ignore         ]]],
         [ NR_truncate   , "truncate"    , sysarg_int,           [
-                        [ "path"        , sysarg_path   , TRUNCATE ],
+                        [ "path"        , sysarg_path   , TRUNCATE | ENTER ],
                         [ "length"      , sysarg_off_t          ]]],
         [ NR_ftruncate  , "ftruncate"   , sysarg_int,           [
-                        [ "fd"          , sysarg_fd     , TRUNCATE ],
+                        [ "fd"          , sysarg_fd     , TRUNCATE | ENTER ],
                         [ "length"      , sysarg_off_t          ]]],
         [ NR_chdir      , "chdir"       , sysarg_int,           [
                         [ "path"        , sysarg_path           ]]],
@@ -457,27 +456,27 @@ _syscalls = [
                         [ "oldpath"     , sysarg_path           ],
                         [ "newpath"     , sysarg_path           ]]],
         [ NR_mkdir      , "mkdir"       , sysarg_int,           [
-                        [ "path"        , sysarg_path   , CREATE],
+                        [ "path"        , sysarg_path   , CREATE | ENTER],
                         [ "mode"        , sysarg_mode_t         ]]],
         [ NR_rmdir      , "rmdir"       , sysarg_int,           [
-                        [ "path"        , sysarg_path   , REMOVE]]],
+                        [ "path"        , sysarg_path   , REMOVE | ENTER]]],
         [ NR_creat      , "creat"       , sysarg_fd,            [
-                        [ "path"        , sysarg_path   , CREATE],
+                        [ "path"        , sysarg_path   , CREATE | ENTER],
                         [ "mode"        , sysarg_mode_t         ]]],
         [ NR_link       , "link"        , sysarg_int,           [
                         [ "oldpath"     , sysarg_path           ],
-                        [ "newpath"     , sysarg_path   , CREATE]]],
+                        [ "newpath"     , sysarg_path   , CREATE | ENTER]]],
         [ NR_unlink     , "unlink"      , sysarg_int,           [
-                        [ "path"        , sysarg_rpath  , REMOVE]]],
+                        [ "path"        , sysarg_rpath  , REMOVE | ENTER]]],
         [ NR_symlink    , "symlink"     , sysarg_int,           [
                         [ "oldpath"     , sysarg_name           ],
-                        [ "newpath"     , sysarg_rpath  , CREATE]]],
+                        [ "newpath"     , sysarg_rpath  , CREATE | ENTER]]],
         [ NR_readlink   , "readlink"    , sysarg_ssize_t,       [
-                        [ "path"        , sysarg_rpath  , READ  ],
+                        [ "path"        , sysarg_rpath  , READ | ENTER ],
                         [ "buf"         , sysarg_buf    , EXIT  ],
                         [ "bufsiz"      , sysarg_size_t         ]]],
         [ NR_mknod      , "mknod"       , sysarg_int,           [
-                        [ "path"        , sysarg_path   , CREATE],
+                        [ "path"        , sysarg_path   , CREATE | ENTER],
                         [ "mode"        , sysarg_mode_t         ],
                         [ "dev"         , sysarg_dev_t          ]]],
         [ NR_chroot     , "chroot"      , sysarg_int,           [
@@ -496,16 +495,16 @@ _syscalls = [
                         [ "mode"        , sysarg_mode_t         ]]],
         [ NR_mkdirat    , "mkdirat"     , sysarg_int,           [
                         [ "dirfd"       , sysarg_dirfd          ],
-                        [ "path"        , sysarg_path_at, CREATE],
+                        [ "path"        , sysarg_path_at, CREATE | ENTER],
                         [ "mode"        , sysarg_mode_t         ]]],
         [ NR_mknodat    , "mknodat"     , sysarg_int,           [
                         [ "dirfd"       , sysarg_dirfd          ],
-                        [ "path"        , sysarg_path_at, CREATE],
+                        [ "path"        , sysarg_path_at, CREATE | ENTER],
                         [ "mode"        , sysarg_mode_t         ],
                         [ "dev"         , sysarg_dev_t          ]]],
         [ NR_unlinkat   , "unlinkat"    , sysarg_int,           [
                         [ "dirfd"       , sysarg_dirfd          ],
-                        [ "path"        , sysarg_rpath_at, REMOVE ],
+                        [ "path"        , sysarg_rpath_at, REMOVE | ENTER],
                         [ "flags"       , sysarg_int            ]]],
         [ NR_renameat   , "renameat"    , sysarg_int,           [
                         [ "olddirfd"    , sysarg_dirfd          ],
@@ -521,10 +520,10 @@ _syscalls = [
         [ NR_symlinkat  , "symlinkat"   , sysarg_int,           [
                         [ "oldpath"     , sysarg_name           ],
                         [ "newdirfd"    , sysarg_fd             ],
-                        [ "newpath"     , sysarg_rpath  , CREATE]]],
+                        [ "newpath"     , sysarg_rpath  , CREATE | ENTER]]],
         [ NR_readlinkat , "readlinkat"  , sysarg_ssize_t,       [
                         [ "dirfd"       , sysarg_dirfd          ],
-                        [ "path"        , sysarg_rpath  , READ  ],
+                        [ "path"        , sysarg_rpath  , READ | ENTER ],
                         [ "buf"         , sysarg_buf    , EXIT  ],
                         [ "bufsiz"      , sysarg_size_t         ]]],
         [ NR_faccessat  , "faccessat"   , sysarg_int,           [
@@ -588,70 +587,70 @@ _syscalls = [
                         [ "protocol"    , sysarg_int            ],
                         [ "sv"          , sysarg_fd2    , EXIT  ]]],
         [ NR_bind       , "bind"        , sysarg_int,           [
-                        [ "socket"      , sysarg_fd     , WRITE ],
+                        [ "socket"      , sysarg_fd     , WRITE | ENTER],
                         [ "addr"        , sysarg_struct , ENTER , sockaddr ],
                         [ "addr_len"    , sysarg_size_t         ]]],
         [ NR_getsockname, "getsockname" , sysarg_int,           [
-                        [ "socket"      , sysarg_fd     , READ ],
+                        [ "socket"      , sysarg_fd     , READ | ENTER],
                         [ "addr"        , sysarg_struct , EXIT  , sockaddr ],
                         [ "addr_len"    , sysarg_psize_t, EXIT  ]]],
         [ NR_getpeername, "getpeername" , sysarg_int,           [
-                        [ "socket"      , sysarg_fd     , READ  ],
+                        [ "socket"      , sysarg_fd     , READ | ENTER ],
                         [ "addr"        , sysarg_struct , EXIT  , sockaddr ],
                         [ "len"         , sysarg_psize_t, EXIT  ]]],
         [ NR_setsockopt , "setsockopt"  , sysarg_int,           [
-                        [ "socket"      , sysarg_fd     , WRITE ],
+                        [ "socket"      , sysarg_fd     , WRITE | ENTER],
                         [ "level"       , sysarg_int            ],
                         [ "opt_name"    , sysarg_int            ],
                         [ "opt_value"   , sysarg_buf            ],
                         [ "opt_len"     , sysarg_size_t         ]]],
         [ NR_getsockopt , "getsockopt"  , sysarg_int,           [
-                        [ "socket"      , sysarg_fd     , READ  ],
+                        [ "socket"      , sysarg_fd     , READ | ENTER ],
                         [ "level"       , sysarg_int            ],
                         [ "opt_name"    , sysarg_int            ],
                         [ "opt_value"   , sysarg_struct,  EXIT  , usrbuf  ],
                         [ "opt_len"     , sysarg_psize_t, EXIT  ]]],
         [ NR_shutdown   , "shutdown"    , sysarg_int,           [
-                        [ "socket"      , sysarg_fd     , WRITE ],
+                        [ "socket"      , sysarg_fd     , WRITE | ENTER],
                         [ "how"         , sysarg_int            ]]],
         [ NR_listen     , "listen"      , sysarg_int,           [
-                        [ "socket"      , sysarg_fd     , READ  ],
+                        [ "socket"      , sysarg_fd     , READ | ENTER ],
                         [ "backlog"     , sysarg_int            ]]],
         [ NR_poll       , "poll"        , sysarg_int,           [
                         [ "pollfd"      , sysarg_struct, ENTER , pollfd  ],
                         [ "nfds"        , sysarg_size_t         ],
                         [ "timeout"     , sysarg_int            ]]],
         [ NR_sendto     , "sendto"      , sysarg_ssize_t,       [
-                        [ "socket"      , sysarg_fd     , WRITE ],
+                        [ "socket"      , sysarg_fd     , WRITE | ENTER],
                         [ "buf"         , sysarg_buf            ],
                         [ "len"         , sysarg_size_t         ],
                         [ "flags"       , sysarg_int            ],
                         [ "addr"        , sysarg_struct , ENTER , sockaddr ],
                         [ "len"         , sysarg_size_t         ]]],
         [ NR_recvmsg    , "recvmsg"     , sysarg_ssize_t,       [
-                        [ "socket"      , sysarg_fd     , READ  ],
+                        [ "socket"      , sysarg_fd     , READ | ENTER ],
                         [ "msg"         , sysarg_msghdr , ENTER , msghdr   ],
                         [ "flags"       , sysarg_int            ]]],
         [ NR_select     , "select"      , sysarg_int,           [
                         [ "nfds"        , sysarg_int            ],
-                        [ "readfds"     , sysarg_struct , ENTER  , fd_set  ],
-                        [ "writeds"     , sysarg_struct , ENTER  , fd_set  ],
-                        [ "execptds"    , sysarg_struct , ENTER  , fd_set  ],
-                        [ "timeval"     , sysarg_struct , ENTER  , timeval ]]],
+                        [ "readfds"     , sysarg_struct , BOTH  , fd_set  ],
+                        [ "writeds"     , sysarg_struct , BOTH  , fd_set  ],
+                        [ "execptds"    , sysarg_struct , BOTH  , fd_set  ],
+                        [ "timeval"     , sysarg_struct , BOTH  , timeval ]]],
         [ NR_connect    , "connect"     , sysarg_int,           [
-                        [ "fd"          , sysarg_fd     , READ  ],
+                        [ "fd"          , sysarg_fd     , READ | ENTER ],
                         [ "addr"        , sysarg_struct , ENTER  , sockaddr ],
                         [ "len"         , sysarg_int            ]]],
         [ NR_accept     , "accept"      , sysarg_fd,            [
-                        [ "socket"      , sysarg_fd     , READ  ],
+                        [ "socket"      , sysarg_fd     , READ | ENTER ],
                         [ "addr"        , sysarg_struct , ENTER , sockaddr  ],
                         [ "len"         , sysarg_int            ]]],
         [ NR_sendmsg    , "sendmsg"     , sysarg_ssize_t,       [
-                        [ "socket"      , sysarg_fd     , WRITE ],
+                        [ "socket"      , sysarg_fd     , WRITE | ENTER],
                         [ "msg"         , sysarg_msghdr , ENTER , msghdr    ],
                         [ "flags"       , sysarg_int            ]]],
         [ NR_recvfrom   , "recvfrom"    , sysarg_ssize_t,       [
-                        [ "socket"      , sysarg_fd     , READ  ],
+                        [ "socket"      , sysarg_fd     , READ | ENTER ],
                         [ "buf"         , sysarg_buf            ],
                         [ "len"         , sysarg_size_t         ],
                         [ "flags"       , sysarg_int            ],
@@ -670,7 +669,7 @@ def _sort_syscalls(raw_cs):
                         padding = [None] * (len(sysarg._fields) - len(raw_arg))
                         a = sysarg._make(raw_arg + padding)
                         if a.usage is None:
-                                a = a._replace(usage=0)
+                                a = a._replace(usage=ENTER)
                         if a.aux is None:
                                 a = a._replace(aux=0)
                         sc.args[i] = a

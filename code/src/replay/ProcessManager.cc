@@ -1,5 +1,6 @@
-//Author: Hao Wu <haowu@cs.utexas.edu> 
+//Author: Hao Wu <haowu@cs.utexas.edu>
 #include <cstring>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -14,6 +15,7 @@
 #include <common/util.h>
 #include <replay/ProcessManager.h>
 #include <syscall/SystemCall.h>
+#include <syscall/SystemCallArg.h>
 using namespace std;
 
 // Function for pthread
@@ -96,7 +98,11 @@ int ProcessManager::executeProcess()
     }
     args[commandList->size()] = NULL;
 
+#if 0
     // Execute pre-actions
+    // XXX: Temporarily canceled for debugging, if bash command could be
+    // implemented as user input, we finally do not need to deal with
+    // pre-actions.
     LOG("Before executing pre-actions %s", process.getCommand()->toString().c_str());
     Vector<Action *> *preActions = process.getPreActions();
     for (Vector<Action *>::iterator it = preActions->begin(); it != preActions->end(); ++it)
@@ -104,6 +110,7 @@ int ProcessManager::executeProcess()
         (*it)->exec();
     }
     LOG("After executing pre-actions %s %ld", process.getCommand()->toString().c_str(), preActions->size());
+#endif
 
     // Let the process to be traced
     long pret = ptrace(PTRACE_TRACEME, 0, NULL, NULL);
@@ -168,15 +175,16 @@ void dealWithConflict()
 {
     if (isConflict())
     {
+        // TODO: implement
     }
 }
 
 int ProcessManager::traceProcess(pid_t pid)
 {
-    //LOG1("This is the parent process!");
     int status;
     int ret;
     long pret;
+    long inputSeqNum = 0;
     struct user_regs_struct regs;
     PidManager *pidManager = process.getPidManager();
     SystemCallList *syscallList = process.getSyscallList();
@@ -184,7 +192,8 @@ int ProcessManager::traceProcess(pid_t pid)
 
     waitpid(pid, &status, 0);
     pid_t oldPid = process.getCommand()->pid;
-    // TODO: generation number
+
+    // XXX: generation numbers might cause problems here.
     if (pidManager != NULL && oldPid != -1)
     {
         pidManager->add(oldPid, pid);
@@ -196,62 +205,206 @@ int ProcessManager::traceProcess(pid_t pid)
         waitpid(pid, &status, 0);
 
         // The child process is at the point **before** a syscall.
-        // TODO: Deal with the syscall here.
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        SystemCall syscall(regs, pid, false, fdManager);
-        SystemCall syscallMatch = syscallList->search(syscall);
+        SystemCall syscallMatch;
+        SystemCall syscall(regs, pid, SYSARG_IFENTER, fdManager);
 
-        // If no match has been found, we have to go on executing the system call and simply do
-        // nothing else here. However, if a match has been found we must change the return value
-        // accoridngly when the syscall has returned.
-        bool matchFound = syscallMatch.isValid();
-        //LOG("syscall nr: %lu, match found %d", regs.orig_rax, matchFound);
-        //if (syscall.isValid())
-        //{
-            //LOG("syscall: %s", syscall.toString().c_str());
-        //}
-
-        pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
-        waitpid(pid, &status, 0);
-
-        // The child process is at the point **after** a syscall.
-        // Deal with the syscall here. If the match has been found previously, we shall
-        // replace the return value with the recorded value in the systemcall list.
-        // Most syscall will have its return value in the register %rax, But there are some
-        // which does not follow the rule and we will need to deal with them seperately.
-        ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        SystemCall syscallReturn(regs, pid, true, fdManager);
-
-        dealWithConflict();
-
-        // If the system call is fork/vfork, we must create a new process manager for it.
-        if (syscall.isFork())
+        if (syscall.isValid())
         {
-            ret = dealWithFork(syscall, pid);
-            if (ret != 0)
+            LOG("syscall: %s", syscall.toString().c_str());
+        }
+
+        // If the system call is user input or output, we need to act quite differently.
+        if (syscall.isUserSelect(true))
+        {
+            LOG("User select found: %s", syscall.toString().c_str());
+            pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, inputSeqNum);
+            bool matchFound = (pret >= 0);
+
+            // If a match has been found, we'll change the syscall result
+            // accordingly and cancel the syscall execution. Otherwise the
+            // syscall is executed as usual.
+            if (matchFound)
             {
-                break;
+                LOG("Match Found! Match is: %s", syscallMatch.toString().c_str());
+                inputSeqNum = pret;
+                LOG("inputSeqNum=%ld", inputSeqNum);
+                LOG("regs=%s", regsToStr(regs).c_str());
+                // We do not skip executing the system call! We hack it to
+                // execute in no-timeout way.
+#if 0
+                timeval tmpTime;
+                timeval zeroTime = {0, 0};
+                long timeval_addr = SystemCall::getArgFromReg(regs, 4);
+                readFromProcess(&tmpTime, timeval_addr, sizeof(zeroTime), pid);
+                LOG("before time: %ld:%ld", tmpTime.tv_sec, tmpTime.tv_usec);
+                writeToProcess(&zeroTime, timeval_addr, sizeof(zeroTime), pid);
+                readFromProcess(&tmpTime, timeval_addr, sizeof(zeroTime), pid);
+                LOG("after time: %ld:%ld", tmpTime.tv_sec, tmpTime.tv_usec);
+                pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+                waitpid(pid, &status, 0);
+#endif
+
+                // Achieve the result of the execution
+                //ptrace(PTRACE_GETREGS, pid, 0, &regs);
+                //SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
+
+                // Merge the result with recorded result
+                //syscallReturn.merge(syscallMatch);
+
+                // Write matched system call
+                // Get the user input from syscallMatch
+                // Use ptrace to put the user input back
+                //LOG("poke system call: %s", syscallReturn.toString().c_str());
+                //writeMatchedSyscall(syscallReturn, pid);
+
+                // Skip executing the system call
+                LOG("Before skipping");
+                if (skipSyscall(pid) < 0)
+                {
+                    LOG("Skip syscall failed: %s", syscall.toString().c_str());
+                }
+                LOG("After skipping");
+
+#if 0
+                ptrace(PTRACE_GETREGS, pid, 0, &regs);
+                LOG("regs=%s", regsToStr(regs).c_str());
+                SystemCall syscallFake(regs, pid, SYSARG_IFEXIT, fdManager);
+                LOG("fake return syscall is: %s", syscallFake.toString().c_str());
+#endif
+
+                // write back result
+                LOG("Before match written");
+                writeMatchedSyscall(syscallMatch, pid);
+                LOG("After match written");
+
+#if 0
+                ptrace(PTRACE_GETREGS, pid, 0, &regs);
+                LOG("regs=%s", regsToStr(regs).c_str());
+                tmp = ptrace(PTRACE_PEEKDATA, pid, regs.rsi, 0);
+                LOG("firstbyte=%ld", tmp);
+                SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
+                LOG("return syscall is: %s", syscallReturn.toString().c_str());
+#endif
+            }
+            else
+            {
+                LOG("No Match Found!");
+                pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+                waitpid(pid, &status, 0);
+            }
+        }
+        else if (syscall.isRegularUserInput())
+        {
+            //LOG("User input found: %s", syscall.toString().c_str());
+            LOG("User input found: %s", syscall.toString().c_str());
+            pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, inputSeqNum);
+            bool matchFound = (pret >= 0);
+
+            // If a match has been found, we'll change the syscall result
+            // accordingly and cancel the syscall execution. Otherwise the
+            // syscall is executed as usual.
+            if (matchFound)
+            {
+                LOG("Match Found! Match is: %s", syscallMatch.toString().c_str());
+                inputSeqNum = pret;
+                LOG("inputSeqNum=%ld", inputSeqNum);
+
+                // Skip executing the system call
+                LOG("Before skipping");
+                if (skipSyscall(pid) < 0)
+                {
+                    LOG("Skip syscall failed: %s", syscall.toString().c_str());
+                }
+                LOG("After skipping");
+
+                // write back result
+                LOG("Before match written");
+                writeMatchedSyscall(syscallMatch, pid);
+                LOG("After match written");
+            }
+            else
+            {
+                LOG("No Match Found!");
+                pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+                waitpid(pid, &status, 0);
+            }
+        }
+#if 0
+        else if (syscall.isOutput())
+        {
+            // TODO: implement later
+        }
+#endif
+        else
+        {
+            pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+            waitpid(pid, &status, 0);
+
+            // The child process is at the point **after** a syscall.
+            // Deal with the syscall here. If the match has been found previously, we shall
+            // replace the return value with the recorded value in the systemcall list.
+            // Most syscall will have its return value in the register %rax, But there are some
+            // which does not follow the rule and we will need to deal with them seperately.
+            ptrace(PTRACE_GETREGS, pid, 0, &regs);
+            // We might not need the return value, but we need the side
+            // effect for pid manager and fd manager.
+            SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
+
+            //dealWithConflict();
+
+            // If the system call is fork/vfork, we must create a new process manager for it.
+            if (syscall.isFork())
+            {
+                ret = dealWithFork(syscall, pid);
+                if (ret != 0)
+                {
+                    break;
+                }
             }
         }
     }
     return 0;
 }
 
+int ProcessManager::skipSyscall(pid_t pid)
+{
+    // HW: "PTRACE_SYSEMU" is in "linux/ptrace.h" x64, but not in "sys/ptrace.h".
+    // Thus I am not sure if it is supported fully by x64
+    long pret;
+    int status;
+
+    user_regs_struct regs;
+    pret = ptrace(PTRACE_GETREGS, pid, 0, &regs);
+    if (pret < 0)
+        LOG("get regs failed!");
+
+    // XXX: ad-hoc
+    regs.orig_rax = 39;
+    pret = ptrace(PTRACE_SETREGS, pid, 0, &regs);
+    if (pret < 0)
+        LOG("set regs failed!");
+    pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+    waitpid(pid, &status, 0);
+
+    //pret = ptrace(PTRACE_SYSEMU, pid, NULL, NULL);
+    return (int) pret;
+}
+
 int ProcessManager::writeMatchedSyscall(SystemCall &syscall, pid_t pid)
 {
-    // Simply rewrite rax currently
+
+    // TODO: Implement
+
     long pret;
     int ret;
-    struct user_regs_struct regs;
 
-    ptrace(PTRACE_GETREGS, pid, 0, &regs);
-    ret = syscall.overwrite(regs);
+    ret = syscall.overwrite(pid);
     if (ret < 0)
     {
         LOG1("Cannot put the return value into registers!");
         return ret;
     }
-    pret = ptrace(PTRACE_SETREGS, pid, 0, &regs);
     if (pret < 0)
     {
         LOG1("Cannot overwrite the return value!");
@@ -265,20 +418,13 @@ String ProcessManager::toString()
     // We only output the command line currently.
     stringstream ss;
     // TODO: implement
-    /*
-    for (Vector<String>::iterator it = commandList->begin(); it != commandList->end(); it++)
-    {
-        ss << (*it) << ", ";
-    }
-    ss << endl;
-    */
     return ss.str();
 }
 
 // The main function is used for development and debugging only.
 // It will be removed in the released version
 // @author haowu
-/*
+#if 0
 int old_main(int argc, char **argv)
 {
     // Init the ProcessManager
@@ -306,4 +452,5 @@ int old_main(int argc, char **argv)
     list.init(fin, manager.getFDManager());
     return 0;
 }
-*/
+#endif
+

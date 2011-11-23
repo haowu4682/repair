@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from syscall import syscalls
+from syscall import *
 from ctypes import sizeof, Structure
 
 # generate C code for _syscalls
@@ -14,13 +14,14 @@ def print_syscalls():
         for arg in sc.args:
             ty = arg.ty.__name__
             # haowu: some hack here to adapt to our system
-            # TODO: Use a more clean method here.
             new_ty = ty[7:] + "_record"
+            new_overwrite = ty[7:] + "_overwrite"
             aux = arg.aux
             if isinstance(aux, type):
                 assert issubclass(aux, Structure)
                 aux = sizeof(aux)
-            print('\t\t{ "%s", %s, %s, %s },' % (arg.name, new_ty, arg.usage & 1, aux))
+            print('\t\t{ "%s", %s, %s, %s, %s },' % (arg.name, new_ty,
+                new_overwrite, arg.usage & BOTH, aux))
         print("\t}, %s_exec }," % sc.name)
 
 if __name__ == "__main__":

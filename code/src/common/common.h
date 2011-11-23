@@ -7,6 +7,7 @@
 #include <bits/wordsize.h>
 #include <cerrno>
 #include <ctime>
+#include <iostream>
 #include <map>
 #include <stdio.h>
 #include <string>
@@ -27,6 +28,14 @@
 #define UIO_MAXIOV 1024
 #endif
 
+#ifndef PTRACE_SYSEMU
+#define PTRACE_SYSEMU ((enum __ptrace_request)31)
+#endif
+
+#ifndef PTRACE_SYSEMU_SINGLESTEP
+#define PTRACE_SYSEMU_SINGLESTEP ((enum __ptrace_request)32)
+#endif
+
 #define WORD_SIZE __WORDSIZE
 #define BYTE_SIZE 8
 #define WORD_BYTES (WORD_SIZE / BYTE_SIZE)
@@ -35,6 +44,10 @@
 #define WORD_ALIGN (WORD_BYTES - 1)
 #define int64_MAX_LENGTH 25
 #define FASTBUF PAGE_SIZE
+
+#define STDIN_FD 0
+#define STDOUT_FD 1
+#define STDERR_FD 2
 
 // Debugging tools
 #define LOG(fmt,args...) do { \

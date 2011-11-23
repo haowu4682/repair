@@ -52,7 +52,7 @@ class OsLoader():
     is_clone = r.nr in [NR_clone, NR_fork, NR_vfork]
 
     # enter
-    if r.usage == 0:
+    if r.usage & ENTER:
       actor_call = procmgr.ProcessActor.get(r.pid, r)
       argsname = actor_call.name + ('sysarg', r.sid)
       if mgrapi.RegisteredObject.by_name(argsname) is None:
@@ -63,7 +63,7 @@ class OsLoader():
         pc.connect()
 
     # exit
-    if r.usage == 1:
+    if r.usage & EXIT:
       if not is_clone:
         actor_ret = procmgr.ProcessActor.get(r.pid, r)
         retname = actor_ret.name + ('sysret', r.sid)
@@ -109,8 +109,8 @@ class OsLoader():
       if retnode: sc.retnode = retnode
 
     if argsnode: sc.argsnode = argsnode
-    if r.usage == 0: sc.tic = r.ts + (3,)
-    if r.usage == 1: sc.tac = r.ts + (0,)
+    if r.usage & ENTER: sc.tic = r.ts + (3,)
+    if r.usage & EXIT: sc.tac = r.ts + (0,)
 
     ## Some system calls do not have return records
     ## (or return value objects, but that's OK for now.)

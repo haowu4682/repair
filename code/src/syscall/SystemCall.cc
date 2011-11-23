@@ -1,11 +1,15 @@
 // Original Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
+#include <sys/ptrace.h>
+#include <sys/select.h>
 
 #include <common/common.h>
 #include <common/util.h>
+#include <replay/File.h>
 #include <syscall/SystemCall.h>
 using namespace std;
 
@@ -44,13 +48,13 @@ const SyscallType *getSyscallType(String name)
     return NULL;
 }
 
-SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager,
+SystemCall::SystemCall(const user_regs_struct &regs, pid_t pid, int usage, FDManager *fdManager,
         PidManager *pidManager)
 {
     init(regs, pid, usage, fdManager, pidManager);
 }
 
-void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDManager *fdManager,
+void SystemCall::init(const user_regs_struct &regs, pid_t pid, int usage, FDManager *fdManager,
         PidManager *pidManager)
 {
     this->fdManager = fdManager;
@@ -72,20 +76,23 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
     long argsList[SYSCALL_MAX_ARGS];
     getRegsList(regs, argsList);
     int numArgs = type->numArgs;
-    ret = regs.rax;
+    ret = getArgFromReg(regs, SYSCALL_MAX_ARGS);
+    //LOG("name=%s", type->name.c_str());
     for (int i = 0; i < numArgs; i++)
     {
-        SyscallArgType argType = type->args[i];
-        if (argType.usage != usage)
+        const SyscallArgType *argType = &type->args[i];
+        if ((argType->usage & usage) == 0)
         {
-            args[i].setArg();
+            //LOG("NOMATCH usage=%d, argtype=%s", usage, argType->name.c_str());
+            args[i].setArg(argType);
         }
         else
         {
-            SystemCallArgumentAuxilation aux = getAux(argsList, argType, i, ret, numArgs, pid, usage);
-            args[i].setArg(argsList[i], &aux, &argType);
-            //LOG1(argType.record(argsList[i], &aux).c_str());
+            //LOG("match usage=%d, argTypeUsage=%d, argtype=%s", usage, argType->usage, argType->name.c_str());
+            SystemCallArgumentAuxilation aux = getAux(argsList, *type, i, ret, numArgs, pid, usage);
+            args[i].setArg(argsList[i], &aux, argType);
         }
+        //LOG("arg type pointer: %d %p", i, getArg(i).getType());
     }
 
     // Manager fd's
@@ -94,21 +101,14 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, bool usage, FDMan
         // open
         if (type->nr == 2)
         {
-            if (usage)
+            if (usage & SYSARG_IFEXIT)
             {
-                fdManager->addNew(ret, lastOpenFilePath);
+                File *file = new File(ret, lastOpenFilePath);
+                fdManager->addNewFile(file);
             }
             else
             {
                 lastOpenFilePath = args[0].getValue();
-            }
-        }
-        // close
-        if (type->nr == 3)
-        {
-            if (!usage)
-            {
-                fdManager->removeNew(atoi(args[0].getValue().c_str()));
             }
         }
     }
@@ -126,18 +126,81 @@ void SystemCall::getRegsList(const user_regs_struct &regs, long args[])
     args[5] = regs.r9;
 }
 
+// This is a utility function to get a single arg from sets of regs
+long SystemCall::getArgFromReg(const user_regs_struct &regs, int num)
+{
+    long retVal;
+    switch (num)
+    {
+        case 0:
+            retVal = regs.rdi;
+            break;
+        case 1:
+            retVal = regs.rsi;
+            break;
+        case 2:
+            retVal = regs.rdx;
+            break;
+        case 3:
+            retVal = regs.r10;
+            break;
+        case 4:
+            retVal = regs.r8;
+            break;
+        case 5:
+            retVal = regs.r9;
+            break;
+        default:
+            retVal = regs.rax;
+            break;
+    }
+    return retVal;
+}
+
+// This is a utility function to get a single arg from sets of regs
+void SystemCall::setArgToReg(user_regs_struct &regs, int num, long val)
+{
+    switch (num)
+    {
+        case 0:
+            regs.rdi = val;
+            break;
+        case 1:
+            regs.rsi = val;
+            break;
+        case 2:
+            regs.rdx = val;
+            break;
+        case 3:
+            regs.r10 = val;
+            break;
+        case 4:
+            regs.r8 = val;
+            break;
+        case 5:
+            regs.r9 = val;
+            break;
+        default:
+            regs.rax = val;
+            break;
+    }
+}
+
 // This is an adpation of similar kernel-mode code in retro. But this one is in user-mode.
-SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &type, int i,
-        long ret, int nargs, pid_t pid, bool usage)
+SystemCallArgumentAuxilation SystemCall::getAux(long args[], const SyscallType &syscallType, int i,
+        long ret, int nargs, pid_t pid, int usage)
 {
     SystemCallArgumentAuxilation a;
     a.pid = pid;
     a.usage = usage;
+    const SyscallArgType &argType = syscallType.args[i];
+    a.aux = argType.aux;
+
     // TODO: Implement the following arguments
     int used[SYSCALL_MAX_ARGS + 1] = {0};
 
-    if (type.record == iovec_record) {
-        if (usage) {
+    if (argType.record == iovec_record) {
+        if (usage & SYSARG_IFEXIT) {
             if (ret > 0) {
                 a.aux = args[i+1];
                 a.ret = ret;
@@ -149,9 +212,9 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
             a.ret = UIO_MAXIOV*PAGE_SIZE;
         }
     }
-    if (type.record == buf_record || type.record == buf_det_record
-            || type.record == sha1_record) {
-        if (usage) {
+    if (argType.record == buf_record || argType.record == buf_det_record
+            || argType.record == sha1_record) {
+        if (usage & SYSARG_IFEXIT) {
             // Length of the buffer depends on the kernel.
             if (ret > 0) {
                 used[6] = 1;
@@ -163,43 +226,40 @@ SystemCallArgumentAuxilation SystemCall::getAux(long args[], SyscallArgType &typ
             used[i+1] = 1;
             a.aux = args[i+1];
         }
-    } else if (type.record == struct_record) {
-        if (usage) {
-            a.aux = 0;
+    } else if (argType.record == struct_record) {
+        if (usage & SYSARG_IFEXIT) {
             if (ret == 0) {
+                //The following approach does not work now.
+#if 0
                 int size = 0;
-                readFromProcess((void *)size, args[i+1], sizeof(int), pid);
+                readFromProcess((void *)&size, args[i+1], sizeof(int), pid);
                 a.aux = size;
+#endif
             }
         } else {
-            used[i+1] = 1;
-            a.aux = args[i+1];
+            if (syscallType.args[i+1].record == uint_record)
+            {
+                used[i+1] = 1;
+                a.aux = args[i+1];
+            }
         }
-    } else if (type.record == path_at_record || type.record == rpath_at_record) {
+    } else if (argType.record == path_at_record || argType.record == rpath_at_record) {
         /* test AT_SYMLINK_(NO)FOLLOW, always the last argument */
+        /*
         if (a.aux && (a.aux & args[nargs - 1])) {
-            /* toggle */
-            if (type.record == path_at_record)
-                type.record = rpath_at_record;
+            if (argType.record == path_at_record)
+                argType.record = rpath_at_record;
             else
-                type.record = path_at_record;
-        }
+                argType.record = path_at_record;
+        }*/
         a.aux = args[i-1];
     }
     return a;
 }
 
-// XXX: This may not apply to some system calls. It needs to be reviewed.
-int SystemCall::overwrite(user_regs_struct &regs)
-{
-    // TODO: Do the overwrite stuff
-    return 0;
-}
-
 // Tell whether the syscall is a ``fork'' or ``vfork'' or ``clone''
 bool SystemCall::isFork() const
 {
-    // XXX: Hard code the syscall number for x86_64 here now.
     return valid && (type->nr == 56 // clone
                 ||   type->nr == 57 // fork
                 ||   type->nr == 58 // vfork
@@ -208,7 +268,6 @@ bool SystemCall::isFork() const
 
 bool SystemCall::isExec() const
 {
-    // XXX: Hard code the syscall number for x86_64 here now.
     return valid && (type->nr == 59);
 }
 
@@ -217,18 +276,202 @@ bool SystemCall::isPipe() const
     return valid && (type->nr == 22);
 }
 
-// Execute the syscall manually
-int SystemCall::exec()
+bool SystemCall::isSelect() const
 {
-    if (!usage)
+    return valid && (type->nr == 23);
+}
+
+bool SystemCall::isPoll() const
+{
+    return valid && (type->nr == 7);
+}
+
+bool SystemCall::isInput() const
+{
+    return valid && (
+            type->nr == 0 ||        // read
+            type->nr == 17 ||       // pread
+            type->nr == 45 ||       // recvfrom
+            type->nr == 47 ||       // recvmsg
+            type->nr == 23          // select
+            );
+}
+
+bool SystemCall::isOutput() const
+{
+    //TODO: Implement
+    return false;
+}
+
+bool isFDUserInput(int fd, const FDManager *fdManager, bool isNew = true, long seqNum = 0)
+{
+    File *file;
+    if (isNew)
     {
-        LOG("Trying to replay: %s", toString().c_str());
-        return type->exec(this);
+        file = fdManager->searchNew(fd);
     }
     else
     {
-        return 0;
+        file = fdManager->searchOld(fd, seqNum);
     }
+    if (file == NULL)
+    {
+        // Unknown fd, we do not treat it as user input.
+        LOG("Unknown fd: %d", fd);
+        return false;
+    }
+    return file->isUserInput();
+}
+
+#if 0
+bool SystemCall::isUserInput() const
+{
+    return isRegularUserInput() ||
+           isUserSelect() ||
+           isUserPoll();
+}
+#endif
+
+bool SystemCall::isUserSelect(bool isNew) const
+{
+    if (!isSelect())
+        return false;
+    //LOG1(toString().c_str());
+    size_t numArgs = type->numArgs;
+    // HARD CODE FOR X86_64
+    for (size_t i = 1; i < 4; ++i)
+    {
+        const SyscallArgType *argType = &type->args[i];
+        //LOG1(args[1].toString().c_str());
+        if (argType->record != struct_record)
+        {
+            LOG("System call cannot be interpreted as select: %s", toString().c_str());
+            break;
+        }
+        fd_set fds = fd_set_derecord(args[i].getValue().c_str());
+        int nfds = atoi(args[0].getValue().c_str());
+        for (int fd = 0; fd < nfds; ++fd)
+        {
+            if (FD_ISSET(fd, &fds))
+            {
+                if (isFDUserInput(fd, fdManager, isNew, seqNum))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool SystemCall::isUserPoll() const
+{
+    // TODO: implement
+    return false;
+}
+
+bool SystemCall::isRegularUserInput() const
+{
+    bool ifUserInput = isInput();
+    if (!ifUserInput)
+        return false;
+    size_t numArgs = type->numArgs;
+    for (size_t i = 0; i < numArgs; ++i)
+    {
+        const SyscallArgType *argType = &type->args[i];
+        if (argType->record == fd_record)
+        {
+            int fd = atoi(args[i].getValue().c_str());
+            // XXX: Hard code for ``new syscall'' here.
+            if (isFDUserInput(fd, fdManager, true))
+            { 
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// Execute the syscall manually
+int SystemCall::exec() 
+{
+    int ret;
+    if (usage & SYSARG_IFENTER)
+    {
+        ret = type->exec(this);
+    }
+    else
+    {
+        ret = -1;
+    }
+    return ret;
+}
+
+// Merge two system calls
+int SystemCall::merge(const SystemCall &src)
+{
+    if (isSelect() && src.isSelect())
+    {
+        if (ret < 0)
+        {
+            LOG("Select call has failed");
+            return ret;
+        }
+        int nfds_dst = atoi(args[0].getValue().c_str());
+        int nfds_src = atoi(src.args[0].getValue().c_str());
+        int nfds_max = max(nfds_dst, nfds_src);
+        fd_set fd_set_dst = fd_set_derecord(args[1].getValue());
+        fd_set fd_set_src = fd_set_derecord(src.args[1].getValue());
+        for (int oldFD = 0; oldFD < nfds_max; ++oldFD)
+        {
+            if (isFDUserInput(oldFD, fdManager, false, src.seqNum))
+            {
+                int newFD = fdManager->oldToNew(oldFD, src.seqNum);
+                if (FD_ISSET(oldFD, &fd_set_src) && !FD_ISSET(newFD, &fd_set_dst))
+                {
+                    ++ret;
+                    FD_SET(newFD, &fd_set_dst);
+                }
+                else if (!FD_ISSET(oldFD, &fd_set_src) && FD_ISSET(newFD, &fd_set_dst))
+                {
+                    --ret;
+                    FD_CLR(newFD, &fd_set_dst);
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+// Overwrite the syscall result into a process
+int SystemCall::overwrite(pid_t pid)
+{
+    int pret = 0;
+    user_regs_struct regs;
+    if (usage & SYSARG_IFEXIT)
+    {
+        // Achieve current regs list
+        ptrace(PTRACE_GETREGS, pid, 0, &regs);
+        LOG("regs=%s", regsToStr(regs).c_str());
+        // Overwrite arguments
+        for (int i = 0; i < type->numArgs; i++)
+        {
+            //long argVal = getArgFromReg(regs, i);
+            args[i].overwrite(pid, regs, i);
+        }
+        // Overwrite return value
+        ptrace(PTRACE_GETREGS, pid, 0, &regs);
+        regs.orig_rax = type->nr;
+        LOG("ret=%ld", ret);
+        setArgToReg(regs, SYSCALL_MAX_ARGS, ret);
+        // Write back the regs list
+        ptrace(PTRACE_SETREGS, pid, 0, &regs);
+    }
+    else
+    {
+        return -1;
+    }
+    return pret;
 }
 
 // An aux function to parse a syscall arg.
@@ -310,7 +553,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
 
     // Read the first part of the record.
     is >> addr >> seqNum >> statusChar >> pid;
-    usage = ((statusChar == '<') ? true : false);
+    usage = ((statusChar == '<') ? SYSARG_IFEXIT : SYSARG_IFENTER);
     // Now we are going to parse the args, we need some string operations here.
     is.get();
     getline(is, auxStr);
@@ -351,7 +594,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
         if (auxStr[endPos] == ')')
         {
             // The args part has finished
-            if (usage)
+            if (usage & SYSARG_IFEXIT)
             {
                 pos = endPos + 2;
                 pos = pos + 2;
@@ -379,29 +622,20 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
         // open
         if (type->nr == 2)
         {
-            if (usage)
+            if (usage & SYSARG_IFEXIT)
             {
-                fdManager->addOld(ret, lastOpenFilePath, seqNum);
+                File *file = new File(ret, lastOpenFilePath);
+                fdManager->addOldFile(file, seqNum);
             }
             else
             {
                 lastOpenFilePath = args[0].getValue();
             }
         }
-        // close
-        if (type->nr == 3)
-        {
-            /*
-            if (!usage)
-            {
-                fdManager->removeOld(atoi(args[0].getValue().c_str()));
-            }
-            */
-        }
     }
 }
 
-bool SystemCall::operator ==(SystemCall &another)
+bool SystemCall::match(const SystemCall &another) const
 {
     if (!valid || !another.valid)
         return false;
@@ -411,19 +645,16 @@ bool SystemCall::operator ==(SystemCall &another)
         return false;
     for (int i = 0; i < type->numArgs; i++)
     {
-        if (usage == type->args[i].usage && usage == another.type->args[i].usage)
+        if ((usage & type->args[i].usage) && (usage & another.type->args[i].usage))
         {
             // If it's a FD argument, use FDManager
-            if (type->args[i].record == fd_record)
+            if (fdManager != NULL && type->args[i].record == fd_record)
             {
-                if (fdManager != NULL)
+                int oldFD = atoi(another.args[i].getValue().c_str());
+                int newFD = atoi(args[i].getValue().c_str());
+                if (!fdManager->equals(oldFD, newFD, another.seqNum))
                 {
-                    int oldFD = atoi(another.args[i].getValue().c_str());
-                    int newFD = atoi(args[i].getValue().c_str());
-                    if (!fdManager->equals(oldFD, newFD, another.seqNum))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
             else if (!((args[i] < another.args[i]) || (another.args[i] < args[i])))
@@ -435,20 +666,97 @@ bool SystemCall::operator ==(SystemCall &another)
     return true;
 }
 
+bool SystemCall::matchUserInput(const SystemCall &another) const
+{
+    if (isRegularUserInput())
+    {
+        // The method is not super fast, but it should work.
+        if (!valid || !another.valid)
+            return false;
+        if (usage != another.usage)
+            return false;
+        if (type != another.type)
+            return false;
+
+        if (fdManager != NULL && type->args[0].record == fd_record)
+        {
+            int oldFD = atoi(another.args[0].getValue().c_str());
+            int newFD = atoi(args[0].getValue().c_str());
+            LOG("oldFD=%d, newFD=%d, seqNum=%d", oldFD, newFD, another.seqNum);
+            if (!fdManager->equals(oldFD, newFD, another.seqNum))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        return args[0] == another.args[0];
+    }
+
+    else if (isSelect())
+    {
+        // The method is not super fast, but it should work.
+        if (!valid || !another.valid)
+            return false;
+        if (usage != another.usage)
+            return false;
+        if (type != another.type)
+            return false;
+
+        // We assume that only read fds matter here.
+        // write fds do not matter because they will not be used as an input.
+        fd_set read_fds1 = fd_set_derecord(args[1].getValue());
+        fd_set read_fds2 = fd_set_derecord(another.args[1].getValue());
+        int nfds = atoi(args[0].getValue().c_str());
+        //LOG("nfds=%d", nfds);
+        for (int newFD = 0; newFD < nfds; ++newFD)
+        {
+            int oldFD = fdManager->newToOld(newFD, another.seqNum);
+            //LOG("newFD=%d, oldFD=%d", newFD, oldFD);
+            if (oldFD >= 0 && oldFD < nfds)
+            {
+                bool fdset1 = FD_ISSET(newFD, &read_fds1);
+                bool fdset2 = FD_ISSET(oldFD, &read_fds2);
+                if ((fdset1 && !fdset2) || (!fdset1 && fdset2))
+                {
+                    if (isFDUserInput(newFD, fdManager, true))
+                    { 
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    else
+    {
+        return match(another);
+    }
+}
+
+bool SystemCall::operator ==(const SystemCall &another) const
+{
+    return match(another);
+}
+
 String SystemCall::toString() const
 {
     ostringstream ss;
-    LOG("%p", type);
-    ss << "name=" << type->name << ", ";
     ss << "valid=" << valid << ", ";
-    ss << "usage=" << usage << ", ";
-    ss << "args=(";
-    for (int i = 0; i < type->numArgs; i++)
+    if (valid)
     {
-        ss << args[i].toString() << ", ";
+        ss << "name=" << type->name << ", ";
+        ss << "usage=" << usage << ", ";
+        ss << "args=(";
+        for (int i = 0; i < type->numArgs; i++)
+        {
+            ss << args[i].toString() << ", ";
+        }
+        ss << "), ";
+        ss << "ret=" << ret;
     }
-    ss << "), ";
-    ss << "ret=" << ret;
     return ss.str();
 }
 
