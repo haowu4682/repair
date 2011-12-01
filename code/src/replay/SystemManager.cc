@@ -87,9 +87,20 @@ String SystemManager::toString()
     return os.str();
 }
 
+void usage()
+{
+    usageStr = "Usage: SystemReplay record1 [record2] [...] [recordN]";
+    cerr << usageStr << endl;
+}
+
 int main(int argc, char **argv)
 {
-    ifstream fin("/home/haowu/repair_data/dumb.txt");
+    if (argc < 2)
+    {
+        usage();
+        exit(0);
+    }
+    ifstream fin(argv[1]);
     PidManager pidManager;
     SystemManager sysManager;
     FDManager fdManager;
