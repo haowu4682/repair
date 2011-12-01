@@ -336,7 +336,6 @@ bool SystemCall::isUserSelect(bool isNew) const
 {
     if (!isSelect())
         return false;
-    //LOG1(toString().c_str());
     size_t numArgs = type->numArgs;
     // HARD CODE FOR X86_64
     for (size_t i = 1; i < 4; ++i)
@@ -552,7 +551,8 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     int i;
 
     // Read the first part of the record.
-    is >> addr >> seqNum >> statusChar >> pid;
+    is >> addr >> seqNum >> statusChar >> ts >> pid;
+    assert(statusChar == '<' || statusChar == '>');
     usage = ((statusChar == '<') ? SYSARG_IFEXIT : SYSARG_IFENTER);
     // Now we are going to parse the args, we need some string operations here.
     is.get();
@@ -749,6 +749,7 @@ String SystemCall::toString() const
     {
         ss << "name=" << type->name << ", ";
         ss << "usage=" << usage << ", ";
+        ss << "timestamp=" << ts << ", ";
         ss << "args=(";
         for (int i = 0; i < type->numArgs; i++)
         {

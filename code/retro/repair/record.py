@@ -67,7 +67,7 @@ class SyscallRecord(Record):
       prefix = ["", ">", "<", "<>"][self.usage] + " "
     else:
       prefix = ""
-    s = prefix + " ".join([str(self.pid), self.name]) \
+    s = prefix + " ".join([str(self.ts), str(self.pid), self.name]) \
       + "(" + ", ".join(args) + ")"
     if hasattr(self, "ret"):
       s = s + " = " + str(self.ret)
@@ -130,10 +130,10 @@ def _read_syscall(f):
 #  XXX: do not check the usage currently since the record contains some invalid
 #  usage data. It is a bug, but we do not need to fix it now since it does not
 #  prevent the system from running.
-  #assert r.usage in range(BOTH)
+  assert r.usage in range(BOTH)
   r.nr = sysarg_uint(f)
   r.sid = _read_sid(f)
-  #print r.ts, r.pid, r.usage, r.nr, r.sid
+#  print r.ts, r.pid, r.usage, r.nr, r.sid
   r.args = {}
   args = []
 
