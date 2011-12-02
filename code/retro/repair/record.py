@@ -63,7 +63,7 @@ class SyscallRecord(Record):
       else:
         s = _q(v)
       args.append(x + s)
-    if hasattr(self, "usage"):
+    if hasattr(self, "usage") and self.usage in range(BOTH):
       prefix = ["", ">", "<", "<>"][self.usage] + " "
     else:
       prefix = ""
@@ -133,7 +133,7 @@ def _read_syscall(f):
   #assert r.usage in range(BOTH)
   r.nr = sysarg_uint(f)
   r.sid = _read_sid(f)
-  #print r.ts, r.pid, r.usage, r.nr, r.sid
+  print r.ts, r.pid, r.usage, r.nr, r.sid
   r.args = {}
   args = []
 
