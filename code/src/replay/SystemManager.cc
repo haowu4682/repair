@@ -1,5 +1,6 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <pthread.h>
@@ -89,7 +90,7 @@ String SystemManager::toString()
 
 void usage()
 {
-    usageStr = "Usage: SystemReplay record1 [record2] [...] [recordN]";
+    char usageStr[] = "Usage: SystemReplay record1 [record2] [...] [recordN]";
     cerr << usageStr << endl;
 }
 
@@ -100,7 +101,6 @@ int main(int argc, char **argv)
         usage();
         exit(0);
     }
-    ifstream fin(argv[1]);
     PidManager pidManager;
     SystemManager sysManager;
     FDManager fdManager;
@@ -113,8 +113,11 @@ int main(int argc, char **argv)
     sysManager.setPidManager(&pidManager);
     sysManager.setRoot(&rootProcess);
 
-    list.init(fin);
-    //LOG1(list.toString().c_str());
+    for (int i = 1; i < argc; ++i)
+    {
+        ifstream fin(argv[i]);
+        list.init(fin);
+    }
     LOG("init finished");
     sysManager.execAll();
     LOG("execution finished");

@@ -151,6 +151,9 @@ class SystemCall : public Action
         // Get pid manager
         PidManager *getPidManager() const { return pidManager; }
 
+        // Get Timestamp
+        Timestamp getTimestamp() const { return ts; }
+
         // to string
         String toString() const;
         //friend std::ostream &operator <<(std::ostream &os, SystemCall &syscall) 
