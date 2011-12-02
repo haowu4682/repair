@@ -136,13 +136,30 @@ void SystemCallList::init(istream &in)
     {
         SystemCall syscall(syscallString, fdManager);
         pid_t oldPid = syscall.getPid();
-        syscallMap[oldPid].syscalls.push_back(syscall);
+        Vector<SystemCall> &syscalls = syscallMap[oldPid].syscalls;
+        if (syscalls.empty() || syscalls.back().getTimestamp() <= syscall.getTimestamp())
+        {
+            syscalls.push_back(syscall);
+        }
+        else
+        {
+            // TODO: change to binary search
+            for (Vector<SystemCall>::iterator it = syscalls.begin(), e = syscalls.end();
+                    it != e; ++it)
+            {
+                if (it->getTimestamp() > syscall.getTimestamp())
+                {
+                    syscalls.insert(it, syscall);
+                    break;
+                }
+            }
+        }
 
         if (syscall.isExec())
         {
             // This is the updated version
             // XXX: If the exec is executed by a `exec'-ed process, we shall not add it to the list here
-            if (syscall.getUsage() && SYSARG_IFENTER) // && !pidManager->isForked(syscall.getPid()))
+            if (syscall.getUsage() & SYSARG_IFENTER) // && !pidManager->isForked(syscall.getPid()))
             {
                 Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
                 if (it == processMap.end())
@@ -160,7 +177,7 @@ void SystemCallList::init(istream &in)
         }
         else if (syscall.isFork())
         {
-            if (syscall.getUsage() && SYSARG_IFEXIT)
+            if (syscall.getUsage() & SYSARG_IFEXIT)
             {
                 pid_t newPid = syscall.getReturn();
                 Process *parent = root->searchProcess(oldPid);
