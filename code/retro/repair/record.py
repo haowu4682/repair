@@ -63,7 +63,7 @@ class SyscallRecord(Record):
       else:
         s = _q(v)
       args.append(x + s)
-    if hasattr(self, "usage"):
+    if hasattr(self, "usage") and self.usage in range(BOTH):
       prefix = ["", ">", "<", "<>"][self.usage] + " "
     else:
       prefix = ""
