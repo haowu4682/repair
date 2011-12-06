@@ -61,7 +61,6 @@ void Process::setCommand(SystemCall *syscall)
 {
     command->pid = syscall->getPid();
     parseArgv(command->argv, syscall->getArg(1).getValue());
-    LOG1(command->argv[0].c_str());
     setVirtual(false);
 }
 

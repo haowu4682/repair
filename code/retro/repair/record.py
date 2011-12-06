@@ -133,7 +133,7 @@ def _read_syscall(f):
   #assert r.usage in range(BOTH)
   r.nr = sysarg_uint(f)
   r.sid = _read_sid(f)
-  print r.ts, r.pid, r.usage, r.nr, r.sid
+  #print r.ts, r.pid, r.usage, r.nr, r.sid
   r.args = {}
   args = []
 

@@ -259,12 +259,12 @@ int ProcessManager::traceProcess(pid_t pid)
                 //writeMatchedSyscall(syscallReturn, pid);
 
                 // Skip executing the system call
-                LOG("Before skipping");
+                //LOG("Before skipping");
                 if (skipSyscall(pid) < 0)
                 {
                     LOG("Skip syscall failed: %s", syscall.toString().c_str());
                 }
-                LOG("After skipping");
+                //LOG("After skipping");
 
 #if 0
                 ptrace(PTRACE_GETREGS, pid, 0, &regs);
@@ -274,14 +274,14 @@ int ProcessManager::traceProcess(pid_t pid)
 #endif
 
                 // write back result
-                LOG("Before match written");
+                //LOG("Before match written");
                 writeMatchedSyscall(syscallMatch, pid);
                 LOG("After match written");
 
-#if 0
+#if 1
                 ptrace(PTRACE_GETREGS, pid, 0, &regs);
                 LOG("regs=%s", regsToStr(regs).c_str());
-                tmp = ptrace(PTRACE_PEEKDATA, pid, regs.rsi, 0);
+                long tmp = ptrace(PTRACE_PEEKDATA, pid, regs.rsi, 0);
                 LOG("firstbyte=%ld", tmp);
                 SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
                 LOG("return syscall is: %s", syscallReturn.toString().c_str());

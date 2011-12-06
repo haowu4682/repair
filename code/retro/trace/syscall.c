@@ -94,6 +94,7 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
 	    if (unlikely(buf->offset + reserve_bytes >
 			 buf->chan->subbuf_size)) {
 		size_t length = relay_switch_subbuf(buf, reserve_bytes);
+        // XXX(Hao): retry is no good here. It still gets stuck.
 		if (!length) {
 		    preempt_enable();
 		    dbg(info, "retro buffers full, sleeping..");
