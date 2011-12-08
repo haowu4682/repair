@@ -184,7 +184,10 @@ int ProcessManager::traceProcess(pid_t pid)
     int status;
     int ret;
     long pret;
+    //XXX: careful of sequence number logic, it might break
     long inputSeqNum = 0;
+    long selectSeqNum = 0;
+
     struct user_regs_struct regs;
     PidManager *pidManager = process.getPidManager();
     SystemCallList *syscallList = process.getSyscallList();
@@ -218,7 +221,7 @@ int ProcessManager::traceProcess(pid_t pid)
         if (syscall.isUserSelect(true))
         {
             LOG("User select found: %s", syscall.toString().c_str());
-            pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, inputSeqNum);
+            pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, selectSeqNum);
             bool matchFound = (pret >= 0);
 
             // If a match has been found, we'll change the syscall result
@@ -227,8 +230,8 @@ int ProcessManager::traceProcess(pid_t pid)
             if (matchFound)
             {
                 LOG("Match Found! Match is: %s", syscallMatch.toString().c_str());
-                inputSeqNum = pret;
-                LOG("inputSeqNum=%ld", inputSeqNum);
+                selectSeqNum = pret;
+                LOG("selectSeqNum=%ld", selectSeqNum);
                 LOG("regs=%s", regsToStr(regs).c_str());
                 // We do not skip executing the system call! We hack it to
                 // execute in no-timeout way.
@@ -278,7 +281,7 @@ int ProcessManager::traceProcess(pid_t pid)
                 writeMatchedSyscall(syscallMatch, pid);
                 LOG("After match written");
 
-#if 1
+#if 0
                 ptrace(PTRACE_GETREGS, pid, 0, &regs);
                 LOG("regs=%s", regsToStr(regs).c_str());
                 long tmp = ptrace(PTRACE_PEEKDATA, pid, regs.rsi, 0);
@@ -308,6 +311,7 @@ int ProcessManager::traceProcess(pid_t pid)
             {
                 LOG("Match Found! Match is: %s", syscallMatch.toString().c_str());
                 inputSeqNum = pret;
+                selectSeqNum = pret;
                 LOG("inputSeqNum=%ld", inputSeqNum);
 
                 // Skip executing the system call

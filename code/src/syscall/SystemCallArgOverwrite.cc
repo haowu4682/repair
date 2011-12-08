@@ -61,14 +61,20 @@ SYSARGOVERWRITE_(buf)
     String str = removeEscapeSequence(escapedStr);
     LOG("escaped str is: %s, after escape: %s", escapedStr.c_str(), str.c_str());
     long argVal = SystemCall::getArgFromReg(regs, i);
-    if (str[0] == '\"')
+    size_t spos, epos;
+    spos = str.find('\"');
+    if (spos == std::string::npos)
     {
-        writeToProcess(str.c_str()+1, argVal, str.size()-2, pid);
+        LOG("str invalid: %s", str.c_str());
+        return -1;
     }
-    else
+    epos = str.find('\"', spos + 1);
+    if (epos == std::string::npos)
     {
-        writeToProcess(str.c_str(), argVal, str.size(), pid);
+        LOG("str invalid: %s", str.c_str());
+        return -1;
     }
+    writeToProcess(&str.c_str()[spos+1], argVal, epos-spos-1, pid);
     // Modify the length by modifying the return value.
     // This part should be done by SystemCall::overwrite. We do not execute it
     // here.
