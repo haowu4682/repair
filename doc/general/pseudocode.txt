@@ -1,0 +1,36 @@
+def replay_system:
+    MAP<pid, LIST<systemcall>> syscall_list
+
+    syscall_list = read_syscall_list()
+    for all pid in syscall_list:
+        if pid is not a child of another process:
+            replay_process(pid)
+
+def replay_process(proc):
+    if proc is a process with exec:
+        replay_process_thread = create a thread to handle the process
+        replay_process_thread.run(proc)
+    else:
+        for c is child of proc:
+            replay_process(c)
+
+def replay_process_thread.run(proc):
+    p = fork()
+    if (p == 0):
+        ptrace(TRACEME)
+        execute the exec command
+    else:
+        trace(p)
+
+def trace(p):
+    while (p is alive):
+        continue execution, stop at syscall or end of execution
+        if (syscall is user input):
+            find the matched syscall in syscall_list
+            skip running the syscall
+            replace the syscall return result with the recorded result
+        elif (syscall has a conflict):
+            record it in the log
+        elif (syscall is a fork):
+            trace(child)
+
