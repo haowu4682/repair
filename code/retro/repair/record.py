@@ -64,9 +64,9 @@ class SyscallRecord(Record):
         s = _q(v)
       args.append(x + s)
     if hasattr(self, "usage") and self.usage in range(BOTH):
-      prefix = ["", ">", "<", "<>"][self.usage] + " "
+      prefix = ["", ">", "<", "^"][self.usage] + " "
     else:
-      prefix = ""
+      prefix = "="
     s = prefix + " ".join([str(self.ts), str(self.pid), self.name]) \
       + "(" + ", ".join(args) + ")"
     if hasattr(self, "ret"):

@@ -551,8 +551,14 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     int i;
 
     // Read the first part of the record.
-    is >> addr >> seqNum >> statusChar >> ts >> pid;
-    assert(statusChar == '<' || statusChar == '>');
+    is >> addr >> seqNum >> statusChar;
+    LOG("status char = %c", statusChar);
+    if(statusChar != '<' && statusChar != '>')
+    {
+        valid = false;
+        return -1;
+    }
+    is >> ts >> pid;
     usage = ((statusChar == '<') ? SYSARG_IFEXIT : SYSARG_IFENTER);
     // Now we are going to parse the args, we need some string operations here.
     is.get();
@@ -633,6 +639,8 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
             }
         }
     }
+
+    LOG("syscall record: %s", toString().c_str());
 }
 
 bool SystemCall::match(const SystemCall &another) const
