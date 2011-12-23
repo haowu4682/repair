@@ -51,12 +51,15 @@ class SystemCall : public Action
 
         // Whether two syscalls are equal. Two syscalls are equal if their usages are equal, and
         // each available arguments and return value(if usage==true) are equal
-        bool operator == (const SystemCall &) const;
+        bool operator == (const SystemCall &syscall) const
+        {
+            return equals(syscall);
+        }
+        bool equals(const SystemCall &) const;
+        // Whether two syscalls are equalivant as a user input or an output.
+        // If the syscall is not a user input or output, it just returns to regular
+        // equivalence.
         bool match(const SystemCall &) const;
-        // Whether two syscalls are equalivant in USER_INPUT sense. If the
-        // syscall cannot contain a user input, it just returns to regular
-        // match.
-        bool matchUserInput(const SystemCall &) const;
 
         // Whether the system call is valid.
         // A valid system call is a system with its code and args provided.

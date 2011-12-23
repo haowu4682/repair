@@ -35,7 +35,7 @@ SystemCall SystemCallList::search(SystemCall &syscall)
     return result;
 }
 
-long SystemCallList::searchMatchInput(SystemCall &match,
+long SystemCallList::searchMatch(SystemCall &match,
         const SystemCall &source, pid_t pid, size_t seq /* = 0 */)
 {
     SyscallMapType::iterator it;
@@ -53,7 +53,7 @@ long SystemCallList::searchMatchInput(SystemCall &match,
     for (size_t pos = seq, end = syscalls.size(); pos < end; ++pos)
     {
         //LOG("%ld: %s", pos, syscalls[pos].toString().c_str());
-        if (source.matchUserInput(syscalls[pos]))
+        if (source.match(syscalls[pos]))
         {
             if ((++pos) < syscalls.size())
             {
@@ -184,6 +184,18 @@ void SystemCallList::init(istream &in)
                 if (parent == NULL)
                 {
                     parent = root;
+                }
+                // If there is already a parent other than this one, we should
+                // remove that.
+                Process *oldChild = root->searchProcess(newPid);
+                if (oldChild != NULL)
+                {
+                    Process *oldParent = oldChild->getParent();
+                    if (oldParent == parent)
+                    {
+                        continue;
+                    }
+                    oldParent->removeProcess(oldChild);
                 }
                 Process *child = parent->addSubProcess(newPid);
                 processMap[newPid] = child;

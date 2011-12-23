@@ -221,7 +221,7 @@ int ProcessManager::traceProcess(pid_t pid)
         if (syscall.isUserSelect(true))
         {
             LOG("User select found: %s", syscall.toString().c_str());
-            pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, selectSeqNum);
+            pret = syscallList->searchMatch(syscallMatch, syscall, oldPid, selectSeqNum);
             bool matchFound = (pret >= 0);
 
             // If a match has been found, we'll change the syscall result
@@ -301,7 +301,7 @@ int ProcessManager::traceProcess(pid_t pid)
         {
             //LOG("User input found: %s", syscall.toString().c_str());
             LOG("User input found: %s", syscall.toString().c_str());
-            pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, inputSeqNum);
+            pret = syscallList->searchMatch(syscallMatch, syscall, oldPid, inputSeqNum);
             bool matchFound = (pret >= 0);
 
             // If a match has been found, we'll change the syscall result
@@ -334,12 +334,20 @@ int ProcessManager::traceProcess(pid_t pid)
                 waitpid(pid, &status, 0);
             }
         }
-#if 0
         else if (syscall.isOutput())
         {
-            // TODO: implement later
-        }
+            LOG("Output found: %s", syscall.toString().c_str());
+#if 0
+            pret = syscallList->searchMatch(syscallMatch, syscall, oldPid, inputSeqNum);
+            bool matchFound = (pret >= 0);
+
+            if (matchFound)
+            {
+                LOG("Conflict Found: %s", syscallMatch.toString().c_str());
+                // TODO: implement later
+            }
 #endif
+        }
         else
         {
             pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);

@@ -552,7 +552,6 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
 
     // Read the first part of the record.
     is >> addr >> seqNum >> statusChar;
-    LOG("status char = %c", statusChar);
     if(statusChar != '<' && statusChar != '>')
     {
         valid = false;
@@ -643,7 +642,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     LOG("syscall record: %s", toString().c_str());
 }
 
-bool SystemCall::match(const SystemCall &another) const
+bool SystemCall::equals(const SystemCall &another) const
 {
     if (!valid || !another.valid)
         return false;
@@ -674,7 +673,7 @@ bool SystemCall::match(const SystemCall &another) const
     return true;
 }
 
-bool SystemCall::matchUserInput(const SystemCall &another) const
+bool SystemCall::match(const SystemCall &another) const
 {
     if (isRegularUserInput())
     {
@@ -690,7 +689,7 @@ bool SystemCall::matchUserInput(const SystemCall &another) const
         {
             int oldFD = atoi(another.args[0].getValue().c_str());
             int newFD = atoi(args[0].getValue().c_str());
-            LOG("oldFD=%d, newFD=%d, seqNum=%d", oldFD, newFD, another.seqNum);
+            LOG("oldFD=%d, newFD=%d, seqNum=%ld", oldFD, newFD, another.seqNum);
             if (!fdManager->equals(oldFD, newFD, another.seqNum))
             {
                 return false;
@@ -740,13 +739,8 @@ bool SystemCall::matchUserInput(const SystemCall &another) const
     }
     else
     {
-        return match(another);
+        return equals(another);
     }
-}
-
-bool SystemCall::operator ==(const SystemCall &another) const
-{
-    return match(another);
 }
 
 String SystemCall::toString() const
