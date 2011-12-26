@@ -291,6 +291,7 @@ bool SystemCall::isInput() const
     return valid && (
             type->nr == 0 ||        // read
             type->nr == 17 ||       // pread
+            type->nr == 19 ||       // readv
             type->nr == 45 ||       // recvfrom
             type->nr == 47 ||       // recvmsg
             type->nr == 23          // select
@@ -299,8 +300,12 @@ bool SystemCall::isInput() const
 
 bool SystemCall::isOutput() const
 {
-    //TODO: Implement
-    return false;
+    //TODO: More
+    return valid && (
+            type->nr == 1 ||        // write
+            type->nr == 18 ||       // pwrite
+            type->nr == 20          // writev
+            );
 }
 
 bool isFDUserInput(int fd, const FDManager *fdManager, bool isNew = true, long seqNum = 0)
@@ -650,6 +655,7 @@ bool SystemCall::equals(const SystemCall &another) const
         return false;
     if (type != another.type)
         return false;
+
     for (int i = 0; i < type->numArgs; i++)
     {
         if ((usage & type->args[i].usage) && (usage & another.type->args[i].usage))
@@ -675,16 +681,16 @@ bool SystemCall::equals(const SystemCall &another) const
 
 bool SystemCall::match(const SystemCall &another) const
 {
-    if (isRegularUserInput())
-    {
-        // The method is not super fast, but it should work.
-        if (!valid || !another.valid)
-            return false;
-        if (usage != another.usage)
-            return false;
-        if (type != another.type)
-            return false;
+    // The method is not super fast, but it should work.
+    if (!valid || !another.valid)
+        return false;
+    if (usage != another.usage)
+        return false;
+    if (type != another.type)
+        return false;
 
+    if (isRegularUserInput() || isOutput())
+    {
         if (fdManager != NULL && type->args[0].record == fd_record)
         {
             int oldFD = atoi(another.args[0].getValue().c_str());
@@ -701,27 +707,16 @@ bool SystemCall::match(const SystemCall &another) const
         }
         return args[0] == another.args[0];
     }
-
     else if (isSelect())
     {
-        // The method is not super fast, but it should work.
-        if (!valid || !another.valid)
-            return false;
-        if (usage != another.usage)
-            return false;
-        if (type != another.type)
-            return false;
-
         // We assume that only read fds matter here.
         // write fds do not matter because they will not be used as an input.
         fd_set read_fds1 = fd_set_derecord(args[1].getValue());
         fd_set read_fds2 = fd_set_derecord(another.args[1].getValue());
         int nfds = atoi(args[0].getValue().c_str());
-        //LOG("nfds=%d", nfds);
         for (int newFD = 0; newFD < nfds; ++newFD)
         {
             int oldFD = fdManager->newToOld(newFD, another.seqNum);
-            //LOG("newFD=%d, oldFD=%d", newFD, oldFD);
             if (oldFD >= 0 && oldFD < nfds)
             {
                 bool fdset1 = FD_ISSET(newFD, &read_fds1);
@@ -729,7 +724,7 @@ bool SystemCall::match(const SystemCall &another) const
                 if ((fdset1 && !fdset2) || (!fdset1 && fdset2))
                 {
                     if (isFDUserInput(newFD, fdManager, true))
-                    { 
+                    {
                         return false;
                     }
                 }

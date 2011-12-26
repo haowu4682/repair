@@ -165,20 +165,6 @@ int ProcessManager::dealWithFork(SystemCall &syscall, pid_t oldPid)
     return 0;
 }
 
-bool isConflict()
-{
-    //TODO: determine definition of conflict here.
-    return false;
-}
-
-void dealWithConflict()
-{
-    if (isConflict())
-    {
-        // TODO: implement
-    }
-}
-
 int ProcessManager::traceProcess(pid_t pid)
 {
     int status;
@@ -337,16 +323,15 @@ int ProcessManager::traceProcess(pid_t pid)
         else if (syscall.isOutput())
         {
             LOG("Output found: %s", syscall.toString().c_str());
-#if 0
             pret = syscallList->searchMatch(syscallMatch, syscall, oldPid, inputSeqNum);
             bool matchFound = (pret >= 0);
 
             if (matchFound)
             {
                 LOG("Conflict Found: %s", syscallMatch.toString().c_str());
-                // TODO: implement later
+                // TODO: implement more features on that.
+                //
             }
-#endif
         }
         else
         {
