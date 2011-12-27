@@ -173,6 +173,7 @@ int ProcessManager::traceProcess(pid_t pid)
     //XXX: careful of sequence number logic, it might break
     long inputSeqNum = 0;
     long selectSeqNum = 0;
+    long outputSeqNum = 0;
 
     struct user_regs_struct regs;
     PidManager *pidManager = process.getPidManager();
@@ -329,8 +330,11 @@ int ProcessManager::traceProcess(pid_t pid)
             if (matchFound)
             {
                 LOG("Conflict Found: %s", syscallMatch.toString().c_str());
+                inputSeqNum = pret;
+                selectSeqNum = pret;
+                LOG("inputSeqNum=%ld", inputSeqNum);
+
                 // TODO: implement more features on that.
-                //
             }
         }
         else

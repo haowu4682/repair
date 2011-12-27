@@ -55,6 +55,7 @@ long SystemCallList::searchMatch(SystemCall &match,
         //LOG("%ld: %s", pos, syscalls[pos].toString().c_str());
         if (source.match(syscalls[pos]))
         {
+            LOG("syscall found: %s", syscalls[pos].toString().c_str());
             if ((++pos) < syscalls.size())
             {
                 match = syscalls[pos];
@@ -64,6 +65,7 @@ long SystemCallList::searchMatch(SystemCall &match,
                     --pos;
                     continue;
                 }
+                LOG("syscall match: %s", match.toString().c_str());
                 return static_cast<int>(pos + 1);
             }
             else
@@ -76,50 +78,6 @@ long SystemCallList::searchMatch(SystemCall &match,
 
     return MATCH_NOT_FOUND;
 }
-
-#if 0
-long SystemCallList::searchMatchSelect(SystemCall &match, 
-        const SystemCall &source, pid_t pid, size_t seq /* = 0 */)
-{
-    SyscallMapType::iterator it;
-    if ((it = syscallMap.find(pid)) == syscallMap.end())
-    {
-        // No syscall list found
-        LOG("No system call list found for %d", pid);
-        return MATCH_NOT_FOUND;
-    }
-
-    SystemCallListItem &listItem = it->second;
-    Vector<SystemCall> &syscalls = listItem.syscalls;
-
-    for (size_t pos = seq, end = syscalls.size(); pos < end; ++pos)
-    {
-        if (!match.isSelect())
-            continue;
-        if (source == syscalls[pos])
-        {
-            if ((++pos) < syscalls.size())
-            {
-                match = syscalls[pos];
-                if (match.getType() != source.getType())
-                {
-                    LOG("Syscall record pair not matched.");
-                    --pos;
-                    continue;
-                }
-                return static_cast<int>(pos + 1);
-            }
-            else
-            {
-                LOG("Syscall record pair broken due to eof");
-                break;
-            }
-        }
-    }
-
-    return MATCH_NOT_FOUND;
-}
-#endif
 
 void SystemCallList::init(istream &in)
 {
