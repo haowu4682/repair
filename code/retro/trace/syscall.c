@@ -1,3 +1,4 @@
+#include <asm/atomic.h>
 #include <asm/unistd.h>
 #include <linux/delay.h>
 #include <linux/file.h>
@@ -10,6 +11,9 @@
 static struct syscall syscalls[] = {
 	#include "trace_syscalls.inc"
 };
+
+// The timestamp
+static atomic_t a_ts = {0};
 
 const struct syscall * syscall_get(int nr)
 {
@@ -75,6 +79,7 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
 	const struct sysarg *arg;
 
 	int i, used[7] = {0};
+    int seq_ts;
 	char buf[128];
 	size_t len;
 	unsigned cpu;
@@ -154,8 +159,10 @@ static long _record(int usage, pid_t pid, int nr, long args[6],
 		}
 	}
 
+    seq_ts = atomic_inc_return(&a_ts);
 	/* start real recording */
 	len = vartime(buf);
+    len += uvarint(seq_ts, buf + len);
 	len += uvarint(pid, buf + len);
 	len += uvarint(usage, buf + len);
 	len += uvarint(nr, buf + len);

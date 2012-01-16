@@ -67,7 +67,7 @@ class SyscallRecord(Record):
       prefix = ["", ">", "<", "^"][self.usage] + " "
     else:
       prefix = "="
-    s = prefix + " ".join([str(self.ts), str(self.pid), self.name]) \
+    s = prefix + " ".join([str(self.seq), str(self.pid), self.name]) \
       + "(" + ", ".join(args) + ")"
     if hasattr(self, "ret"):
       s = s + " = " + str(self.ret)
@@ -125,6 +125,7 @@ def read_syscall(f):
 def _read_syscall(f):
   r = SyscallRecord()
   r.ts = _read_time(f)
+  r.seq = sysarg_uint(f)
   r.pid = sysarg_uint(f)
   r.usage = sysarg_uint(f)
 #  XXX: do not check the usage currently since the record contains some invalid
