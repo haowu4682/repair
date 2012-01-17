@@ -1,0 +1,126 @@
+S1 Introduction
+
+Many times users of a machine want to share a common environment without
+interfering each other, for example, repair from chair and more. One trivial way
+is to let multiple users operating on the same machine. However, this won't work
+because sometimes they cannot use the same machine, or seperation is needed. For
+example, repair-from-chair and more. Another way: merge the file system,
+Deficiency: devices neglected, sometimes not a reasonable behavior.(Other
+possible ways and their deficiencies here.)
+
+In order to solve the issue, we introduce an idea called machine rebase(better
+name?). (Describe it)
+
+What are the basic challenges? (1) How to know what a user wants to do (2) How
+to execute what a user did. (3) What happen if actions in one branch causes the
+other branch cannot execute homomorphicly(a.k.a conflict).
+
+There are already some methods to do the rebase. (Briefly descirbe some,
+including Retro. Include their deficiencies why they cannot resolve all the
+challenges) More in S2.
+
+What's our high level idea?
+
+What does we do? (Summary of Design perhaps)
+
+Contributions(TBD)
+
+Evaluation and Limitations(TBD)
+
+S2 Related Works
+
+(Based on previous discussions only. No diving into more related work currently.)
+T1 Repair works. Retro, etc.
+T2 Input-based replay. Collective, VNCPlay, etc.
+T3 Distributed branching storage systems. Olive, etc.
+
+S3 Principles
+
+1. Process-based rebase. Execute from "exec".
+Why not from "fork"? We cannot, we don't know how to execute a process from
+"fork".
+How to deal with actions between "fork" and "exec"? Execute them manually.
+2. Howto replay a process: replay actions between fork and exec(included).
+3. Track replaying an actual process. We use ptrace to track the actions by a
+replaying actual process. The purpose here is to handle user inputs and
+conflicts.
+
+S4 Design(The section may be divided into 2 or 3 sections)
+S4-0 General Definitions(May be moved to first apperances.)
+Action: "important" system calls, which include those influence the flow of
+processes(fork, exec, etc.) and those interact with the environment(read, write,
+etc.)
+
+Device: A device is something outside the CPU/Memory and can provide I/O with
+them, like disk, keyboard, network card, etc.
+
+User: A user is someone who provides input into the system and retrieves output
+from the system. A user is responsible to deal with conflicts. A user must know
+that a rebase is taking place.
+
+World: The world is the factors who can read input from the system and write
+into the system, but do not know that a rebase is taking place. It includes any
+remote servers on the Internet.
+
+Revertible device: A device which can (1)reverse its state, (2) automatically
+provides input without user or world's interaction. For example, a disk.
+
+Irrevertible device: opposite to revertible device. Equivalent to user device
+plus world device.(Better Name?)
+
+Environment: All revertible and irrevertible devices
+
+S4-1 Record Phase
+Action Record Module
+Kernel module based on Retro, which records the actions during execution.
+(Details of things recorded)
+
+S4-2 Replay Phase
+Managers. Managers are used to manage objects in replaying. ProcessManager
+and SystemManager are used to manage replaying processes. Pid manager and Fd
+manager are used to manage pid's and fd's, which might have changed during
+replaying. Syscall Manager is used to record/re-execute system calls.
+Relations between Managers TBD.
+
+Action handling. Action handling parts are used to help handling actions,
+including reading from the record/actual execution, and re-execute an action,
+etc. Details TBD.(This may have gone into too much details, should go into
+implementation.)
+
+User Inputs. There are 3 steps in dealing with user inputs: (1) detect
+(2) match (3) replace. Detection is pretty straight forward. From matching,
+we consider the recorded system calls which is from the same device and belongs
+to the corresponding process. For example, in the record there are 3 user
+inputs from stdin: "i", "a", and "q". In replaying, when the process is
+replayed and waits for a read from stdin, the system feeds "i" for it. Next
+time the system feeds "a", and then "q". If the process wants more input, the
+system will feed nothing to it and the process will block there. In order for
+the process to make progress, we need to unblock ``select'', ``poll'' and
+``epoll'', since the process will block on those system calls when there is
+actually nothing from the keyboard.
+
+Unblock the blocking I/O system calls. Some system calls will block during the
+replay, e.g. ``select''. User programs often use them to determine whether any
+input devices have data to read in. In the case, the solution is the
+following: we check if there is a matching user input in the record. If there is
+no matching user input, the system call goes as usual. If there is a matching
+user input, the system will return the matched recorded fds as the result to the
+process.
+
+Conflict handling. Detail TBD until the implementation has been well done.
+
+S5 Implementation
+TBD
+
+S6 Evaluation
+TBD
+
+S7 Discussion
+TBD
+
+S8 Conclusion
+TBD
+
+References
+TBD
+
