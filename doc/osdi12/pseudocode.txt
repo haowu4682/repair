@@ -1,10 +1,26 @@
 def replay_system:
     MAP<pid, LIST<systemcall>> syscall_list
 
-    syscall_list = read_syscall_list()
+    syscall_list = read_syscall_list(record_file_list)
     for all pid in syscall_list:
         if pid is not a child of another process:
             replay_process(pid)
+
+def read_syscall_list(record_file_list):
+    LIST<syscall> syscall_frontier
+    current_ts = 0
+    to_record_list = record_file_list
+
+    while (record_file_list not processed all)
+        pick record_file from record_file_list
+        i = seq# of record_file
+        if (syscall_frontier[i].ts == current_ts)
+            put syscall_frontier[i] into result
+        if (syscall_frontier[i].ts == current_ts or syscall_frontier[i] does not
+                exist)
+            syscall = read_syscall(record_file)
+            if record_file reaches EOF
+                remove record_file from record_file_list
 
 def replay_process(proc):
     if proc is a process with exec:
@@ -18,7 +34,7 @@ def replay_process_thread.run(proc):
     p = fork()
     if (p == 0):
         ptrace(TRACEME)
-        execute the exec command
+        replay actions in process in timestamp order
     else:
         trace(p)
 

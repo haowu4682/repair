@@ -38,6 +38,7 @@ T3 Distributed branching storage systems. Olive, etc.
 S3 Principles
 
 [MW: maybe these are challenges? as stated they are not principles.]
+[HW: I kind of think it should go into design section now.]
 
 1. Process-based rebase. Execute from "exec".
 Why not from "fork"? We cannot, we don't know how to execute a process from
