@@ -113,10 +113,16 @@ int main(int argc, char **argv)
     sysManager.setPidManager(&pidManager);
     sysManager.setRoot(&rootProcess);
 
+    Vector<istream *> inList;
     for (int i = 1; i < argc; ++i)
     {
-        ifstream fin(argv[i]);
-        list.init(fin);
+        inList.push_back(new ifstream(argv[i]));
+    }
+    list.init(inList);
+    for (vector<istream *>::iterator it = inList.begin(), e = inList.end();
+            it != e; ++it)
+    {
+        delete *it;
     }
     LOG("init finished");
     sysManager.execAll();

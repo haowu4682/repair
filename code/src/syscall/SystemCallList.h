@@ -52,8 +52,8 @@ class SystemCallList
         //        pid_t pid, size_t seq = 0);
 
         // Init the system call list from an input stream.
-        // @param in the input stream
-        void init(std::istream &in);
+        // @param inList the list of all the input streams
+        void init(Vector<std::istream *> &inList);
 
         // to string
         String toString();

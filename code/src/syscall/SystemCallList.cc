@@ -80,9 +80,10 @@ long SystemCallList::searchMatch(SystemCall &match,
     return MATCH_NOT_FOUND;
 }
 
-void SystemCallList::init(istream &in)
+void SystemCallList::init(Vector<istream *> &inList)
 {
     // '\n' is used as a delimeter between syscalls
+#if 0
     string syscallString;
     SystemCall lastExecSyscall;
     Process *root = systemManager->getRoot();
@@ -201,6 +202,7 @@ void SystemCallList::init(istream &in)
             }
         }
     }
+#endif
 }
 
 String SystemCallList::toString()
