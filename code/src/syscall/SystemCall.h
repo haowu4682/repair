@@ -10,7 +10,7 @@
 #include <replay/FDManager.h>
 #include <replay/PidManager.h>
 #include <syscall/SystemCallArg.h>
-#include <syscall/Timestamp.h>
+//#include <syscall/Timestamp.h>
 
 // The max number of system call arguments in a system call
 #define SYSCALL_MAX_ARGS 6
@@ -155,7 +155,8 @@ class SystemCall : public Action
         PidManager *getPidManager() const { return pidManager; }
 
         // Get Timestamp
-        Timestamp getTimestamp() const { return ts; }
+        //Timestamp getTimestamp() const { return ts; }
+        long getTimestamp() const { return ts; }
 
         // to string
         String toString() const;
@@ -198,7 +199,8 @@ class SystemCall : public Action
         // The pid manager
         PidManager *pidManager;
         // Timestamp
-        Timestamp ts;
+        //Timestamp ts;
+        long ts;
 };
 
 #endif //__SYSCALL_SYSCALL_H__
