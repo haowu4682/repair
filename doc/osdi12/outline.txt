@@ -19,9 +19,10 @@ There are already some methods to do the rebase. (Briefly descirbe some,
 including Retro. Include their deficiencies why they cannot resolve all the
 challenges) More in S2.
 
-What's our high level idea?
+What's our high level idea? [MW to fill in, after seeing latest
+    pcode.]
 
-What does we do? (Summary of Design perhaps)
+What do we do? (Summary of Design perhaps) [HW to fill in]
 
 Contributions(TBD)
 
@@ -35,6 +36,8 @@ T2 Input-based replay. Collective, VNCPlay, etc.
 T3 Distributed branching storage systems. Olive, etc.
 
 S3 Principles
+
+[MW: maybe these are challenges? as stated they are not principles.]
 
 1. Process-based rebase. Execute from "exec".
 Why not from "fork"? We cannot, we don't know how to execute a process from
@@ -106,6 +109,15 @@ following: we check if there is a matching user input in the record. If there is
 no matching user input, the system call goes as usual. If there is a matching
 user input, the system will return the matched recorded fds as the result to the
 process.
+
+    [MW: ISSUE. what happens if read/select/etc. blocks here? that will
+    block the replay --> not good. *however*, maybe you can use the case
+    of a blocked syscall here as an indication that the replay module is
+    getting the semantics wrong?]
+
+    [Idea from Hao: report it as a conflict and keep running. another
+    idea: or maybe back up and try a different matching in the replay
+    logic; if *that* doesn't work *then* report it as a conflict.]
 
 Conflict handling. Detail TBD until the implementation has been well done.
 
