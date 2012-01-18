@@ -75,6 +75,7 @@ long SystemCallList::searchMatch(SystemCall &match,
             }
         }
     }
+    LOG("syscall not found due to EOF");
 
     return MATCH_NOT_FOUND;
 }

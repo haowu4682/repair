@@ -323,6 +323,7 @@ int ProcessManager::traceProcess(pid_t pid)
         }
         else if (syscall.isOutput())
         {
+#if 0
             LOG("Output found: %s", syscall.toString().c_str());
             pret = syscallList->searchMatch(syscallMatch, syscall, oldPid, inputSeqNum);
             bool matchFound = (pret >= 0);
@@ -336,6 +337,7 @@ int ProcessManager::traceProcess(pid_t pid)
 
                 // TODO: implement more features on that.
             }
+#endif
         }
         else
         {
