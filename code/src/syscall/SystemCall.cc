@@ -291,6 +291,7 @@ bool SystemCall::isInput() const
     return valid && (
             type->nr == 0 ||        // read
             type->nr == 17 ||       // pread
+            type->nr == 19 ||       // readv
             type->nr == 45 ||       // recvfrom
             type->nr == 47 ||       // recvmsg
             type->nr == 23          // select
@@ -299,8 +300,12 @@ bool SystemCall::isInput() const
 
 bool SystemCall::isOutput() const
 {
-    //TODO: Implement
-    return false;
+    //TODO: More
+    return valid && (
+            type->nr == 1 ||        // write
+            type->nr == 18 ||       // pwrite
+            type->nr == 20          // writev
+            );
 }
 
 bool isFDUserInput(int fd, const FDManager *fdManager, bool isNew = true, long seqNum = 0)
@@ -336,7 +341,6 @@ bool SystemCall::isUserSelect(bool isNew) const
 {
     if (!isSelect())
         return false;
-    //LOG1(toString().c_str());
     size_t numArgs = type->numArgs;
     // HARD CODE FOR X86_64
     for (size_t i = 1; i < 4; ++i)
@@ -552,7 +556,13 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     int i;
 
     // Read the first part of the record.
-    is >> addr >> seqNum >> statusChar >> pid;
+    is >> addr >> seqNum >> statusChar;
+    if(statusChar != '<' && statusChar != '>')
+    {
+        valid = false;
+        return -1;
+    }
+    is >> ts >> pid;
     usage = ((statusChar == '<') ? SYSARG_IFEXIT : SYSARG_IFENTER);
     // Now we are going to parse the args, we need some string operations here.
     is.get();
@@ -633,9 +643,11 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
             }
         }
     }
+
+    LOG("syscall record: %s", toString().c_str());
 }
 
-bool SystemCall::match(const SystemCall &another) const
+bool SystemCall::equals(const SystemCall &another) const
 {
     if (!valid || !another.valid)
         return false;
@@ -643,6 +655,7 @@ bool SystemCall::match(const SystemCall &another) const
         return false;
     if (type != another.type)
         return false;
+
     for (int i = 0; i < type->numArgs; i++)
     {
         if ((usage & type->args[i].usage) && (usage & another.type->args[i].usage))
@@ -666,23 +679,23 @@ bool SystemCall::match(const SystemCall &another) const
     return true;
 }
 
-bool SystemCall::matchUserInput(const SystemCall &another) const
+bool SystemCall::match(const SystemCall &another) const
 {
-    if (isRegularUserInput())
-    {
-        // The method is not super fast, but it should work.
-        if (!valid || !another.valid)
-            return false;
-        if (usage != another.usage)
-            return false;
-        if (type != another.type)
-            return false;
+    // The method is not super fast, but it should work.
+    if (!valid || !another.valid)
+        return false;
+    if (usage != another.usage)
+        return false;
+    if (type != another.type)
+        return false;
 
+    if (isRegularUserInput() || isOutput())
+    {
         if (fdManager != NULL && type->args[0].record == fd_record)
         {
             int oldFD = atoi(another.args[0].getValue().c_str());
             int newFD = atoi(args[0].getValue().c_str());
-            LOG("oldFD=%d, newFD=%d, seqNum=%d", oldFD, newFD, another.seqNum);
+            LOG("oldFD=%d, newFD=%d, seqNum=%ld", oldFD, newFD, another.seqNum);
             if (!fdManager->equals(oldFD, newFD, another.seqNum))
             {
                 return false;
@@ -694,27 +707,16 @@ bool SystemCall::matchUserInput(const SystemCall &another) const
         }
         return args[0] == another.args[0];
     }
-
     else if (isSelect())
     {
-        // The method is not super fast, but it should work.
-        if (!valid || !another.valid)
-            return false;
-        if (usage != another.usage)
-            return false;
-        if (type != another.type)
-            return false;
-
         // We assume that only read fds matter here.
         // write fds do not matter because they will not be used as an input.
         fd_set read_fds1 = fd_set_derecord(args[1].getValue());
         fd_set read_fds2 = fd_set_derecord(another.args[1].getValue());
         int nfds = atoi(args[0].getValue().c_str());
-        //LOG("nfds=%d", nfds);
         for (int newFD = 0; newFD < nfds; ++newFD)
         {
             int oldFD = fdManager->newToOld(newFD, another.seqNum);
-            //LOG("newFD=%d, oldFD=%d", newFD, oldFD);
             if (oldFD >= 0 && oldFD < nfds)
             {
                 bool fdset1 = FD_ISSET(newFD, &read_fds1);
@@ -722,7 +724,7 @@ bool SystemCall::matchUserInput(const SystemCall &another) const
                 if ((fdset1 && !fdset2) || (!fdset1 && fdset2))
                 {
                     if (isFDUserInput(newFD, fdManager, true))
-                    { 
+                    {
                         return false;
                     }
                 }
@@ -732,13 +734,8 @@ bool SystemCall::matchUserInput(const SystemCall &another) const
     }
     else
     {
-        return match(another);
+        return equals(another);
     }
-}
-
-bool SystemCall::operator ==(const SystemCall &another) const
-{
-    return match(another);
 }
 
 String SystemCall::toString() const
@@ -749,6 +746,7 @@ String SystemCall::toString() const
     {
         ss << "name=" << type->name << ", ";
         ss << "usage=" << usage << ", ";
+        ss << "timestamp=" << ts << ", ";
         ss << "args=(";
         for (int i = 0; i < type->numArgs; i++)
         {

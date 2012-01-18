@@ -1,5 +1,6 @@
 // Author: Hao Wu
 
+#include <algorithm>
 #include <pthread.h>
 
 #include <common/common.h>
@@ -10,7 +11,7 @@ using namespace std;
 
 int Process::exec()
 {
-    LOG("Executing process %ld", subProcessList.size());
+    LOG("Executing process pid=%d, subprocnum=%ld", command->pid, subProcessList.size());
     if (isVirtual)
     {
         execVirtual();
@@ -166,6 +167,17 @@ bool Process::operator ==(pid_t pid) const
 bool Process::operator ==(const Process &process) const
 {
     return command->pid == process.command->pid;
+}
+
+void Process::removeProcess(Process *proc)
+{
+    //TODO: implement
+    Vector<Process *>::iterator toDeleteIt = find(subProcessList.begin(),
+            subProcessList.end(), proc);
+    if (toDeleteIt != subProcessList.end())
+    {
+        subProcessList.erase(toDeleteIt);
+    }
 }
 
 Process::~Process()

@@ -35,7 +35,7 @@ SystemCall SystemCallList::search(SystemCall &syscall)
     return result;
 }
 
-long SystemCallList::searchMatchInput(SystemCall &match,
+long SystemCallList::searchMatch(SystemCall &match,
         const SystemCall &source, pid_t pid, size_t seq /* = 0 */)
 {
     SyscallMapType::iterator it;
@@ -53,8 +53,9 @@ long SystemCallList::searchMatchInput(SystemCall &match,
     for (size_t pos = seq, end = syscalls.size(); pos < end; ++pos)
     {
         //LOG("%ld: %s", pos, syscalls[pos].toString().c_str());
-        if (source.matchUserInput(syscalls[pos]))
+        if (source.match(syscalls[pos]))
         {
+            LOG("syscall found: %s", syscalls[pos].toString().c_str());
             if ((++pos) < syscalls.size())
             {
                 match = syscalls[pos];
@@ -64,6 +65,7 @@ long SystemCallList::searchMatchInput(SystemCall &match,
                     --pos;
                     continue;
                 }
+                LOG("syscall match: %s", match.toString().c_str());
                 return static_cast<int>(pos + 1);
             }
             else
@@ -76,50 +78,6 @@ long SystemCallList::searchMatchInput(SystemCall &match,
 
     return MATCH_NOT_FOUND;
 }
-
-#if 0
-long SystemCallList::searchMatchSelect(SystemCall &match, 
-        const SystemCall &source, pid_t pid, size_t seq /* = 0 */)
-{
-    SyscallMapType::iterator it;
-    if ((it = syscallMap.find(pid)) == syscallMap.end())
-    {
-        // No syscall list found
-        LOG("No system call list found for %d", pid);
-        return MATCH_NOT_FOUND;
-    }
-
-    SystemCallListItem &listItem = it->second;
-    Vector<SystemCall> &syscalls = listItem.syscalls;
-
-    for (size_t pos = seq, end = syscalls.size(); pos < end; ++pos)
-    {
-        if (!match.isSelect())
-            continue;
-        if (source == syscalls[pos])
-        {
-            if ((++pos) < syscalls.size())
-            {
-                match = syscalls[pos];
-                if (match.getType() != source.getType())
-                {
-                    LOG("Syscall record pair not matched.");
-                    --pos;
-                    continue;
-                }
-                return static_cast<int>(pos + 1);
-            }
-            else
-            {
-                LOG("Syscall record pair broken due to eof");
-                break;
-            }
-        }
-    }
-
-    return MATCH_NOT_FOUND;
-}
-#endif
 
 void SystemCallList::init(istream &in)
 {
@@ -136,13 +94,30 @@ void SystemCallList::init(istream &in)
     {
         SystemCall syscall(syscallString, fdManager);
         pid_t oldPid = syscall.getPid();
-        syscallMap[oldPid].syscalls.push_back(syscall);
+        Vector<SystemCall> &syscalls = syscallMap[oldPid].syscalls;
+        if (syscalls.empty() || syscalls.back().getTimestamp() <= syscall.getTimestamp())
+        {
+            syscalls.push_back(syscall);
+        }
+        else
+        {
+            // TODO: change to binary search
+            for (Vector<SystemCall>::iterator it = syscalls.begin(), e = syscalls.end();
+                    it != e; ++it)
+            {
+                if (it->getTimestamp() > syscall.getTimestamp())
+                {
+                    syscalls.insert(it, syscall);
+                    break;
+                }
+            }
+        }
 
         if (syscall.isExec())
         {
             // This is the updated version
             // XXX: If the exec is executed by a `exec'-ed process, we shall not add it to the list here
-            if (syscall.getUsage() && SYSARG_IFENTER) // && !pidManager->isForked(syscall.getPid()))
+            if (syscall.getUsage() & SYSARG_IFENTER) // && !pidManager->isForked(syscall.getPid()))
             {
                 Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
                 if (it == processMap.end())
@@ -160,13 +135,25 @@ void SystemCallList::init(istream &in)
         }
         else if (syscall.isFork())
         {
-            if (syscall.getUsage() && SYSARG_IFEXIT)
+            if (syscall.getUsage() & SYSARG_IFEXIT)
             {
                 pid_t newPid = syscall.getReturn();
                 Process *parent = root->searchProcess(oldPid);
                 if (parent == NULL)
                 {
                     parent = root;
+                }
+                // If there is already a parent other than this one, we should
+                // remove that.
+                Process *oldChild = root->searchProcess(newPid);
+                if (oldChild != NULL)
+                {
+                    Process *oldParent = oldChild->getParent();
+                    if (oldParent == parent)
+                    {
+                        continue;
+                    }
+                    oldParent->removeProcess(oldChild);
                 }
                 Process *child = parent->addSubProcess(newPid);
                 processMap[newPid] = child;

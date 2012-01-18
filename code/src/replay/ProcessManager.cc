@@ -165,20 +165,6 @@ int ProcessManager::dealWithFork(SystemCall &syscall, pid_t oldPid)
     return 0;
 }
 
-bool isConflict()
-{
-    //TODO: determine definition of conflict here.
-    return false;
-}
-
-void dealWithConflict()
-{
-    if (isConflict())
-    {
-        // TODO: implement
-    }
-}
-
 int ProcessManager::traceProcess(pid_t pid)
 {
     int status;
@@ -187,6 +173,7 @@ int ProcessManager::traceProcess(pid_t pid)
     //XXX: careful of sequence number logic, it might break
     long inputSeqNum = 0;
     long selectSeqNum = 0;
+    long outputSeqNum = 0;
 
     struct user_regs_struct regs;
     PidManager *pidManager = process.getPidManager();
@@ -221,7 +208,7 @@ int ProcessManager::traceProcess(pid_t pid)
         if (syscall.isUserSelect(true))
         {
             LOG("User select found: %s", syscall.toString().c_str());
-            pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, selectSeqNum);
+            pret = syscallList->searchMatch(syscallMatch, syscall, oldPid, selectSeqNum);
             bool matchFound = (pret >= 0);
 
             // If a match has been found, we'll change the syscall result
@@ -301,7 +288,7 @@ int ProcessManager::traceProcess(pid_t pid)
         {
             //LOG("User input found: %s", syscall.toString().c_str());
             LOG("User input found: %s", syscall.toString().c_str());
-            pret = syscallList->searchMatchInput(syscallMatch, syscall, oldPid, inputSeqNum);
+            pret = syscallList->searchMatch(syscallMatch, syscall, oldPid, inputSeqNum);
             bool matchFound = (pret >= 0);
 
             // If a match has been found, we'll change the syscall result
@@ -334,12 +321,22 @@ int ProcessManager::traceProcess(pid_t pid)
                 waitpid(pid, &status, 0);
             }
         }
-#if 0
         else if (syscall.isOutput())
         {
-            // TODO: implement later
+            LOG("Output found: %s", syscall.toString().c_str());
+            pret = syscallList->searchMatch(syscallMatch, syscall, oldPid, inputSeqNum);
+            bool matchFound = (pret >= 0);
+
+            if (matchFound)
+            {
+                LOG("Conflict Found: %s", syscallMatch.toString().c_str());
+                inputSeqNum = pret;
+                selectSeqNum = pret;
+                LOG("inputSeqNum=%ld", inputSeqNum);
+
+                // TODO: implement more features on that.
+            }
         }
-#endif
         else
         {
             pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);

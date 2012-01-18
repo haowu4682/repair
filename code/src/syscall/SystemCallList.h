@@ -35,7 +35,7 @@ class SystemCallList
         //     system call will be returned.
         SystemCall search(SystemCall &syscall);
 
-        // Search for a matching user input system call.
+        // Search for a matching system call.
         // @param match the matched system call
         // @param source the original system call
         // @param pid the old pid of the system call
@@ -43,7 +43,7 @@ class SystemCallList
         //        to search. Default value is 0.
         // @ret the sequence number of the next system call in the list.
         //      MATCH_NOT_FOUND if no matched system call is found.
-        long searchMatchInput(SystemCall &match, const SystemCall &source,
+        long searchMatch(SystemCall &match, const SystemCall &source,
                 pid_t pid, size_t seq = 0);
 
         // Search for a matching select system call. Parameters are similar with
@@ -63,7 +63,7 @@ class SystemCallList
 
         // A map from old pid to a syscall list
         SyscallMapType syscallMap;
-        
+
         // A pid manager use to manage processes mapping
         PidManager *pidManager;
 
