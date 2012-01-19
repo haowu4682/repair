@@ -40,11 +40,13 @@ class SystemCallList
         // @param source the original system call
         // @param pid the old pid of the system call
         // @param seq the sequence number of the first system call in the list
-        //        to search. Default value is 0.
-        // @ret the sequence number of the next system call in the list.
+        //        to search.
+        // @param returnExit return the next system call in the list instead of
+        //        the match itself.
+        // @ret the sequence number of the returned system call in the list.
         //      MATCH_NOT_FOUND if no matched system call is found.
         long searchMatch(SystemCall &match, const SystemCall &source,
-                pid_t pid, size_t seq = 0);
+                pid_t pid, size_t seq, bool returnExit);
 
         // Search for a matching select system call. Parameters are similar with
         // searchMatchInput.

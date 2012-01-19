@@ -37,7 +37,8 @@ SystemCall SystemCallList::search(SystemCall &syscall)
 }
 
 long SystemCallList::searchMatch(SystemCall &match,
-        const SystemCall &source, pid_t pid, size_t seq /* = 0 */)
+        const SystemCall &source, pid_t pid, size_t seq,
+        bool returnExit)
 {
     SyscallMapType::iterator it;
     if ((it = syscallMap.find(pid)) == syscallMap.end())
@@ -57,22 +58,30 @@ long SystemCallList::searchMatch(SystemCall &match,
         if (source.match(syscalls[pos]))
         {
             LOG("syscall found: %s", syscalls[pos].toString().c_str());
-            if ((++pos) < syscalls.size())
+            if (returnExit)
             {
-                match = syscalls[pos];
-                if (match.getType() != source.getType())
+                if ((++pos) < syscalls.size())
                 {
-                    LOG("Syscall record pair not matched.");
-                    --pos;
-                    continue;
+                    match = syscalls[pos];
+                    if (match.getType() != source.getType())
+                    {
+                        LOG("Syscall record pair not matched.");
+                        --pos;
+                        continue;
+                    }
+                    LOG("syscall match: %s", match.toString().c_str());
+                    return static_cast<int>(pos + 1);
                 }
-                LOG("syscall match: %s", match.toString().c_str());
-                return static_cast<int>(pos + 1);
+                else
+                {
+                    LOG("Syscall record pair broken due to eof");
+                    break;
+                }
             }
             else
             {
-                LOG("Syscall record pair broken due to eof");
-                break;
+                match = syscalls[pos];
+                return static_cast<int>(pos+1);
             }
         }
     }

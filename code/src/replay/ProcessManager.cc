@@ -208,7 +208,8 @@ int ProcessManager::traceProcess(pid_t pid)
         if (syscall.isUserSelect(true))
         {
             LOG("User select found: %s", syscall.toString().c_str());
-            pret = syscallList->searchMatch(syscallMatch, syscall, oldPid, selectSeqNum);
+            pret = syscallList->searchMatch(syscallMatch, syscall, oldPid,
+                    selectSeqNum, true);
             bool matchFound = (pret >= 0);
 
             // If a match has been found, we'll change the syscall result
@@ -288,7 +289,8 @@ int ProcessManager::traceProcess(pid_t pid)
         {
             //LOG("User input found: %s", syscall.toString().c_str());
             LOG("User input found: %s", syscall.toString().c_str());
-            pret = syscallList->searchMatch(syscallMatch, syscall, oldPid, inputSeqNum);
+            pret = syscallList->searchMatch(syscallMatch, syscall, oldPid,
+                    inputSeqNum, true);
             bool matchFound = (pret >= 0);
 
             // If a match has been found, we'll change the syscall result
@@ -323,21 +325,19 @@ int ProcessManager::traceProcess(pid_t pid)
         }
         else if (syscall.isOutput())
         {
-#if 0
             LOG("Output found: %s", syscall.toString().c_str());
-            pret = syscallList->searchMatch(syscallMatch, syscall, oldPid, inputSeqNum);
+            pret = syscallList->searchMatch(syscallMatch, syscall, oldPid,
+                    outputSeqNum, false);
             bool matchFound = (pret >= 0);
 
             if (matchFound)
             {
-                LOG("Conflict Found: %s", syscallMatch.toString().c_str());
-                inputSeqNum = pret;
-                selectSeqNum = pret;
-                LOG("inputSeqNum=%ld", inputSeqNum);
-
-                // TODO: implement more features on that.
+                LOG("Conflict Found: current: %s; record: %s",
+                        syscall.toString().c_str(),
+                        syscallMatch.toString().c_str());
+                outputSeqNum = pret;
+                LOG("outputSeqNum=%ld", outputSeqNum);
             }
-#endif
         }
         else
         {
