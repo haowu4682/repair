@@ -119,7 +119,7 @@ int main(int argc, char **argv)
         inList.push_back(new ifstream(argv[i]));
     }
     list.init(inList);
-    for (vector<istream *>::iterator it = inList.begin(), e = inList.end();
+    for (Vector<istream *>::iterator it = inList.begin(), e = inList.end();
             it != e; ++it)
     {
         delete *it;

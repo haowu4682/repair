@@ -61,6 +61,11 @@ class SystemCallList
     private:
         typedef std::map<pid_t, SystemCallListItem> SyscallMapType;
 
+        // Insert a system call into the syscall map.
+        // Automatically append it into the back of the matched list. Seq Num is
+        // not considered here.
+        void insertSyscall(SystemCall &syscall);
+
         // A map from old pid to a syscall list
         SyscallMapType syscallMap;
 

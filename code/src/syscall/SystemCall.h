@@ -139,7 +139,7 @@ class SystemCall : public Action
         // range(0...5), it in fact returns the ``return value''. This is
         // something to be aware of.
         static long getArgFromReg(const user_regs_struct &regs, int num);
-        
+
         // Set the value of certain syscall arg to a register frame. The
         // function is similar with getArgFromReg.
         // @param regs the current register frame
