@@ -542,7 +542,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     this->fdManager = fdManager;
     this->pidManager = pidManager;
     // The format is:
-    // ADDRESS NUMBER <|> PID syscallname(arg1, arg2, ..., argN) = ret
+    // ADDRESS NUMBER <|> timestamp PID syscallname(arg1, arg2, ..., argN) = ret
     istringstream is(record);
     String addr;
     // Equals '<' when it's **before** a syscall. Equals '>' when it's **after** a syscall.
@@ -568,7 +568,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     is.get();
     getline(is, auxStr);
     size_t pos = 0;
-    // `6' is not hard-coded here now. The same as the max number of args hard-coded in `SystemCall.h'.
+
     for (i = 0; i < SYSCALL_MAX_ARGS; i++)
     {
         // The record of args hasn't finished here.
@@ -586,7 +586,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
             const SyscallType *syscallType = getSyscallType(syscallName);
             if (syscallType == NULL)
             {
-                LOG("The system call dose not exist: %s", record.c_str());
+                LOG("The system call does not exist: %s", record.c_str());
                 break;
             }
             type = syscallType;

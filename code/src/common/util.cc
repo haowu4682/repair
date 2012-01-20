@@ -216,15 +216,14 @@ String bufToStr(const String &buf)
     spos = str.find('\"');
     if (spos == std::string::npos)
     {
-        LOG("str invalid as buf, return the escaped string instead: %s", str.c_str());
         return str;
     }
-    epos = str.find('\"', spos + 1);
+    epos = str.rfind('\"');
     if (epos == std::string::npos)
     {
-        LOG("str invalid as buf, return the escaped string instead: %s", str.c_str());
         return str;
     }
+    assert(spos < epos);
     return str.substr(spos + 1, epos - spos - 1);
 }
 

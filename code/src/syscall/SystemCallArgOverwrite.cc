@@ -57,8 +57,9 @@ SYSARGOVERWRITE_(buf)
 {
     long pret;
     // Modify the buf value
-    String bufStr = sysarg->getValue();
-    String str = bufToStr(bufStr);
+//    String bufStr = sysarg->getValue();
+//    String str = bufToStr(bufStr);
+    String str = sysarg->getValue();
     long argVal = SystemCall::getArgFromReg(regs, i);
     writeToProcess(str.c_str(), argVal, str.size(), pid);
     // Modify the length by modifying the return value.

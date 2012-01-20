@@ -1,5 +1,6 @@
 // Author: Hao Wu <haowu@cs.utexas.edu>
 
+#include <common/util.h>
 #include <syscall/SystemCallArg.h>
 using namespace std;
 
@@ -13,6 +14,10 @@ void SystemCallArgument::setArg(long regValue, SystemCallArgumentAuxilation *aux
 void SystemCallArgument::setArg(String record, const SyscallArgType *syscallType)
 {
     type = syscallType;
+    if (type != NULL && (type->record == buf_record || type->record == buf_det_record))
+    {
+        record = bufToStr(record);
+    }
     this->value = record;
 }
 
