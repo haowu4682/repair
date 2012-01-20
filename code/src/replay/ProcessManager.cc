@@ -199,10 +199,12 @@ int ProcessManager::traceProcess(pid_t pid)
         SystemCall syscallMatch;
         SystemCall syscall(regs, pid, SYSARG_IFENTER, fdManager);
 
+#if 0
         if (syscall.isValid())
         {
             LOG("syscall: %s", syscall.toString().c_str());
         }
+#endif
 
         // If the system call is user input or output, we need to act quite differently.
         if (syscall.isUserSelect(true))

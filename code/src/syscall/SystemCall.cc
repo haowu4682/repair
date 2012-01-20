@@ -643,8 +643,6 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
             }
         }
     }
-
-    LOG("syscall record: %s", toString().c_str());
 }
 
 bool SystemCall::equals(const SystemCall &another) const

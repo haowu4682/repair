@@ -57,7 +57,6 @@ long SystemCallList::searchMatch(SystemCall &match,
         //LOG("%ld: %s", pos, syscalls[pos].toString().c_str());
         if (source.match(syscalls[pos]))
         {
-            LOG("syscall found: %s", syscalls[pos].toString().c_str());
             if (returnExit)
             {
                 if ((++pos) < syscalls.size())
@@ -69,7 +68,6 @@ long SystemCallList::searchMatch(SystemCall &match,
                         --pos;
                         continue;
                     }
-                    LOG("syscall match: %s", match.toString().c_str());
                     return static_cast<int>(pos + 1);
                 }
                 else
@@ -162,7 +160,6 @@ void SystemCallList::init(Vector<istream *> &inList)
             stepCount = 0;
 
             getline(in, syscallString);
-            LOG1(syscallString.c_str());
             syscallFrontier[fileNum] = new SystemCall(syscallString, fdManager);
 
             if (in.eof())
