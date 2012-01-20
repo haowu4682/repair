@@ -121,7 +121,7 @@ class SystemCall : public Action
         const SystemCallArgument &getArg(int i) const { return args[i]; }
 
         // Get the sequence number
-        long getSeqNum() const { return seqNum; }
+//        long getSeqNum() const { return seqNum; }
 
         // Get the type
         const SyscallType *getType() const { return type; }
@@ -191,7 +191,7 @@ class SystemCall : public Action
         // The return value of the system call
         long ret;
         // The seq number of the system call
-        long seqNum;
+        // long seqNum;
         // The old pid which owns the syscall
         pid_t pid;
         // The fd manager

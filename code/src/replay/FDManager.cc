@@ -22,16 +22,16 @@ void FDManager::init()
     }
 }
 
-int FDManager::addOldFile(File *file, long seqNum)
+int FDManager::addOldFile(File *file, long ts)
 {
     int fd = file->getFD();
-    oldFDMap[fd].push_back(FDItem(seqNum, file));
+    oldFDMap[fd].push_back(FDItem(ts, file));
 }
 
-int FDManager::addNewFile(File *file, long seqNum)
+int FDManager::addNewFile(File *file, long ts)
 {
     int fd = file->getFD();
-    newFDMap[fd].push_back(FDItem(seqNum, file));
+    newFDMap[fd].push_back(FDItem(ts, file));
 }
 
 /*
@@ -46,7 +46,7 @@ int FDManager::removeNew(int fd)
 }
 */
 
-File *FDManager::searchOld(int fd, long seqNum) const
+File *FDManager::searchOld(int fd, long ts) const
 {
     File *str = NULL;
     mapType::const_iterator it;
@@ -55,7 +55,7 @@ File *FDManager::searchOld(int fd, long seqNum) const
     {
         for (Vector<FDItem>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
         {
-            if (jt->seqNum < seqNum)
+            if (jt->ts < ts)
             {
                 str = jt->file;
             }
@@ -80,9 +80,9 @@ File *FDManager::searchNew(int fd) const
     return str;
 }
 
-int FDManager::oldToNew(int oldFD, long seqNum) const
+int FDManager::oldToNew(int oldFD, long ts) const
 {
-    File *file = searchOld(oldFD, seqNum);
+    File *file = searchOld(oldFD, ts);
     if (file != NULL)
     {
         for (mapType::const_iterator it = newFDMap.begin(); it != newFDMap.end(); ++it)
@@ -96,7 +96,7 @@ int FDManager::oldToNew(int oldFD, long seqNum) const
     return -1;
 }
 
-int FDManager::newToOld(int newFD, long seqNum) const
+int FDManager::newToOld(int newFD, long ts) const
 {
     File *file = searchNew(newFD);
     int oldFD;
@@ -113,10 +113,10 @@ int FDManager::newToOld(int newFD, long seqNum) const
                 // 2. the sequential number is not expired
                 // 3. the record has the least sequential number among the files
                 // which satisfy the two conditions above.
-                if (jt->file == file && jt->seqNum >= seqNum
-                        && jt->seqNum < leastSeqNum)
+                if (jt->file == file && jt->ts >= ts
+                        && jt->ts < leastSeqNum)
                 {
-                    leastSeqNum = jt->seqNum;
+                    leastSeqNum = jt->ts;
                     oldFD = it->first;
                 }
             }
@@ -125,9 +125,9 @@ int FDManager::newToOld(int newFD, long seqNum) const
     return oldFD;
 }
 
-bool FDManager::equals(int oldFD, int newFD, long seqNum) const
+bool FDManager::equals(int oldFD, int newFD, long ts) const
 {
-    File *oldPath = searchOld(oldFD, seqNum);
+    File *oldPath = searchOld(oldFD, ts);
     File *newPath = searchNew(newFD);
     if (oldPath == NULL)
         return false;
@@ -146,7 +146,7 @@ String FDManager::toString() const
     {
         for (Vector<FDItem>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
         {
-            sout << it->first << "\t" << jt->seqNum << "\t" << jt->file << endl;
+            sout << it->first << "\t" << jt->ts << "\t" << jt->file << endl;
         }
     }
     sout << "New FDs" << endl;
@@ -154,7 +154,7 @@ String FDManager::toString() const
     {
         for (Vector<FDItem>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
         {
-            sout << it->first << "\t" << jt->seqNum << "\t" << jt->file << endl;
+            sout << it->first << "\t" << jt->ts << "\t" << jt->file << endl;
         }
     }
     return sout.str();

@@ -16,22 +16,22 @@ class FDManager
         FDManager() { init(); }
         // XXX: ASSUME item with lower seq number will always be inserted in the
         // first place here.
-        int addOldFile(File *file, long seqNum);
+        int addOldFile(File *file, long ts);
         //int removeOldFile(int fd);
         //int removeOldFile(File *file);
-        int addNewFile(File *file, long seqNum = -1);
+        int addNewFile(File *file, long ts = -1);
         //int removeNewFile(int fd);
         //int removeNewFile(File *file);
 
-        File *searchOld(int fd, long seqNum) const;
+        File *searchOld(int fd, long ts) const;
         // Always return the most recent one
         File *searchNew(int fd) const;
         // If we can find a fd mapping, return the mapped fd. Otherwise return the old fd.
-        int oldToNew(int oldFD, long seqNum) const;
+        int oldToNew(int oldFD, long ts) const;
         // If we can find a fd mapping, return the mapped fd. Otherwise return the new fd.
-        int newToOld(int newFD, long seqNum) const;
-        // The seqNum is used for old-fd, the new fd does not need a seqNum
-        bool equals(int oldFD, int newFD, long seqNum) const;
+        int newToOld(int newFD, long ts) const;
+        // The ts is used for old-fd, the new fd does not need a ts
+        bool equals(int oldFD, int newFD, long ts) const;
         String toString() const;
 
         // Clone the FDMap from another FDManager
@@ -49,10 +49,10 @@ class FDManager
 
         struct FDItem
         {
-            long seqNum;
+            long ts;
             File *file;
             FDItem() {}
-            FDItem(long seqNum, File *file) : seqNum(seqNum), file(file) {}
+            FDItem(long ts, File *file) : ts(ts), file(file) {}
         };
 
         typedef std::pair<int, Vector<FDItem> > valueType;

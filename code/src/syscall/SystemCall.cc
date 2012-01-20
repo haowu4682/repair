@@ -308,7 +308,7 @@ bool SystemCall::isOutput() const
             );
 }
 
-bool isFDUserInput(int fd, const FDManager *fdManager, bool isNew = true, long seqNum = 0)
+bool isFDUserInput(int fd, const FDManager *fdManager, bool isNew = true, long ts = 0)
 {
     File *file;
     if (isNew)
@@ -317,7 +317,7 @@ bool isFDUserInput(int fd, const FDManager *fdManager, bool isNew = true, long s
     }
     else
     {
-        file = fdManager->searchOld(fd, seqNum);
+        file = fdManager->searchOld(fd, ts);
     }
     if (file == NULL)
     {
@@ -358,7 +358,7 @@ bool SystemCall::isUserSelect(bool isNew) const
         {
             if (FD_ISSET(fd, &fds))
             {
-                if (isFDUserInput(fd, fdManager, isNew, seqNum))
+                if (isFDUserInput(fd, fdManager, isNew, ts))
                 {
                     return true;
                 }
@@ -428,9 +428,9 @@ int SystemCall::merge(const SystemCall &src)
         fd_set fd_set_src = fd_set_derecord(src.args[1].getValue());
         for (int oldFD = 0; oldFD < nfds_max; ++oldFD)
         {
-            if (isFDUserInput(oldFD, fdManager, false, src.seqNum))
+            if (isFDUserInput(oldFD, fdManager, false, src.ts))
             {
-                int newFD = fdManager->oldToNew(oldFD, src.seqNum);
+                int newFD = fdManager->oldToNew(oldFD, src.ts);
                 if (FD_ISSET(oldFD, &fd_set_src) && !FD_ISSET(newFD, &fd_set_dst))
                 {
                     ++ret;
@@ -553,6 +553,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
     String sysargName;
     String sysargValue;
     String retStr;
+    long seqNum;
     int i;
 
     // Read the first part of the record.
@@ -635,7 +636,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
             if (usage & SYSARG_IFEXIT)
             {
                 File *file = new File(ret, lastOpenFilePath);
-                fdManager->addOldFile(file, seqNum);
+                fdManager->addOldFile(file, ts);
             }
             else
             {
@@ -663,7 +664,7 @@ bool SystemCall::equals(const SystemCall &another) const
             {
                 int oldFD = atoi(another.args[i].getValue().c_str());
                 int newFD = atoi(args[i].getValue().c_str());
-                if (!fdManager->equals(oldFD, newFD, another.seqNum))
+                if (!fdManager->equals(oldFD, newFD, another.ts))
                 {
                     return false;
                 }
@@ -699,8 +700,7 @@ bool SystemCall::match(const SystemCall &another) const
         {
             int oldFD = atoi(another.args[0].getValue().c_str());
             int newFD = atoi(args[0].getValue().c_str());
-            LOG("oldFD=%d, newFD=%d, seqNum=%ld", oldFD, newFD, another.seqNum);
-            if (!fdManager->equals(oldFD, newFD, another.seqNum))
+            if (!fdManager->equals(oldFD, newFD, another.ts))
             {
                 return false;
             }
@@ -720,7 +720,7 @@ bool SystemCall::match(const SystemCall &another) const
         int nfds = atoi(args[0].getValue().c_str());
         for (int newFD = 0; newFD < nfds; ++newFD)
         {
-            int oldFD = fdManager->newToOld(newFD, another.seqNum);
+            int oldFD = fdManager->newToOld(newFD, another.ts);
             if (oldFD >= 0 && oldFD < nfds)
             {
                 bool fdset1 = FD_ISSET(newFD, &read_fds1);
