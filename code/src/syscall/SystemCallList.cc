@@ -51,10 +51,8 @@ long SystemCallList::searchMatch(SystemCall &match,
     SystemCallListItem &listItem = it->second;
     Vector<SystemCall> &syscalls = listItem.syscalls;
 
-    //LOG("%s", source.toString().c_str());
     for (size_t pos = seq, end = syscalls.size(); pos < end; ++pos)
     {
-        //LOG("%ld: %s", pos, syscalls[pos].toString().c_str());
         if (source.match(syscalls[pos]))
         {
             if (returnExit)

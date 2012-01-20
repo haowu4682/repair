@@ -674,12 +674,18 @@ bool SystemCall::equals(const SystemCall &another) const
             }
         }
     }
+    if (usage & SYSARG_IFEXIT)
+    {
+        if (ret != another.ret)
+        {
+            return false;
+        }
+    }
     return true;
 }
 
 bool SystemCall::match(const SystemCall &another) const
 {
-    // The method is not super fast, but it should work.
     if (!valid || !another.valid)
         return false;
     if (usage != another.usage)

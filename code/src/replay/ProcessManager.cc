@@ -219,10 +219,8 @@ int ProcessManager::traceProcess(pid_t pid)
             // syscall is executed as usual.
             if (matchFound)
             {
-                LOG("Match Found! Match is: %s", syscallMatch.toString().c_str());
+                LOG("Select Match Found! Match is: %s", syscallMatch.toString().c_str());
                 selectSeqNum = pret;
-                LOG("selectSeqNum=%ld", selectSeqNum);
-                LOG("regs=%s", regsToStr(regs).c_str());
                 // We do not skip executing the system call! We hack it to
                 // execute in no-timeout way.
 #if 0
@@ -269,9 +267,9 @@ int ProcessManager::traceProcess(pid_t pid)
                 // write back result
                 //LOG("Before match written");
                 writeMatchedSyscall(syscallMatch, pid);
-                LOG("After match written");
 
 #if 0
+                LOG("After match written");
                 ptrace(PTRACE_GETREGS, pid, 0, &regs);
                 LOG("regs=%s", regsToStr(regs).c_str());
                 long tmp = ptrace(PTRACE_PEEKDATA, pid, regs.rsi, 0);
@@ -282,7 +280,7 @@ int ProcessManager::traceProcess(pid_t pid)
             }
             else
             {
-                LOG("No Match Found!");
+                LOG("No Select Match Found!");
                 pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
                 waitpid(pid, &status, 0);
             }
@@ -300,27 +298,22 @@ int ProcessManager::traceProcess(pid_t pid)
             // syscall is executed as usual.
             if (matchFound)
             {
-                LOG("Match Found! Match is: %s", syscallMatch.toString().c_str());
+                LOG("Input Match Found! Match is: %s", syscallMatch.toString().c_str());
                 inputSeqNum = pret;
                 selectSeqNum = pret;
-                LOG("inputSeqNum=%ld", inputSeqNum);
 
                 // Skip executing the system call
-                LOG("Before skipping");
                 if (skipSyscall(pid) < 0)
                 {
                     LOG("Skip syscall failed: %s", syscall.toString().c_str());
                 }
-                LOG("After skipping");
 
                 // write back result
-                LOG("Before match written");
                 writeMatchedSyscall(syscallMatch, pid);
-                LOG("After match written");
             }
             else
             {
-                LOG("No Match Found!");
+                LOG("No Input Match Found!");
                 pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
                 waitpid(pid, &status, 0);
             }
@@ -332,14 +325,29 @@ int ProcessManager::traceProcess(pid_t pid)
                     outputSeqNum, false);
             bool matchFound = (pret >= 0);
 
-            if (matchFound)
+            if (!matchFound)
+                // No match result has been found, report TYPE#2 conflict
             {
-                LOG("Conflict Found: current: %s; record: %s",
+                LOG("Type#2 Conflict Found!");
+            }
+            else if (syscallMatch == syscall)
+                // An exact match, no conflict is found
+            {
+                LOG("Output Match Found! No Conflicts. record: %s",
+                        syscallMatch.toString().c_str());
+                outputSeqNum = pret;
+            }
+            else
+                // A Type#1 Conflict is found
+            {
+                LOG("Type#1 Conflict Found: current: %s; record: %s",
                         syscall.toString().c_str(),
                         syscallMatch.toString().c_str());
                 outputSeqNum = pret;
-                LOG("outputSeqNum=%ld", outputSeqNum);
             }
+
+            pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+            waitpid(pid, &status, 0);
         }
         else
         {
