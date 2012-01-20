@@ -52,8 +52,8 @@ class SyscallRecord(Record):
       v = self.args.get(a.name)
       if v is None:
         s = "None"
-      elif a.ty in (sysarg_buf, sysarg_buf_det) and len(v) > 10:
-        s = _q(v[0:11]) + "..."
+#      elif a.ty in (sysarg_buf, sysarg_buf_det) and len(v) > 10:
+#        s = _q(v[0:11]) + "..."
       elif a.ty == sysarg_sha1:
         s = "sha1:" + "".join("%02X" % ord(c) for c in v)[:10]
       elif a.name in ["envp"]:

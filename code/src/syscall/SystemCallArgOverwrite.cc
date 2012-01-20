@@ -57,24 +57,10 @@ SYSARGOVERWRITE_(buf)
 {
     long pret;
     // Modify the buf value
-    String escapedStr = sysarg->getValue();
-    String str = removeEscapeSequence(escapedStr);
-    LOG("escaped str is: %s, after escape: %s", escapedStr.c_str(), str.c_str());
+    String bufStr = sysarg->getValue();
+    String str = bufToStr(bufStr);
     long argVal = SystemCall::getArgFromReg(regs, i);
-    size_t spos, epos;
-    spos = str.find('\"');
-    if (spos == std::string::npos)
-    {
-        LOG("str invalid: %s", str.c_str());
-        return -1;
-    }
-    epos = str.find('\"', spos + 1);
-    if (epos == std::string::npos)
-    {
-        LOG("str invalid: %s", str.c_str());
-        return -1;
-    }
-    writeToProcess(&str.c_str()[spos+1], argVal, epos-spos-1, pid);
+    writeToProcess(str.c_str(), argVal, str.size(), pid);
     // Modify the length by modifying the return value.
     // This part should be done by SystemCall::overwrite. We do not execute it
     // here.

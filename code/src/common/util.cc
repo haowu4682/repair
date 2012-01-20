@@ -208,6 +208,26 @@ int atoiE(const char *src, int base = 10, int begin = 0, int end = INT_MAX)
     return res;
 }
 
+String bufToStr(const String &buf)
+{
+    String str = removeEscapeSequence(buf);
+    //LOG("escaped str is: %s, after escape: %s", buf.c_str(), str.c_str());
+    size_t spos, epos;
+    spos = str.find('\"');
+    if (spos == std::string::npos)
+    {
+        LOG("str invalid as buf, return the escaped string instead: %s", str.c_str());
+        return str;
+    }
+    epos = str.find('\"', spos + 1);
+    if (epos == std::string::npos)
+    {
+        LOG("str invalid as buf, return the escaped string instead: %s", str.c_str());
+        return str;
+    }
+    return str.substr(spos + 1, epos - spos - 1);
+}
+
 String removeEscapeSequence(const String &src)
 {
     int i = 0, e = src.size();
