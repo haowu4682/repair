@@ -26,8 +26,7 @@ File::File(int fd, String path)
 
 bool File::equals(const File &file) const
 {
-    return (type == file.type) &&
-           (path == file.path);
+    return path == file.path;
 }
 
 ostream &operator <<(ostream &os, File *file)

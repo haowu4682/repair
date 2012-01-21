@@ -24,6 +24,7 @@ class File
         File(int fd, FileType type, String path);
         bool equals(const File &file) const;
         bool operator == (const File &file) const { return equals(file); }
+        bool operator != (const File &file) const { return !equals(file); }
 
         int getFD() { return fd; }
         FileType getType() { return type; }

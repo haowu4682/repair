@@ -14,7 +14,9 @@ void SystemCallArgument::setArg(long regValue, SystemCallArgumentAuxilation *aux
 void SystemCallArgument::setArg(String record, const SyscallArgType *syscallType)
 {
     type = syscallType;
-    if (type != NULL && (type->record == buf_record || type->record == buf_det_record))
+    if (type != NULL && (type->record == buf_record ||
+                type->record == buf_det_record ||
+                type->record == path_record))
     {
         record = bufToStr(record);
     }
@@ -28,6 +30,8 @@ void SystemCallArgument::setArg(const SyscallArgType *syscallType)
 }
 
 // An aux function to get the path from a path record. It's not elegant.
+// OBSOLETED! DO NOT USE!
+#if 0
 String getPathString(const String &value)
 {
     size_t startPos = value.find('"');
@@ -38,20 +42,12 @@ String getPathString(const String &value)
         return "";
     return value.substr(startPos+1, endPos - startPos - 1);
 }
+#endif
 
 String SystemCallArgument::getValue() const
 {
     // TODO: no ad-hoc here.
-    //LOG("type is: %p", type->name.c_str());
-    //LOG("type name is: %s", type->name.c_str());
-    if (type->name == "path")
-    {
-        return getPathString(value);
-    }
-    else
-    {
-        return value;
-    }
+    return value;
 }
 
 bool SystemCallArgument::operator == (const SystemCallArgument &another) const

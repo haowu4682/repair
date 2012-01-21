@@ -103,12 +103,18 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, int usage, FDMana
         {
             if (usage & SYSARG_IFEXIT)
             {
-                File *file = new File(ret, lastOpenFilePath);
-                fdManager->addNewFile(file);
+                if (ret >= 0)
+                {
+                    File *file = new File(ret, lastOpenFilePath);
+                    LOG("Add File %ld:%s", ret, lastOpenFilePath.c_str());
+                    fdManager->addNewFile(file);
+                }
             }
             else
             {
                 lastOpenFilePath = args[0].getValue();
+                LOG("SYSCALL: %s", toString().c_str());
+                LOG("Record LastOpenFilePath = %s", lastOpenFilePath.c_str());
             }
         }
     }
@@ -666,6 +672,7 @@ bool SystemCall::equals(const SystemCall &another) const
                 int newFD = atoi(args[i].getValue().c_str());
                 if (!fdManager->equals(oldFD, newFD, another.ts))
                 {
+                    LOG("OLDFD=%d, NEWFD=%d, NO EQUAL", oldFD, newFD);
                     return false;
                 }
             }
@@ -702,6 +709,7 @@ bool SystemCall::match(const SystemCall &another) const
             int newFD = atoi(args[0].getValue().c_str());
             if (!fdManager->equals(oldFD, newFD, another.ts))
             {
+                LOG("OLDFD=%d, NEWFD=%d, NO EQUAL", oldFD, newFD);
                 return false;
             }
             else

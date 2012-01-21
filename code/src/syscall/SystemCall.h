@@ -55,6 +55,10 @@ class SystemCall : public Action
         {
             return equals(syscall);
         }
+        bool operator != (const SystemCall &syscall) const
+        {
+            return !equals(syscall);
+        }
         bool equals(const SystemCall &) const;
         // Whether two syscalls are equalivant as a user input or an output.
         // If the syscall is not a user input or output, it just returns to regular

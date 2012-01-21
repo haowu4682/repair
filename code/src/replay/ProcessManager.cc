@@ -330,7 +330,7 @@ int ProcessManager::traceProcess(pid_t pid)
             {
                 LOG("Type#2 Conflict Found!");
             }
-            else if (syscallMatch == syscall)
+            else if (syscall == syscallMatch)
                 // An exact match, no conflict is found
             {
                 LOG("Output Match Found! No Conflicts. record: %s",
