@@ -165,12 +165,72 @@ int ProcessManager::dealWithFork(SystemCall &syscall, pid_t oldPid)
     return 0;
 }
 
+int ProcessManager::dealWithConflict(ConflictType type, const SystemCall *current,
+        const SystemCall *match)
+{
+    char choiceChar;
+
+    switch (type)
+    {
+        case differ_record:
+            LOG("Type#1 Conflict Found: current: %s; record: %s",
+                    current->toString().c_str(),
+                    match->toString().c_str());
+            cout << "A conflict is found. The record value is different from "
+                "current value." << endl;
+            break;
+        case missing_record:
+            LOG("Type#2 Conflict Found! current: %s",
+                    current->toString().c_str());
+            cout << "A conflict is found. The record value does not exist.";
+            break;
+        default:
+            LOG("ERROR: Unidentified Conflict Found!");
+            assert(0);
+    }
+    cout << "Action Needed: [M]anually resolve the conflict; [I]gnore;"
+        " [P]rint more information:" << endl;
+
+get_choice_dealing_conflict:
+    choiceChar = retrieveChar("mMiIpP", "Unknown choice, try again. Action "
+            "Needed: [M]anually resolve the conflict; [I]gnore; [P]rint more "
+            "information:");
+
+    switch (choiceChar)
+    {
+        case 'm':
+        case 'M':
+            // TODO: suspend running
+            printMsg("System replay has currently suspended, please resolve the"
+                    " issue manually, and press enter key to continue ...");
+            retrieveChar();
+            // TODO: resume running
+            break;
+        case 'i':
+        case 'I':
+            printMsg("Conflict is Ignored. System replay continues.");
+            break;
+        case 'p':
+        case 'P':
+            // TODO: print some information for the user
+            // including: which process, what system call, which file, what
+            // content, etc.
+            printMsg("No more information available!");
+            goto get_choice_dealing_conflict;
+        default:
+            LOG("ERROR: Unidentified choice");
+            goto get_choice_dealing_conflict;
+    }
+
+    return 0;
+}
+
 int ProcessManager::traceProcess(pid_t pid)
 {
     int status;
     int ret;
     long pret;
-    //XXX: careful of sequence number logic, it might break
+    // NOTE Careful of sequence number logic, it might break
     long inputSeqNum = 0;
     long selectSeqNum = 0;
     long outputSeqNum = 0;
@@ -183,7 +243,7 @@ int ProcessManager::traceProcess(pid_t pid)
     waitpid(pid, &status, 0);
     pid_t oldPid = process.getCommand()->pid;
 
-    // XXX: generation numbers might cause problems here.
+    // NOTE generation numbers might cause problems here.
     if (pidManager != NULL && oldPid != -1)
     {
         pidManager->add(oldPid, pid);
@@ -198,13 +258,6 @@ int ProcessManager::traceProcess(pid_t pid)
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
         SystemCall syscallMatch;
         SystemCall syscall(regs, pid, SYSARG_IFENTER, fdManager);
-
-#if 0
-        if (syscall.isValid())
-        {
-            LOG("syscall: %s", syscall.toString().c_str());
-        }
-#endif
 
         // If the system call is user input or output, we need to act quite differently.
         if (syscall.isUserSelect(true))
@@ -221,8 +274,9 @@ int ProcessManager::traceProcess(pid_t pid)
             {
                 LOG("Select Match Found! Match is: %s", syscallMatch.toString().c_str());
                 selectSeqNum = pret;
-                // We do not skip executing the system call! We hack it to
-                // execute in no-timeout way.
+
+                // We do not skip executing the system call now, but these code
+                // are left here in case we change our mind later.
 #if 0
                 timeval tmpTime;
                 timeval zeroTime = {0, 0};
@@ -234,7 +288,6 @@ int ProcessManager::traceProcess(pid_t pid)
                 LOG("after time: %ld:%ld", tmpTime.tv_sec, tmpTime.tv_usec);
                 pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
                 waitpid(pid, &status, 0);
-#endif
 
                 // Achieve the result of the execution
                 //ptrace(PTRACE_GETREGS, pid, 0, &regs);
@@ -248,35 +301,16 @@ int ProcessManager::traceProcess(pid_t pid)
                 // Use ptrace to put the user input back
                 //LOG("poke system call: %s", syscallReturn.toString().c_str());
                 //writeMatchedSyscall(syscallReturn, pid);
+#endif
 
                 // Skip executing the system call
-                //LOG("Before skipping");
                 if (skipSyscall(pid) < 0)
                 {
                     LOG("Skip syscall failed: %s", syscall.toString().c_str());
                 }
-                //LOG("After skipping");
-
-#if 0
-                ptrace(PTRACE_GETREGS, pid, 0, &regs);
-                LOG("regs=%s", regsToStr(regs).c_str());
-                SystemCall syscallFake(regs, pid, SYSARG_IFEXIT, fdManager);
-                LOG("fake return syscall is: %s", syscallFake.toString().c_str());
-#endif
 
                 // write back result
-                //LOG("Before match written");
                 writeMatchedSyscall(syscallMatch, pid);
-
-#if 0
-                LOG("After match written");
-                ptrace(PTRACE_GETREGS, pid, 0, &regs);
-                LOG("regs=%s", regsToStr(regs).c_str());
-                long tmp = ptrace(PTRACE_PEEKDATA, pid, regs.rsi, 0);
-                LOG("firstbyte=%ld", tmp);
-                SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
-                LOG("return syscall is: %s", syscallReturn.toString().c_str());
-#endif
             }
             else
             {
@@ -326,24 +360,22 @@ int ProcessManager::traceProcess(pid_t pid)
             bool matchFound = (pret >= 0);
 
             if (!matchFound)
-                // No match result has been found, report TYPE#2 conflict
+                // No match result has been found, report miss_record conflict
             {
-                LOG("Type#2 Conflict Found!");
+                dealWithConflict(missing_record, &syscall, NULL);
             }
             else if (syscall == syscallMatch)
                 // An exact match, no conflict is found
             {
-                LOG("Output Match Found! No Conflicts. record: %s",
-                        syscallMatch.toString().c_str());
+//                LOG("Output Match Found! No Conflicts. record: %s",
+//                        syscallMatch.toString().c_str());
                 outputSeqNum = pret;
             }
             else
-                // A Type#1 Conflict is found
+                // A differ_record Conflict is found
             {
-                LOG("Type#1 Conflict Found: current: %s; record: %s",
-                        syscall.toString().c_str(),
-                        syscallMatch.toString().c_str());
                 outputSeqNum = pret;
+                dealWithConflict(differ_record, &syscall, &syscallMatch);
             }
 
             pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
@@ -364,8 +396,6 @@ int ProcessManager::traceProcess(pid_t pid)
             // effect for pid manager and fd manager.
             SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
 
-            //dealWithConflict();
-
             // If the system call is fork/vfork, we must create a new process manager for it.
             if (syscall.isFork())
             {
@@ -383,7 +413,7 @@ int ProcessManager::traceProcess(pid_t pid)
 int ProcessManager::skipSyscall(pid_t pid)
 {
     // HW: "PTRACE_SYSEMU" is in "linux/ptrace.h" x64, but not in "sys/ptrace.h".
-    // Thus I am not sure if it is supported fully by x64
+    // Thus we have to use an ad-hoc way here to do the same job.
     long pret;
     int status;
 
@@ -392,23 +422,19 @@ int ProcessManager::skipSyscall(pid_t pid)
     if (pret < 0)
         LOG("get regs failed!");
 
-    // XXX: ad-hoc
+    // XXX: ad-hoc, implicitly assume that getpid has a system call number 39
+    // here.
     regs.orig_rax = 39;
     pret = ptrace(PTRACE_SETREGS, pid, 0, &regs);
     if (pret < 0)
         LOG("set regs failed!");
     pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
     waitpid(pid, &status, 0);
-
-    //pret = ptrace(PTRACE_SYSEMU, pid, NULL, NULL);
     return (int) pret;
 }
 
 int ProcessManager::writeMatchedSyscall(SystemCall &syscall, pid_t pid)
 {
-
-    // TODO: Implement
-
     long pret;
     int ret;
 
@@ -428,14 +454,14 @@ int ProcessManager::writeMatchedSyscall(SystemCall &syscall, pid_t pid)
 
 String ProcessManager::toString()
 {
-    // We only output the command line currently.
+    // Currently we do not output anything.
     stringstream ss;
-    // TODO: implement
     return ss.str();
 }
 
 // The main function is used for development and debugging only.
-// It will be removed in the released version
+// It has obsoleted, and is only reserved here in case we want to use it to
+// debug or adds a mode for replaying single process
 // @author haowu
 #if 0
 int old_main(int argc, char **argv)

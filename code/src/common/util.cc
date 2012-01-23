@@ -1,6 +1,7 @@
 // Author: Hao Wu <haowu@cs.utexas.edu.cn>
 
 #include <climits>
+#include <cstring>
 #include <sstream>
 #include <sys/ptrace.h>
 
@@ -344,5 +345,40 @@ String removeEscapeSequence(const String &src)
         }
     }
     return ss.str();
+}
+
+void printMsg(const String &msg, std::ostream &os /* = std::cout */)
+{
+    os << msg << std::endl;
+}
+
+void printMsg(const char *msg, std::ostream &os /* = std::cout */)
+{
+    os << msg << std::endl;
+}
+
+char retrieveChar(const char *alphabet /* = NULL */, const char *noticeMsg
+        /* = NULL */, std::istream &is /* = std::cin */, std::ostream &os
+        /* = std::cout */)
+{
+    char c;
+    String str;
+//    getline(is, str);
+//    c = str[0];
+    is.get(c);
+    if (alphabet != NULL)
+    {
+        while (strchr(alphabet, c) == NULL)
+        {
+            if (noticeMsg != NULL)
+            {
+                printMsg(noticeMsg, os);
+            }
+            is.get(c);
+//            getline(is, str);
+//            c = str[0];
+        }
+    }
+    return c;
 }
 

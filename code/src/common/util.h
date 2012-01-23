@@ -47,5 +47,19 @@ String addEscapeSequence(const String &src);
 /// Convert buffer sequence into str sequence
 String bufToStr(const String &buf);
 
+/// Print a message to the output stream
+void printMsg(const String &msg, std::ostream &os = std::cout);
+void printMsg(const char *msg, std::ostream &os = std::cout);
+
+/// Retrive a single letter answer from the input stream.
+/// If the input stream does not return a character that makes sense, the
+/// function just try to read from it again.
+/// The function is a BLOCKING function.
+/// @param alphabet the available alphabet, NULL means anything is OK.
+/// @param noticeMsg the noticeMsg when the input character is not in the
+/// alphabet
+char retrieveChar(const char *alphabet = NULL, const char *noticeMsg = NULL,
+        std::istream &is = std::cin, std::ostream &os = std::cout);
+
 #endif //__COMMON_UTIL_H__
 

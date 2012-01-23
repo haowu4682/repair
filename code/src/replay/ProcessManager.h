@@ -11,6 +11,12 @@
 #include <replay/Process.h>
 #include <syscall/SystemCall.h>
 
+enum ConflictType
+{
+    missing_record,
+    differ_record
+};
+
 // This class is used to manager the running or a process of class Process
 // @author haowu
 class ProcessManager
@@ -50,8 +56,14 @@ class ProcessManager
         // Skip executing a syscall
         // @param pid
         static int skipSyscall(pid_t pid);
+
+        // Deal with conflict
+        int dealWithConflict(ConflictType type, const SystemCall *current,
+                const SystemCall *record);
+
         // Deal with fork (manage pid, add a new proc manager for it.
         int dealWithFork(SystemCall &syscall, pid_t oldPid);
+
         // The process to be replayed
         Process process;
 };
