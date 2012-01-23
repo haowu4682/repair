@@ -106,15 +106,15 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, int usage, FDMana
                 if (ret >= 0)
                 {
                     File *file = new File(ret, lastOpenFilePath);
-                    LOG("Add File %ld:%s", ret, lastOpenFilePath.c_str());
+//                    LOG("Add File %ld:%s", ret, lastOpenFilePath.c_str());
                     fdManager->addNewFile(file);
                 }
             }
             else
             {
                 lastOpenFilePath = args[0].getValue();
-                LOG("SYSCALL: %s", toString().c_str());
-                LOG("Record LastOpenFilePath = %s", lastOpenFilePath.c_str());
+//                LOG("SYSCALL: %s", toString().c_str());
+//                LOG("Record LastOpenFilePath = %s", lastOpenFilePath.c_str());
             }
         }
     }

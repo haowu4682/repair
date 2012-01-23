@@ -41,6 +41,9 @@ String regsToStr(user_regs_struct &regs);
 /// Convert out escape sequences
 String removeEscapeSequence(const String &src);
 
+/// Convert in escape sequences
+String addEscapeSequence(const String &src);
+
 /// Convert buffer sequence into str sequence
 String bufToStr(const String &buf);
 

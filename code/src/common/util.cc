@@ -227,6 +227,24 @@ String bufToStr(const String &buf)
     return str.substr(spos + 1, epos - spos - 1);
 }
 
+String addEscapeSequence(const String &src)
+{
+    std::stringstream ss;
+    for (int i = 0; i < src.size(); ++i)
+    {
+        char c = src[i];
+        if (c == '\\' || c < 0x20)
+        {
+            ss << "\\x" << std::hex << int(c) << std::dec;
+        }
+        else
+        {
+            ss << c;
+        }
+    }
+    return ss.str();
+}
+
 String removeEscapeSequence(const String &src)
 {
     int i = 0, e = src.size();

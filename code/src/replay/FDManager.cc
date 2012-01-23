@@ -129,12 +129,12 @@ bool FDManager::equals(int oldFD, int newFD, long ts) const
 {
     File *oldPath = searchOld(oldFD, ts);
     File *newPath = searchNew(newFD);
-    LOG("oldFile: %p, newFile: %p", oldPath, newPath);
+//    LOG("oldFile: %p, newFile: %p", oldPath, newPath);
     if (oldPath == NULL)
         return false;
     if (newPath == NULL)
         return false;
-    LOG("oldPath: %s, newPath: %s", oldPath->getPath().c_str(), newPath->getPath().c_str());
+//    LOG("oldPath: %s, newPath: %s", oldPath->getPath().c_str(), newPath->getPath().c_str());
     if (*oldPath != *newPath)
         return false;
     return true;
