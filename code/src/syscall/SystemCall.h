@@ -94,6 +94,9 @@ class SystemCall : public Action
         // Tell whether the system call is a output
         bool isOutput() const;
 
+        // Tell whether the system call is a network output
+        bool isNetworkOutput() const;
+
         // Tell whether the system call is a ``select''
         bool isSelect() const;
 

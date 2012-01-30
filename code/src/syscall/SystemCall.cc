@@ -306,11 +306,20 @@ bool SystemCall::isInput() const
 
 bool SystemCall::isOutput() const
 {
-    //TODO: More
     return valid && (
             type->nr == 1 ||        // write
             type->nr == 18 ||       // pwrite
-            type->nr == 20          // writev
+            type->nr == 20 ||       // writev
+            isNetworkOutput()
+            );
+}
+
+bool SystemCall::isNetworkOutput() const
+{
+    return valid && (
+            type->nr == 40 ||       // sendfile
+            type->nr == 44 ||       // sendto
+            type->nr == 46          // sendmsg
             );
 }
 

@@ -378,8 +378,23 @@ int ProcessManager::traceProcess(pid_t pid)
                 dealWithConflict(differ_record, &syscall, &syscallMatch);
             }
 
-            pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
-            waitpid(pid, &status, 0);
+            // If network output, we will skip the system call
+            if (syscall.isNetworkOutput())
+            {
+                // Skip executing the system call
+                if (skipSyscall(pid) < 0)
+                {
+                    LOG("Skip syscall failed: %s", syscall.toString().c_str());
+                }
+                // TODO: Fix this sentense with the actual value to be written
+                // into the traced process here.
+                writeMatchedSyscall(syscallMatch, pid);
+            }
+            else
+            {
+                pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+                waitpid(pid, &status, 0);
+            }
         }
         else
         {
