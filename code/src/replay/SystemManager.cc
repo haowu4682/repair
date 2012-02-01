@@ -19,28 +19,6 @@ int SystemManager::execAll()
     return 0;
 }
 
-int SystemManager::addCommand(const SystemCall &syscall)
-{
-    // In x86_64, only `execve' can execute a actor. So the code is harded-coded for this
-    // actor. It does not support other `exec' actors.
-    // XXX Caution: Memory leak!
-    Command *command = new Command();
-    parseArgv(command->argv, syscall.getArg(1).getValue());
-    command->pid = syscall.getPid();
-    return addCommand(*command);
-}
-
-int SystemManager::addCommand(Command &command)
-{
-    // XXX Caution: Memory Leak! Must be optimized when the system grows.
-    Process *process = new Process(&command);
-    process->setFDManager(fdManager);
-    process->setPidManager(pidManager);
-    process->setSyscallList(syscallList);
-    process->setPreActions(&preActionsMap[command.pid]);
-    return addActor(process);
-}
-
 int SystemManager::addActor(Actor *actor)
 {
     actors.push_back(actor);
@@ -104,8 +82,8 @@ int main(int argc, char **argv)
     PidManager pidManager;
     SystemManager sysManager;
     FDManager fdManager;
-    Process rootProcess(true, NULL);
-    rootProcess.setPreActions(new Vector<Action *>());
+    // root process has pid ROOT_PID
+    Process rootProcess(ROOT_PID);
     SystemCallList list(&pidManager, &sysManager, &fdManager);
 
     sysManager.setSyscallList(&list);

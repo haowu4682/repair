@@ -20,7 +20,6 @@ SystemCall SystemCallList::search(SystemCall &syscall)
         if (it != syscallMap.end())
         {
             SystemCallListItem *list = &it->second;
-            // TODO: use a more heuristic way to find a matched syscall
             size_t pos;
             for (pos = list->currentPos; pos < list->syscalls.size(); ++pos)
             {
@@ -118,6 +117,7 @@ void SystemCallList::init(Vector<istream *> &inList)
     Vector<bool> aliveFileList(inList.size(), true);
     String syscallString;
 
+    // Begin searching files for system call records
     int fileNum = 0;
     int stepCount = 0;
 
@@ -180,10 +180,6 @@ void SystemCallList::insertSyscall(SystemCall &syscall)
     string syscallString;
     SystemCall lastExecSyscall;
     Process *root = systemManager->getRoot();
-    Map<pid_t, Process *> processMap;
-    Map<pid_t, bool> preActionRecordEnabled;
-    root->getCommand()->pid = ROOT_PID;
-    processMap[ROOT_PID] = root;
 
     pid_t oldPid = syscall.getPid();
     Vector<SystemCall> &syscalls = syscallMap[oldPid].syscalls;
@@ -193,30 +189,12 @@ void SystemCallList::insertSyscall(SystemCall &syscall)
     }
     else
     {
-        LOG("TIMESTAMP ERROR!");
+        LOG("TIMESTAMP ERROR. Last Timestamp is %ld, new timestamp is %ld",
+                syscalls.back().getTimestamp(), syscall.getTimestamp());
+        assert(0);
     }
 
-    if (syscall.isExec())
-    {
-        // This is the updated version
-        // XXX: If the exec is executed by a `exec'-ed process, we shall not add it to the list here
-        if (syscall.getUsage() & SYSARG_IFENTER) // && !pidManager->isForked(syscall.getPid()))
-        {
-            Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
-            if (it == processMap.end())
-            {
-                Process *proc = root->addSubProcess(oldPid);
-                processMap[oldPid] = proc;
-                proc->setCommand(&syscall);
-            }
-            else
-            {
-                it->second->setCommand(&syscall);
-            }
-            preActionRecordEnabled[oldPid] = false;
-        }
-    }
-    else if (syscall.isFork())
+    if (syscall.isFork())
     {
         if (syscall.getUsage() & SYSARG_IFEXIT)
         {
@@ -239,13 +217,32 @@ void SystemCallList::insertSyscall(SystemCall &syscall)
                 oldParent->removeProcess(oldChild);
             }
             Process *child = parent->addSubProcess(newPid);
-            processMap[newPid] = child;
 
             if (newPid != 0)
             {
                 pidManager->addForked(newPid);
             }
-            preActionRecordEnabled[newPid] = true;
+        }
+    }
+#if 0
+    else if (syscall.isExec())
+    {
+        // This is the updated version
+        // XXX: If the exec is executed by a `exec'-ed process, we shall not add it to the list here
+        if (syscall.getUsage() & SYSARG_IFENTER) // && !pidManager->isForked(syscall.getPid()))
+        {
+            Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
+            if (it == processMap.end())
+            {
+                Process *proc = root->addSubProcess(oldPid);
+                processMap[oldPid] = proc;
+                proc->setCommand(&syscall);
+            }
+            else
+            {
+                it->second->setCommand(&syscall);
+            }
+            preActionRecordEnabled[oldPid] = false;
         }
     }
     else if (syscall.isPipe())
@@ -265,23 +262,20 @@ void SystemCallList::insertSyscall(SystemCall &syscall)
     }
     else
     {
-        Map<pid_t, bool>::iterator jt = preActionRecordEnabled.find(oldPid);
-        if (jt != preActionRecordEnabled.end() && jt->second)
+        SystemCall *newSyscall = new SystemCall(syscall);
+        Process *proc;
+        Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
+        if (it == processMap.end())
         {
-            SystemCall *newSyscall = new SystemCall(syscall);
-            Process *proc;
-            Map<pid_t, Process *>::iterator it = processMap.find(oldPid);
-            if (it == processMap.end())
-            {
-                proc = root;
-            }
-            else
-            {
-                proc = it->second;
-            }
-            proc->addPreAction(newSyscall);
+            proc = root;
         }
+        else
+        {
+            proc = it->second;
+        }
+        proc->addPreAction(newSyscall);
     }
+#endif
 
 out:
     ;

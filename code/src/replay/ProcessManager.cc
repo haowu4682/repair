@@ -53,18 +53,12 @@ int ProcessManager::trace(pid_t pid)
 
 int ProcessManager::startProcess()
 {
-    // If the command line is empty, we cannot do anything
-    if (process.getCommand()->argv.empty())
-    {
-        LOG1("Command is empty, refrain from executing nothing.");
-        return -1;
-    }
     pid_t pid = fork();
 
     // If the fork fails
     if (pid == -1)
     {
-        LOG("fork fails when trying to run %s", toString().c_str());
+        LOG("fork fails when trying to run %d", process.getPid());
         return -1;
     }
 
@@ -82,37 +76,9 @@ int ProcessManager::startProcess()
 
 int ProcessManager::executeProcess()
 {
-    Vector<String> *commandList = &process.getCommand()->argv;
-    // Assert the command is not empty here.
-    ASSERT(commandList->size() != 0);
+    int ret = 0;
 
-    // Arrange the arguments
-    char **args = new char *[commandList->size()+1];
-    for (int i = 0; i < commandList->size(); i++)
-    {
-        // XXX: This is not very clean. But we have to copy `argv' into a new char array since
-        // `char *' is required in execvp, but the type of `argv' is `const char *'.
-        const char *argv = (*commandList)[i].c_str();
-        args[i] = new char[strlen(argv)];
-        strcpy(args[i], argv);
-    }
-    args[commandList->size()] = NULL;
-
-#if 0
-    // Execute pre-actions
-    // XXX: Temporarily canceled for debugging, if bash command could be
-    // implemented as user input, we finally do not need to deal with
-    // pre-actions.
-    LOG("Before executing pre-actions %s", process.getCommand()->toString().c_str());
-    Vector<Action *> *preActions = process.getPreActions();
-    for (Vector<Action *>::iterator it = preActions->begin(); it != preActions->end(); ++it)
-    {
-        (*it)->exec();
-    }
-    LOG("After executing pre-actions %s %ld", process.getCommand()->toString().c_str(), preActions->size());
-#endif
-
-    // Let the process to be traced
+    // Let the process to be traced by parent
     long pret = ptrace(PTRACE_TRACEME, 0, NULL, NULL);
     if (pret < 0)
     {
@@ -120,17 +86,18 @@ int ProcessManager::executeProcess()
         return pret;
     }
 
-    // Execute the command
-    int ret;
-    LOG("Before executing %s", process.getCommand()->toString().c_str());
-    ret = execvp((*commandList)[0].c_str(), args);
-
-    // Clean up
-    for (int i = 0; i < commandList->size(); i++)
+    // Execute actions
+    pid_t oldPid = process.getPid();
+    SystemCallList *syscallList = process.getSyscallList();
+    assert(syscallList != NULL);
+    Vector<SystemCall> &actions = syscallList->getSystemCallListItem(oldPid).syscalls;
+    LOG("Before executing actions %d", oldPid);
+    for (Vector<SystemCall>::iterator it = actions.begin(); it != actions.end(); ++it)
     {
-        delete args[i];
+        it->exec();
     }
-    LOG("Finished executing %s", process.getCommand()->toString().c_str());
+    LOG("After executing actions %d", oldPid);
+
     return ret;
 }
 
@@ -241,7 +208,7 @@ int ProcessManager::traceProcess(pid_t pid)
     FDManager *fdManager = process.getFDManager();
 
     waitpid(pid, &status, 0);
-    pid_t oldPid = process.getCommand()->pid;
+    pid_t oldPid = process.getPid();
 
     // NOTE generation numbers might cause problems here.
     if (pidManager != NULL && oldPid != -1)

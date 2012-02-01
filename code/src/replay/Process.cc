@@ -9,39 +9,27 @@
 #include <replay/ProcessManager.h>
 using namespace std;
 
-int Process::exec()
-{
-    LOG("Executing process pid=%d, subprocnum=%ld", command->pid, subProcessList.size());
-    if (isVirtual)
-    {
-        execVirtual();
-    }
-    else
-    {
-        execReal();
-    }
-}
-
-int Process::execVirtual()
+int Process::execRoot()
 {
     int ret;
-    for (Vector<Action *>::iterator it = preActions->begin(); it != preActions->end(); ++it)
-    {
-        (*it)->exec();
-    }
     for (Vector<Process *>::iterator it = subProcessList.begin(); it != subProcessList.end(); ++it)
     {
         ret = (*it)->exec();
         if (ret < 0)
             return ret;
     }
-    return 0;
 }
 
-int Process::execReal()
+int Process::exec()
 {
     pthread_t thread;
     int ret;
+
+    // If it is root, use execRoot instead.
+    if (pid == ROOT_PID)
+    {
+        return execRoot();
+    }
 
     ProcessManager manager(*this);
     ret = pthread_create(&thread, NULL, replayProcess, &manager);
@@ -49,20 +37,12 @@ int Process::execReal()
     // If pthread creation fails
     if (ret != 0)
     {
-        LOG("pthread_create fails when trying to replay %s, errno=%d", command->toString().c_str(), ret);
+        LOG("pthread_create fails when trying to replay %d, errno=%d", pid, ret);
         return -1;
     }
-    LOG("Executing %s", command->toString().c_str());
-    // XXX: The join command must be moved to another place in the future.
+    // TODO: Move the join function elsewhere to create parallelism
     pthread_join(thread, NULL);
     return 0;
-}
-
-void Process::setCommand(SystemCall *syscall)
-{
-    command->pid = syscall->getPid();
-    parseArgv(command->argv, syscall->getArg(1).getValue());
-    setVirtual(false);
 }
 
 bool Process::isParent(Process *process)
@@ -127,7 +107,8 @@ bool Process::isOffSpring(Process *process)
 Process *Process::searchProcess(pid_t pid)
 {
     Process *result = NULL;
-    if (command->pid == pid)
+
+    if (this->pid == pid)
     {
         result = this;
     }
@@ -147,48 +128,31 @@ Process *Process::searchProcess(pid_t pid)
 
 Process *Process::addSubProcess(pid_t pid)
 {
-    Command *comm = new Command;
-    comm->pid = pid;
-    Vector<Action *> *preActions = new Vector<Action *>();
-    Process *proc = new Process(comm, true, this);
+    Process *proc = new Process(pid, this);
     proc->setSyscallList(syscallList);
     proc->setPidManager(pidManager);
     proc->setFDManager(fdManager);
-    proc->preActions = preActions;
     subProcessList.push_back(proc);
     return proc;
 }
 
 bool Process::operator ==(pid_t pid) const
 {
-    return command->pid == pid;
+    return this->pid == pid;
 }
 
 bool Process::operator ==(const Process &process) const
 {
-    return command->pid == process.command->pid;
+    return this->pid == process.pid;
 }
 
 void Process::removeProcess(Process *proc)
 {
-    //TODO: implement
     Vector<Process *>::iterator toDeleteIt = find(subProcessList.begin(),
             subProcessList.end(), proc);
     if (toDeleteIt != subProcessList.end())
     {
         subProcessList.erase(toDeleteIt);
     }
-}
-
-Process::~Process()
-{
-    /*
-    delete command;
-    delete preActions;
-    for (Vector<Process *>::iterator it = subProcessList.begin(); it != subProcessList.end(); ++it)
-    {
-        delete *it;
-    }
-    */
 }
 

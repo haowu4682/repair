@@ -7,7 +7,6 @@
 
 #include <common/common.h>
 #include <replay/Actor.h>
-#include <replay/Command.h>
 #include <replay/FDManager.h>
 #include <replay/ProcessManager.h>
 #include <syscall/SystemCall.h>
@@ -25,10 +24,6 @@ class SystemManager
         int execAll();
         // Set syscall list
         void setSyscallList(SystemCallList *syscallList) { this->syscallList = syscallList; }
-        // add a command using command string
-        int addCommand(Command &command);
-        // add a command using values from a syscall
-        int addCommand(const SystemCall &syscall);
         // add an actor
         int addActor(Actor *actor);
         // to string

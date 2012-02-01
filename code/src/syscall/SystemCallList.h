@@ -29,6 +29,12 @@ class SystemCallList
                                         systemManager(systemManager),
                                         fdManager(fdManager) {}
 
+        // Get the SystemCallListItem for a certain process
+        SystemCallListItem &getSystemCallListItem(pid_t pid)
+        {
+            return syscallMap[pid];
+        }
+
         // Search for a system call **same** or **similar** with the given system call.
         // @param syscall the given system call
         // @ret the same or similar system call. If no such a system call is found, an **invalid**

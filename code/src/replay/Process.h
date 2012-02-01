@@ -4,7 +4,6 @@
 #define __REPLAY_PROCESS_H__
 
 #include <replay/Actor.h>
-#include <replay/Command.h>
 #include <replay/FDManager.h>
 #include <replay/PidManager.h>
 #include <syscall/SystemCallList.h>
@@ -12,28 +11,17 @@
 class Process : public Actor
 {
     public:
-        Process(bool virt = false, Process *parent = NULL) : isVirtual(virt),
-            parentProcess(parent), command(new Command()) {}
-        Process(Command *comm, bool virt = false, Process *parent = NULL) : isVirtual(virt),
-            parentProcess(parent) { setCommand(comm); }
-        ~Process();
+        Process(pid_t pid, Process *parent = NULL) : pid(pid), parentProcess(parent) {}
         virtual int exec();
-        void setCommand(SystemCall *syscall);
-        void setCommand(Command *command) { this->command = command; }
-        Command *getCommand() { return command;}
+        pid_t getPid() { return pid; }
+        void setPid(pid_t pid) { this->pid = pid; }
         void setFDManager(FDManager *fdManager) { this->fdManager = fdManager; }
         FDManager *getFDManager() { return fdManager; }
         void setPidManager(PidManager *pidManager) { this->pidManager = pidManager; }
         PidManager *getPidManager() { return pidManager; }
         void setSyscallList(SystemCallList *syscallList) { this->syscallList = syscallList; }
         SystemCallList *getSyscallList() { return syscallList; }
-        void setPreActions(Vector<Action *> *preActions) { this->preActions = preActions; }
-        void addPreAction(Action *action) { preActions->push_back(action); }
-        Vector<Action *> *getPreActions() { return preActions; }
-        void setVirtual(bool virt) { isVirtual = virt; }
-        bool getVirtual() { return isVirtual; }
 
-        //void addSubProcess(Process *process) { subProcessList.push_back(process); }
         Process *addSubProcess(pid_t pid);
         bool isChild(Process *process);
         bool isOffSpring(Process *process);
@@ -47,17 +35,15 @@ class Process : public Actor
         bool operator == (pid_t pid) const;
 
     private:
-        Command *command;
+        pid_t pid;
         FDManager *fdManager;
         PidManager *pidManager;
         SystemCallList *syscallList;
-        Vector<Action *> *preActions;
 
         Process *parentProcess;
         Vector<Process *> subProcessList;
-        bool isVirtual;
-        int execReal();
-        int execVirtual();
+
+        int execRoot();
 };
 
 #endif //__REPLAY_PROCESS_H__

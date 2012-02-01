@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <common/common.h>
+#include <common/util.h>
 #include <syscall/SystemCall.h>
 #include <syscall/SystemCallArg.h>
 using namespace std;
@@ -212,16 +212,41 @@ SYSCALL_(clone)
 
 SYSCALL_(fork)
 {
+    fork();
     return 0;
 }
 
 SYSCALL_(vfork)
 {
+    vfork();
     return 0;
 }
 
 SYSCALL_(execve)
 {
+    String path = syscall->getArg(0).getValue();
+    Vector<String> argv;
+    // TODO: envp
+    int ret = parseArgv(argv, syscall->getArg(1).getValue());
+    if (ret < 0)
+    {
+        LOG("system call information corrupted, execution aborted: %s.",
+                syscall->toString().c_str());
+        return ret;
+    }
+
+    char **args = new char *[argv.size()+1];
+    for (int i = 0; i < argv.size(); i++)
+    {
+        // XXX: This is not very clean. But we have to copy `argv' into a new char array since
+        // `char *' is required in execvp, but the type of `argv' is `const char *'.
+        const char *arg = argv[i].c_str();
+        args[i] = new char[strlen(arg)];
+        strcpy(args[i], arg);
+    }
+    args[argv.size()] = NULL;
+
+    execv(path.c_str(), args);
     return 0;
 }
 
