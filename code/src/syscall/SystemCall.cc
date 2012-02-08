@@ -77,7 +77,7 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, int usage, FDMana
     getRegsList(regs, argsList);
     int numArgs = type->numArgs;
     ret = getArgFromReg(regs, SYSCALL_MAX_ARGS);
-    //LOG("name=%s", type->name.c_str());
+    LOG("name=%s", type->name.c_str());
     for (int i = 0; i < numArgs; i++)
     {
         const SyscallArgType *argType = &type->args[i];
@@ -92,7 +92,7 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, int usage, FDMana
             SystemCallArgumentAuxilation aux = getAux(argsList, *type, i, ret, numArgs, pid, usage);
             args[i].setArg(argsList[i], &aux, argType);
         }
-        //LOG("arg type pointer: %d %p", i, getArg(i).getType());
+        LOG("arg type pointer: %d %p", i, getArg(i).getType());
     }
 
     // Manager fd's
@@ -274,7 +274,7 @@ bool SystemCall::isFork() const
 
 bool SystemCall::isExec() const
 {
-    return valid && (type->nr == 59);
+    return valid && (type->nr == 59); // execve
 }
 
 bool SystemCall::isPipe() const

@@ -210,7 +210,6 @@ String strings_record(long argValue, SystemCallArgumentAuxilation *argAux)
         os << rec;
     }
     os << "]";
-    LOG1(os.str().c_str());
 
     return os.str();
 }

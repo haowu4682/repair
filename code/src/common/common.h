@@ -36,6 +36,10 @@
 #define PTRACE_SYSEMU_SINGLESTEP ((enum __ptrace_request)32)
 #endif
 
+// Parameter Definition
+#define COUT std::cout
+#define CERR std::cerr
+#define PROMPT CERR
 #define WORD_SIZE __WORDSIZE
 #define BYTE_SIZE 8
 #define WORD_BYTES (WORD_SIZE / BYTE_SIZE)

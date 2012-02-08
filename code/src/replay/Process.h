@@ -11,7 +11,8 @@
 class Process : public Actor
 {
     public:
-        Process(pid_t pid, Process *parent = NULL) : pid(pid), parentProcess(parent) {}
+        Process(pid_t pid, Process *parent = NULL) : pid(pid),
+            parentProcess(parent), childCount(0) {}
         virtual int exec();
         pid_t getPid() { return pid; }
         void setPid(pid_t pid) { this->pid = pid; }
@@ -31,6 +32,9 @@ class Process : public Actor
         void removeProcess(Process *);
         Process *getParent() { return parentProcess; }
 
+        void initChildCount() { childCount = 0; }
+        Process *getNextChild();
+
         bool operator == (const Process &process) const;
         bool operator == (pid_t pid) const;
 
@@ -42,6 +46,7 @@ class Process : public Actor
 
         Process *parentProcess;
         Vector<Process *> subProcessList;
+        int childCount;
 
         int execRoot();
 };

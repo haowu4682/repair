@@ -62,7 +62,7 @@ class ProcessManager
                 const SystemCall *record);
 
         // Deal with fork (manage pid, add a new proc manager for it.
-        int dealWithFork(SystemCall &syscall, pid_t oldPid);
+        int dealWithFork(SystemCall &syscall);
 
         // The process to be replayed
         Process process;
@@ -76,11 +76,12 @@ struct ManagedProcess
 {
     ProcessManager *manager;
     pid_t pid;
+    ManagedProcess(ProcessManager *manager, pid_t pid) : manager(manager), pid(pid) {}
 };
 
 // Trace a process. The function is used as an API for pthread.
 // @param process the process to be traced.
-void *traceProcess(void *process);
+void *traceManagedProcess(void *process);
 
 #endif //__REPLAY_PROCESSMANAGER_H__
 

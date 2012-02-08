@@ -31,8 +31,9 @@ int Process::exec()
         return execRoot();
     }
 
-    ProcessManager manager(*this);
-    ret = pthread_create(&thread, NULL, replayProcess, &manager);
+    // XXX: LEAK
+    ProcessManager *manager = new ProcessManager(*this);
+    ret = pthread_create(&thread, NULL, replayProcess, manager);
 
     // If pthread creation fails
     if (ret != 0)
@@ -102,6 +103,13 @@ bool Process::isOffSpring(Process *process)
         }
     }
     return false;
+}
+
+Process *Process::getNextChild()
+{
+    if (childCount >= subProcessList.size())
+        return NULL;
+    return subProcessList[childCount++];
 }
 
 Process *Process::searchProcess(pid_t pid)

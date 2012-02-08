@@ -31,9 +31,9 @@ int ProcessManager::replay()
 }
 
 // Function for pthread
-void *traceProcess(void *process)
+void *traceManagedProcess(void *managedProcess)
 {
-    ManagedProcess *proc = (ManagedProcess *)process;
+    ManagedProcess *proc = (ManagedProcess *)managedProcess;
     proc->manager->trace(proc->pid);
 }
 
@@ -105,29 +105,44 @@ int ProcessManager::executeProcess()
 // @ret 0 when it's the manager of the original process.
 //      1 when it's the manager of the new process.
 //      <0 when there is an error.
-int ProcessManager::dealWithFork(SystemCall &syscall, pid_t oldPid)
+int ProcessManager::dealWithFork(SystemCall &syscall)
 {
-    // XXX: Hard code features for x86_64 here.
+    pthread_t thread;
+    int ret;
+    Process *childProc = process.getNextChild();
+    if (childProc == NULL)
+    {
+        LOG("No matching child process found!");
+        // TODO: report conflict
+        return 0;
+    }
+
     // update pid manager
+    pid_t oldPid = childProc->getPid();
+    // XXX: Hard code features for x86_64 here.
     pid_t newPid = (pid_t) syscall.getReturn();
     PidManager *pidManager = process.getPidManager();
-    SystemCallList *syscallList = process.getSyscallList();
     if (pidManager != NULL)
     {
         pidManager->add(oldPid, newPid);
     }
-    // fork a new manager
-    pid_t newManagerPid = fork();
-    if (newManagerPid == 0)
+
+    ProcessManager *manager = new ProcessManager(childProc);
+    ManagedProcess *managedProcess = new ManagedProcess(manager, newPid);
+
+    // Create a pthread for a new manager
+    LOG("old pid = %d, new pid = %d", oldPid, newPid);
+    LOG("Before pthread create for %d in dealWithFork", oldPid);
+    ret = pthread_create(&thread, NULL, traceManagedProcess, managedProcess);
+    LOG("After pthread create for %d in dealWithFork", oldPid);
+
+    // If pthread creation fails
+    if (ret != 0)
     {
-        // Child process, manage the new process;
-        // TODO: trace the process
-        /*
-        ProcessManager manager(syscallList, pidManager);
-        manager.trace(newPid);
-        */
-        return 1;
+        LOG("pthread_create fails when trying to replay %d, errno=%d", oldPid, ret);
+        return -1;
     }
+
     // We don't need to memorize the pid of the new manager here.
     return 0;
 }
@@ -201,6 +216,10 @@ int ProcessManager::traceProcess(pid_t pid)
     long inputSeqNum = 0;
     long selectSeqNum = 0;
     long outputSeqNum = 0;
+    // Skip continueing a program at the beginning of a system call. It is used
+    // if the last syscall is an execve, in which case the last system call
+    // never returns.
+    bool skipPtraceSyscall = false;
 
     struct user_regs_struct regs;
     PidManager *pidManager = process.getPidManager();
@@ -218,13 +237,24 @@ int ProcessManager::traceProcess(pid_t pid)
     // Current the termination condition is: the child has exited from executing
     while (!WIFEXITED(status))
     {
+        if (skipPtraceSyscall)
+        {
+            LOG("SKIPPING SYSCALL");
+            skipPtraceSyscall = false;
+            pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+            waitpid(pid, &status, 0);
+        }
         pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
         waitpid(pid, &status, 0);
 
         // The child process is at the point **before** a syscall.
+        LOG("before get regs");
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
+        LOG("after get regs");
         SystemCall syscallMatch;
         SystemCall syscall(regs, pid, SYSARG_IFENTER, fdManager);
+        LOG("after create syscall");
+        LOG("syscall found: %s", syscall.toString().c_str());
 
         // If the system call is user input or output, we need to act quite differently.
         if (syscall.isUserSelect(true))
@@ -288,7 +318,6 @@ int ProcessManager::traceProcess(pid_t pid)
         }
         else if (syscall.isRegularUserInput())
         {
-            //LOG("User input found: %s", syscall.toString().c_str());
             LOG("User input found: %s", syscall.toString().c_str());
             pret = syscallList->searchMatch(syscallMatch, syscall, oldPid,
                     inputSeqNum, true);
@@ -365,28 +394,39 @@ int ProcessManager::traceProcess(pid_t pid)
         }
         else
         {
+            LOG("Before wait");
             pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
             waitpid(pid, &status, 0);
 
             // The child process is at the point **after** a syscall.
-            // Deal with the syscall here. If the match has been found previously, we shall
-            // replace the return value with the recorded value in the systemcall list.
             // Most syscall will have its return value in the register %rax, But there are some
-            // which does not follow the rule and we will need to deal with them seperately.
+            // which does not follow the rule. However, they shall be handled in
+            // SystemCall::init. We do not bother handling it here.
             ptrace(PTRACE_GETREGS, pid, 0, &regs);
             // We might not need the return value, but we need the side
             // effect for pid manager and fd manager.
             SystemCall syscallReturn(regs, pid, SYSARG_IFEXIT, fdManager);
+            LOG("syscall return: %s", syscallReturn.toString().c_str());
 
             // If the system call is fork/vfork, we must create a new process manager for it.
             if (syscall.isFork())
             {
-                ret = dealWithFork(syscall, pid);
+                ret = dealWithFork(syscallReturn);
                 if (ret != 0)
                 {
                     break;
                 }
             }
+            // If the system call is exec, but the return is not, we shall skip
+            // one system call in the next step since there is one redundant
+            // exec to be catched by ptrace.
+            else if (syscall.isExec() && syscallReturn.isExec() &&
+                    syscallReturn.getReturn() >= 0)
+            {
+                LOG("will skip syscall");
+                skipPtraceSyscall = true;
+            }
+            LOG("After wait");
         }
     }
     return 0;

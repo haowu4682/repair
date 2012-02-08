@@ -23,10 +23,6 @@ def main(fn):
 	else:
 		raise "unrecognized file"
 
-	print "=" * 60
-	print f.name
-	print "-" * 60
-
 	cache = (-1, 0)
 	while True:
 		try:
