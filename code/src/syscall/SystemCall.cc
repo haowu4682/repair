@@ -512,31 +512,32 @@ size_t findPosForNextArg(String &str, int pos)
 {
     size_t res;
     bool strMod = false;
+    bool escapeMod = false;
     int arrayCount = 0;
     int groupCount = 0;
     for (res = pos; res < str.length(); ++res)
     {
-        if (str[res] == '\"' && str[res-1] != '\\')
+        if (str[res] == '\"' && !escapeMod)
         {
             strMod = !strMod;
             continue;
         }
-        if (!strMod && str[res] == '[' && str[res-1] != '\\')
+        else if (!strMod && str[res] == '[' && !escapeMod)
         {
             arrayCount++;
             continue;
         }
-        if (!strMod && str[res] == ']' && str[res-1] != '\\')
+        else if (!strMod && str[res] == ']' && !escapeMod)
         {
             arrayCount--;
             continue;
         }
-        if (!strMod && str[res] == '{' && str[res-1] != '\\')
+        else if (!strMod && str[res] == '{' && !escapeMod)
         {
             groupCount++;
             continue;
         }
-        if (!strMod && str[res] == '}' && str[res-1] != '\\')
+        else if (!strMod && str[res] == '}' && !escapeMod)
         {
             groupCount--;
             continue;
@@ -547,6 +548,14 @@ size_t findPosForNextArg(String &str, int pos)
                 break;
             if (res != str.length() - 1 && str[res] == ',' && str[res+1] == ' ')
                 break;
+        }
+        if (!escapeMod && str[res] == '\\')
+        {
+            escapeMod = true;
+        }
+        else
+        {
+            escapeMod = false;
         }
     }
     return res;

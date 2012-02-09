@@ -19,6 +19,8 @@
 #define Vector std::vector
 #define Map std::map
 #define Pair std::pair
+#define Istream std::istream
+#define Ostream std::ostream
 
 // Constant definition
 #define ROOT_PID -1

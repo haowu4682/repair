@@ -107,6 +107,8 @@ class SystemCallArgument
                 const SyscallArgType *syscallType);
         // Create the argument from a syscall arg record
         void setArg(String record, const SyscallArgType *syscallType);
+        // Create the argument from a syscall arg record
+        void setArg(Istream &is, const SyscallArgType *syscallType);
         // Set the argument to "None".
         void setArg(const SyscallArgType *syscallType);
         // Set up the sysarg name

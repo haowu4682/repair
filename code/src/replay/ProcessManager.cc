@@ -239,7 +239,7 @@ int ProcessManager::traceProcess(pid_t pid)
     {
         if (skipPtraceSyscall)
         {
-            LOG("SKIPPING SYSCALL");
+            LOG("skipping syscall");
             skipPtraceSyscall = false;
             pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
             waitpid(pid, &status, 0);
@@ -248,18 +248,14 @@ int ProcessManager::traceProcess(pid_t pid)
         waitpid(pid, &status, 0);
 
         // The child process is at the point **before** a syscall.
-        LOG("before get regs");
         ptrace(PTRACE_GETREGS, pid, 0, &regs);
-        LOG("after get regs");
         SystemCall syscallMatch;
         SystemCall syscall(regs, pid, SYSARG_IFENTER, fdManager);
-        LOG("after create syscall");
         LOG("syscall found: %s", syscall.toString().c_str());
 
         // If the system call is user input or output, we need to act quite differently.
         if (syscall.isUserSelect(true))
         {
-            LOG("User select found: %s", syscall.toString().c_str());
             pret = syscallList->searchMatch(syscallMatch, syscall, oldPid,
                     selectSeqNum, true);
             bool matchFound = (pret >= 0);
@@ -269,7 +265,9 @@ int ProcessManager::traceProcess(pid_t pid)
             // syscall is executed as usual.
             if (matchFound)
             {
-                LOG("Select Match Found! Match is: %s", syscallMatch.toString().c_str());
+                LOG("Select Match Found! original: %s, match: %s",
+                        syscall.toString().c_str(),
+                        syscallMatch.toString().c_str());
                 selectSeqNum = pret;
 
                 // We do not skip executing the system call now, but these code
@@ -318,7 +316,6 @@ int ProcessManager::traceProcess(pid_t pid)
         }
         else if (syscall.isRegularUserInput())
         {
-            LOG("User input found: %s", syscall.toString().c_str());
             pret = syscallList->searchMatch(syscallMatch, syscall, oldPid,
                     inputSeqNum, true);
             bool matchFound = (pret >= 0);
@@ -328,7 +325,9 @@ int ProcessManager::traceProcess(pid_t pid)
             // syscall is executed as usual.
             if (matchFound)
             {
-                LOG("Input Match Found! Match is: %s", syscallMatch.toString().c_str());
+                LOG("Input Match Found! original: %s, match: %s",
+                        syscall.toString().c_str(),
+                        syscallMatch.toString().c_str());
                 inputSeqNum = pret;
                 selectSeqNum = pret;
 
@@ -350,7 +349,6 @@ int ProcessManager::traceProcess(pid_t pid)
         }
         else if (syscall.isOutput())
         {
-            LOG("Output found: %s", syscall.toString().c_str());
             pret = syscallList->searchMatch(syscallMatch, syscall, oldPid,
                     outputSeqNum, false);
             bool matchFound = (pret >= 0);
@@ -394,7 +392,6 @@ int ProcessManager::traceProcess(pid_t pid)
         }
         else
         {
-            LOG("Before wait");
             pret = ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
             waitpid(pid, &status, 0);
 
@@ -423,10 +420,8 @@ int ProcessManager::traceProcess(pid_t pid)
             else if (syscall.isExec() && syscallReturn.isExec() &&
                     syscallReturn.getReturn() >= 0)
             {
-                LOG("will skip syscall");
                 skipPtraceSyscall = true;
             }
-            LOG("After wait");
         }
     }
     return 0;

@@ -228,6 +228,10 @@ String bufToStr(const String &buf)
     return str.substr(spos + 1, epos - spos - 1);
 }
 
+String readEscapeString(Istream &is)
+{
+}
+
 String addEscapeSequence(const String &src)
 {
     std::stringstream ss;

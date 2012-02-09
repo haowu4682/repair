@@ -38,6 +38,9 @@ long readFromProcess(void *buf, long addr, size_t len, pid_t pid);
 /// Convert register information to string, for debug use
 String regsToStr(user_regs_struct &regs);
 
+/// Read a string from input stream bounded by ""
+String readEscapeString(Istream &is);
+
 /// Convert out escape sequences
 String removeEscapeSequence(const String &src);
 

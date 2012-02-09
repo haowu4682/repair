@@ -23,6 +23,11 @@ void SystemCallArgument::setArg(String record, const SyscallArgType *syscallType
     this->value = record;
 }
 
+void SystemCallArgument::setArg(Istream &is, const SyscallArgType *syscallType)
+{
+    
+}
+
 void SystemCallArgument::setArg(const SyscallArgType *syscallType)
 {
     type = syscallType;
