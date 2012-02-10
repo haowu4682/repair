@@ -1,2 +1,6 @@
 1. We do not support ``epoll'' currently.
 2. a slow method is used in detecting whether 2 ``select'' system calls are equal.
+3. Our system does not protect security currently, since every user input is
+    recorded, it is likely that a user's private data, such as password, will be
+    not in a safe place.
+

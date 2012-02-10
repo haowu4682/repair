@@ -573,6 +573,14 @@ _syscalls = [
         [ NR_listen     , "listen"      , sysarg_int,           [
                         [ "socket"      , sysarg_fd     , READ | ENTER ],
                         [ "backlog"     , sysarg_int            ]]],
+        [ NR_accept     , "accept"      , sysarg_fd,            [
+                        [ "socket"      , sysarg_fd     , READ | ENTER  ],
+                        [ "addr"        , sysarg_struct , ENTER , sockaddr  ],
+                        [ "len"         , sysarg_int            ]]],
+        [ NR_connect    , "connect"     , sysarg_int,           [
+                        [ "fd"          , sysarg_fd     , READ | ENTER  ],
+                        [ "addr"        , sysarg_struct , ENTER  , sockaddr ],
+                        [ "len"         , sysarg_int            ]]],
         [ NR_sendto     , "sendto"      , sysarg_ssize_t,       [
                         [ "socket"      , sysarg_fd     , WRITE | ENTER ],
                         [ "buf"         , sysarg_buf            ],
@@ -580,29 +588,21 @@ _syscalls = [
                         [ "flags"       , sysarg_int            ],
                         [ "addr"        , sysarg_struct , ENTER , sockaddr ],
                         [ "len"         , sysarg_size_t         ]]],
-        [ NR_recvmsg    , "recvmsg"     , sysarg_ssize_t,       [
-                        [ "socket"      , sysarg_fd     , READ | ENTER ],
-                        [ "msg"         , sysarg_msghdr , ENTER , msghdr   ],
-                        [ "flags"       , sysarg_int            ]]],
-        [ NR_connect    , "connect"     , sysarg_int,           [
-                        [ "fd"          , sysarg_fd     , READ | ENTER  ],
-                        [ "addr"        , sysarg_struct , ENTER  , sockaddr ],
-                        [ "len"         , sysarg_int            ]]],
-        [ NR_accept     , "accept"      , sysarg_fd,            [
-                        [ "socket"      , sysarg_fd     , READ | ENTER  ],
-                        [ "addr"        , sysarg_struct , ENTER , sockaddr  ],
-                        [ "len"         , sysarg_int            ]]],
         [ NR_sendmsg    , "sendmsg"     , sysarg_ssize_t,       [
                         [ "socket"      , sysarg_fd     , WRITE | ENTER ],
                         [ "msg"         , sysarg_msghdr , ENTER , msghdr    ],
                         [ "flags"       , sysarg_int            ]]],
+        [ NR_recvmsg    , "recvmsg"     , sysarg_ssize_t,       [
+                        [ "socket"      , sysarg_fd     , READ | ENTER ],
+                        [ "msg"         , sysarg_msghdr , EXIT , msghdr   ],
+                        [ "flags"       , sysarg_int            ]]],
         [ NR_recvfrom   , "recvfrom"    , sysarg_ssize_t,       [
                         [ "socket"      , sysarg_fd     , READ | ENTER  ],
-                        [ "buf"         , sysarg_buf            ],
-                        [ "len"         , sysarg_size_t         ],
+                        [ "buf"         , sysarg_buf    , EXIT  ],
+                        [ "len"         , sysarg_size_t , BOTH  ],
                         [ "flags"       , sysarg_int            ],
-                        [ "addr"        , sysarg_struct , EXIT  , sockaddr   ],
-                        [ "len"         , sysarg_psize_t, EXIT  ]]]]
+                        [ "addr"        , sysarg_struct , BOTH  , sockaddr   ],
+                        [ "len"         , sysarg_psize_t, BOTH  ]]]]
 
 def _sort_syscalls(raw_cs):
         r = []
