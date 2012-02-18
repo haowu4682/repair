@@ -4,6 +4,7 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <sys/socket.h>
 
 #include <common/util.h>
 #include <syscall/sha1.h>
@@ -136,7 +137,7 @@ String buf_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     long pret;
     size_t len = argAux->aux;
-    if (len > 0)
+    if (argValue != 0 && len > 0)
     {
         char *buf = new char[len];
         pret = readFromProcess(buf, argValue, len, argAux->pid);
@@ -217,6 +218,8 @@ String strings_record(long argValue, SystemCallArgumentAuxilation *argAux)
 String iovec_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
     String str;
+    // TODO: implement
+    str = "[]";
     return str;
 }
 
@@ -287,7 +290,7 @@ String struct_record(long argValue, SystemCallArgumentAuxilation *argAux)
         return uint_record(0, argAux);
     //LOG("len=%ld", argAux->aux);
     String str = buf_record(argValue, argAux);
-    stringstream ss;
+    ostringstream ss;
     // XXX: fix it no ad-hoc
     if (argAux->aux == 0)
         ss << "None";
@@ -314,9 +317,35 @@ String psize_t_record(long argValue, SystemCallArgumentAuxilation *argAux)
 
 String msghdr_record(long argValue, SystemCallArgumentAuxilation *argAux)
 {
-    String str;
-    return str;
+    struct msghdr msg;
+    long pret;
+    ostringstream ss;
+    SystemCallArgumentAuxilation fakeAux = *argAux;
+
+    // msghdr
+    readFromProcess(&msg, argValue, sizeof(struct msghdr), argAux->pid);
+    ss << "{";
+    // name
+    fakeAux.aux = msg.msg_namelen;
+    ss << buf_record(long(msg.msg_name), &fakeAux) << ", ";
+    // iov
+    fakeAux.aux = msg.msg_iovlen;
+    ss << iovec_record(long(msg.msg_iov), &fakeAux) << ", ";
+    // control
+    fakeAux.aux = msg.msg_controllen;
+    ss << buf_record(long(msg.msg_control), &fakeAux) << ", ";
+    ss << sint_record(long(msg.msg_flags), NULL) << "}";
+    LOG("msghdr: %s", ss.str().c_str());
+
+    return ss.str();
 }
+
+#if 0
+String msghdrToStr(String value)
+{
+    // TODO
+}
+#endif
 
 Pair<int, int> fd2_derecord(String value)
 {

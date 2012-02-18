@@ -68,6 +68,7 @@ extern sysarg_type_t sysarg_type_list[];
 
 Pair<int, int> fd2_derecord(String value);
 fd_set fd_set_derecord(String value);
+//String msghdrToStr(String value);
 
 SYSARGOVERWRITE_(void);
 SYSARGOVERWRITE_(sint);

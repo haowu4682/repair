@@ -192,6 +192,11 @@ class msghdr(record_struct):
     ("msg_controllen", c_long),
     ("msg_flags"   , c_long)]
 
+  def __repr__(self):
+    # TODO: fix
+    return "{%s, %s, %s, %d}" % (repr(self.name), repr(self.iov), \
+      repr(self.control), self.msg_flags)
+
 class pollfd(record_struct):
   _fields_ = [
     ("fd"   , c_int  ),
@@ -268,7 +273,6 @@ def sysarg_intp(f, arg = None):
 
 def sysarg_buf(f, arg = None):
   n = sysarg_size_t(f)
-  #print "buf size: ", n
   return f.read(n)
 
 def sysarg_buf_det(f, arg = None):
@@ -368,7 +372,8 @@ def sysarg_struct(f, arg):
   # XXX AF_INET6
   # assert size <= sizeof(ty)
   buf = create_string_buffer(f.read(size))
-  return cast(buf, POINTER(ty)).contents
+  result = cast(buf, POINTER(ty)).contents
+  return result
 
 def sysarg_iovec(f, arg = None):
   n = sysarg_size_t(f)
@@ -506,7 +511,8 @@ def sysarg_msghdr(f, arg = None):
   class mock: pass
   arg = mock
   arg.aux = sockaddr
-  msghdr.name = sysarg_struct(f, arg)
+  msghdr.name = sysarg_buf(f)
   msghdr.iov  = sysarg_iovec(f)
+  msghdr.control = sysarg_buf(f)
   return msghdr
 

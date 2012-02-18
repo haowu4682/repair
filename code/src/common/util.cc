@@ -4,6 +4,7 @@
 #include <cstring>
 #include <sstream>
 #include <sys/ptrace.h>
+#include <sys/stat.h>
 
 #include <common/util.h>
 
@@ -214,12 +215,12 @@ String bufToStr(const String &buf)
     String str = removeEscapeSequence(buf);
     //LOG("escaped str is: %s, after escape: %s", buf.c_str(), str.c_str());
     size_t spos, epos;
-    spos = str.find('\"');
+    spos = str.find_first_of("\'\"");
     if (spos == std::string::npos)
     {
         return str;
     }
-    epos = str.rfind('\"');
+    epos = str.find_last_of("\'\"");
     if (epos == std::string::npos)
     {
         return str;
@@ -367,8 +368,8 @@ char retrieveChar(const char *alphabet /* = NULL */, const char *noticeMsg
 {
     char c;
     String str;
-//    getline(is, str);
-//    c = str[0];
+    //    getline(is, str);
+    //    c = str[0];
     is.get(c);
     if (alphabet != NULL)
     {
@@ -379,10 +380,46 @@ char retrieveChar(const char *alphabet /* = NULL */, const char *noticeMsg
                 printMsg(noticeMsg, os);
             }
             is.get(c);
-//            getline(is, str);
-//            c = str[0];
+            //            getline(is, str);
+            //            c = str[0];
         }
     }
     return c;
+}
+
+void printStat(const struct stat *sb, Ostream &os /* = cerr */)
+{
+    os << ("File type:                ");
+
+    switch (sb->st_mode & S_IFMT) {
+        case S_IFBLK:  os << ("block device\n");            break;
+        case S_IFCHR:  os << ("character device\n");        break;
+        case S_IFDIR:  os << ("directory\n");               break;
+        case S_IFIFO:  os << ("FIFO/pipe\n");               break;
+        case S_IFLNK:  os << ("symlink\n");                 break;
+        case S_IFREG:  os << ("regular file\n");            break;
+        case S_IFSOCK: os << ("socket\n");                  break;
+        default:       os << ("unknown?\n");                break;
+    }
+
+    os << ("I-node number:            %ld\n", (long) sb->st_ino);
+
+    os << ("Mode:                     %lo (octal)\n",
+            (unsigned long) sb->st_mode);
+
+    os << ("Link count:               %ld\n", (long) sb->st_nlink);
+    os << ("Ownership:                UID=%ld   GID=%ld\n",
+            (long) sb->st_uid, (long) sb->st_gid);
+
+    os << ("Preferred I/O block size: %ld bytes\n",
+            (long) sb->st_blksize);
+    os << ("File size:                %lld bytes\n",
+            (long long) sb->st_size);
+    os << ("Blocks allocated:         %lld\n",
+            (long long) sb->st_blocks);
+
+    os << ("Last status change:       %s", ctime(&sb->st_ctime));
+    os << ("Last file access:         %s", ctime(&sb->st_atime));
+    os << ("Last file modification:   %s", ctime(&sb->st_mtime));
 }
 

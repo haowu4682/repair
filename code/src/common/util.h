@@ -64,5 +64,8 @@ void printMsg(const char *msg, std::ostream &os = std::cout);
 char retrieveChar(const char *alphabet = NULL, const char *noticeMsg = NULL,
         std::istream &is = std::cin, std::ostream &os = std::cout);
 
+/// Display the stat of a file
+void printStat(const struct stat *, Ostream &os = std::cerr);
+
 #endif //__COMMON_UTIL_H__
 

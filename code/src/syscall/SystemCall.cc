@@ -6,6 +6,7 @@
 #include <sstream>
 #include <sys/ptrace.h>
 #include <sys/select.h>
+#include <sys/stat.h>
 
 #include <common/common.h>
 #include <common/util.h>
@@ -77,7 +78,7 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, int usage, FDMana
     getRegsList(regs, argsList);
     int numArgs = type->numArgs;
     ret = getArgFromReg(regs, SYSCALL_MAX_ARGS);
-    LOG("name=%s", type->name.c_str());
+    //LOG("name=%s", type->name.c_str());
     for (int i = 0; i < numArgs; i++)
     {
         const SyscallArgType *argType = &type->args[i];
@@ -92,7 +93,7 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, int usage, FDMana
             SystemCallArgumentAuxilation aux = getAux(argsList, *type, i, ret, numArgs, pid, usage);
             args[i].setArg(argsList[i], &aux, argType);
         }
-        LOG("arg type pointer: %d %p", i, getArg(i).getType());
+        //LOG("arg type pointer: %d %p", i, getArg(i).getType());
     }
 
     // Manager fd's
@@ -115,6 +116,19 @@ void SystemCall::init(const user_regs_struct &regs, pid_t pid, int usage, FDMana
                 lastOpenFilePath = args[0].getValue();
 //                LOG("SYSCALL: %s", toString().c_str());
 //                LOG("Record LastOpenFilePath = %s", lastOpenFilePath.c_str());
+            }
+        }
+        // socket
+        else if (type->nr == 41)
+        {
+            if (usage & SYSARG_IFEXIT)
+            {
+                if (ret >= 0)
+                {
+                    // path not valid for socket currently
+                    File *file = new File(ret, network, "");
+                    fdManager->addNewFile(file);
+                }
             }
         }
     }
@@ -337,9 +351,13 @@ bool isFDUserInput(int fd, const FDManager *fdManager, bool isNew = true, long t
     if (file == NULL)
     {
         // Unknown fd, we do not treat it as user input.
+        struct stat stat_buf;
+        fstat(fd, &stat_buf);
+        printStat(&stat_buf);
         LOG("Unknown fd: %d", fd);
         return false;
     }
+//    cerr << "File = " << *file << endl;
     return file->isUserInput();
 }
 
@@ -401,9 +419,10 @@ bool SystemCall::isRegularUserInput() const
         if (argType->record == fd_record)
         {
             int fd = atoi(args[i].getValue().c_str());
-            // XXX: Hard code for ``new syscall'' here.
+            LOG("fd=%d", fd);
+            // Hard code for ``new syscall'' here.
             if (isFDUserInput(fd, fdManager, true))
-            { 
+            {
                 return true;
             }
         }
@@ -512,32 +531,44 @@ size_t findPosForNextArg(String &str, int pos)
 {
     size_t res;
     bool strMod = false;
+    bool singleStrMod = false;
+    bool doubleStrMod = false;
     bool escapeMod = false;
     int arrayCount = 0;
     int groupCount = 0;
     for (res = pos; res < str.length(); ++res)
     {
-        if (str[res] == '\"' && !escapeMod)
+        // The two str mode cannot occur simultaneously
+        assert(!(singleStrMod && doubleStrMod));
+
+        if (!escapeMod && !singleStrMod && str[res] == '\"')
         {
+            doubleStrMod = !doubleStrMod;
             strMod = !strMod;
             continue;
         }
-        else if (!strMod && str[res] == '[' && !escapeMod)
+        else if (!escapeMod && !doubleStrMod && str[res] == '\'')
+        {
+            singleStrMod = !singleStrMod;
+            strMod = !strMod;
+            continue;
+        }
+        else if (!escapeMod && !strMod && str[res] == '[')
         {
             arrayCount++;
             continue;
         }
-        else if (!strMod && str[res] == ']' && !escapeMod)
+        else if (!escapeMod && !strMod && str[res] == ']')
         {
             arrayCount--;
             continue;
         }
-        else if (!strMod && str[res] == '{' && !escapeMod)
+        else if (!escapeMod && !strMod && str[res] == '{')
         {
             groupCount++;
             continue;
         }
-        else if (!strMod && str[res] == '}' && !escapeMod)
+        else if (!escapeMod && !strMod && str[res] == '}')
         {
             groupCount--;
             continue;
@@ -620,6 +651,7 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
         size_t endPos = findPosForNextArg(auxStr, pos);
         if (pos > auxStr.length())
         {
+            LOG("i=%d, endPos=%ld, len=%ld", i, endPos, auxStr.length());
             LOG("System call record is corrupted: %s", record.c_str());
         }
         String sysargStr = auxStr.substr(pos, endPos - pos);
@@ -665,6 +697,25 @@ int SystemCall::init(String record, FDManager *fdManager, PidManager *pidManager
             else
             {
                 lastOpenFilePath = args[0].getValue();
+            }
+        }
+        // socket
+        else if (type->nr == 41)
+        {
+            if (usage & SYSARG_IFEXIT)
+            {
+                if (ret >= 0)
+                {
+                    // path not valid for socket currently
+                    File *file = new File(ret, network, "");
+                    fdManager->addOldFile(file, ts);
+                }
+#if 0
+                else
+                {
+                    LOG("socket fails with ret=%ld", ret);
+                }
+#endif
             }
         }
     }

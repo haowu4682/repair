@@ -48,6 +48,9 @@ src/gen_include/%.inc: src/gen_include/%.py $(PYTHONSRC)
 retro: retro/*
 	cd retro; make -C ctl; make -C trace
 
+tags:
+	cd src; ctags -R --fields=+lS
+
 clean:
 	cd retro; make clean
 	rm -f $(REPLAYBIN) $(COMMONOBJ) $(REPLAYOBJ) $(SYSCALLOBJ) src/syscall/trace_syscalls.inc src/syscall/trace_syscalls_exec.inc

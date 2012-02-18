@@ -33,6 +33,7 @@ class File
         bool isUserInput()
         {
             // XXX: Do we interact both device and network?
+            LOG("type is %d", type);
             return ((type == device) || (type == network));
         }
 

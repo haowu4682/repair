@@ -594,7 +594,7 @@ _syscalls = [
                         [ "flags"       , sysarg_int            ]]],
         [ NR_recvmsg    , "recvmsg"     , sysarg_ssize_t,       [
                         [ "socket"      , sysarg_fd     , READ | ENTER ],
-                        [ "msg"         , sysarg_msghdr , EXIT , msghdr   ],
+                        [ "msg"         , sysarg_msghdr , BOTH , msghdr   ],
                         [ "flags"       , sysarg_int            ]]],
         [ NR_recvfrom   , "recvfrom"    , sysarg_ssize_t,       [
                         [ "socket"      , sysarg_fd     , READ | ENTER  ],

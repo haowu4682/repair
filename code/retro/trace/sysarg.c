@@ -163,12 +163,17 @@ void sysarg_msghdr(long v, const struct sysarg *dummy)
   sysarg_buf(v, &arg);
 
   /* name */
+  // HAOWU: add-hoc of putting a sockaddr length here.
   arg.aux = 12;
   sysarg_struct((long)msg_sys.msg_name, &arg);
 
   /* iov */
   arg.aux = msg_sys.msg_iovlen;
   sysarg_iovec((long)msg_sys.msg_iov, &arg);
+
+  /* HAOWU: added control data */
+  arg.aux = msg_sys.msg_controllen;
+  sysarg_struct((long)msg_sys.msg_control, &arg);
 }
 
 void sysarg_buf_det(long v, const struct sysarg *arg)

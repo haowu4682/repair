@@ -20,12 +20,23 @@ void SystemCallArgument::setArg(String record, const SyscallArgType *syscallType
     {
         record = bufToStr(record);
     }
+    if (type != NULL && type->record == msghdr_record)
+    {
+        record = removeEscapeSequence(record);
+    }
+
+#if 0
+    else if (type != NULL && (type->record == msghdr_record))
+    {
+        record = msghdrToStr(record);
+    }
+#endif
     this->value = record;
 }
 
 void SystemCallArgument::setArg(Istream &is, const SyscallArgType *syscallType)
 {
-    
+    //TODO implement or remove the function.
 }
 
 void SystemCallArgument::setArg(const SyscallArgType *syscallType)
@@ -51,7 +62,6 @@ String getPathString(const String &value)
 
 String SystemCallArgument::getValue() const
 {
-    // TODO: no ad-hoc here.
     return value;
 }
 

@@ -79,6 +79,11 @@ long SystemCallList::searchMatch(SystemCall &match,
                 return static_cast<int>(pos+1);
             }
         }
+        else
+        {
+//            LOG("No match. syscall: %s, record: %s", source.toString().c_str(),
+//                    syscalls[pos].toString().c_str());
+        }
     }
     LOG("syscall not found due to EOF");
 
