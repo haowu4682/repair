@@ -23,7 +23,9 @@ inline long writeInt(long value, pid_t pid, user_regs_struct &regs, int i)
 
 SYSARGOVERWRITE_(sint)
 {
-    return 0;
+    //TODO: not necessarily to be correct
+    long value = atoi(sysarg->getValue().c_str());
+    return writeInt(value, pid, regs, i);
 }
 
 SYSARGOVERWRITE_(uint)
@@ -35,37 +37,43 @@ SYSARGOVERWRITE_(uint)
 
 SYSARGOVERWRITE_(sint32)
 {
-    return 0;
+    //TODO: not necessarily to be correct
+    long value = atoi(sysarg->getValue().c_str());
+    return writeInt(value, pid, regs, i);
 }
 
 SYSARGOVERWRITE_(uint32)
 {
-    return 0;
+    //TODO: not necessarily to be correct
+    long value = atoi(sysarg->getValue().c_str());
+    return writeInt(value, pid, regs, i);
 }
 
 SYSARGOVERWRITE_(intp)
 {
-    return 0;
+    //TODO: not necessarily to be correct
+    long value = atoi(sysarg->getValue().c_str());
+    return writeInt(value, pid, regs, i);
 }
 
 SYSARGOVERWRITE_(pid_t)
 {
-    return 0;
+    //TODO: not necessarily to be correct
+    long value = atoi(sysarg->getValue().c_str());
+    return writeInt(value, pid, regs, i);
 }
 
 SYSARGOVERWRITE_(buf)
 {
     long pret;
     // Modify the buf value
-//    String bufStr = sysarg->getValue();
-//    String str = bufToStr(bufStr);
     String str = sysarg->getValue();
     long argVal = SystemCall::getArgFromReg(regs, i);
-    writeToProcess(str.c_str(), argVal, str.size(), pid);
+    pret = writeToProcess(str.c_str(), argVal, str.size(), pid);
     // Modify the length by modifying the return value.
     // This part should be done by SystemCall::overwrite. We do not execute it
     // here.
-    return 0;
+    return pret;
 }
 
 SYSARGOVERWRITE_(sha1)
@@ -138,15 +146,15 @@ SYSARGOVERWRITE_(struct)
         SystemCallArgument fakeArg;
         fakeArg.setArg("0", NULL);
         uint_overwrite(sysarg, pid, regs, i);
+        pret = 0;
     }
     else if (sysarg->getType()->aux == 128)
     {
         fd_set fds = fd_set_derecord(sysarg->getValue());
         long argVal = SystemCall::getArgFromReg(regs, i);
         pret = writeToProcess(&fds, argVal, sizeof(fds), pid);
-        return pret;
     }
-    return 0;
+    return pret;
 }
 
 SYSARGOVERWRITE_(psize_t)
@@ -154,9 +162,66 @@ SYSARGOVERWRITE_(psize_t)
     return 0;
 }
 
+long writeMsgBack(msghdr hdr, const char *buf, long hdr_addr, pid_t pid)
+{
+    long pret;
+    const char *name_buf, *iov_buf, *control_buf;
+
+    // Step 0 Initialize
+    name_buf = buf;
+    iov_buf = buf + hdr.msg_namelen;
+    control_buf = buf + hdr.msg_namelen + hdr.msg_iovlen;
+
+    // Step 1 write back data
+    pret = writeToProcess(name_buf, long(hdr.msg_name), hdr.msg_namelen, pid);
+    TESTERROR(pret, "msghdr overwrite failed, unable to overwrite msg_name at"
+            " %p with length %d.", hdr.msg_name, hdr.msg_namelen);
+    pret = writeToProcess(iov_buf, long(hdr.msg_iov), hdr.msg_iovlen, pid);
+    TESTERROR(pret, "msghdr overwrite failed, unable to overwrite msg_iov at"
+            " %p with length %ld.", hdr.msg_iov, hdr.msg_iovlen);
+    pret = writeToProcess(control_buf, long(hdr.msg_control), hdr.msg_controllen, pid);
+    TESTERROR(pret, "msghdr overwrite failed, unable to overwrite msg_control at"
+            " %p with length %ld.", hdr.msg_control, hdr.msg_controllen);
+
+    // Step 2 write back msghdr
+    pret = writeToProcess(&hdr, hdr_addr, sizeof(msghdr), pid);
+    TESTERROR(pret, "msghdr overwrite failed, unable to overwrite msghdr at"
+            " %p with length %ld.", (void *)hdr_addr, sizeof(msghdr));
+    return 0;
+}
+
 SYSARGOVERWRITE_(msghdr)
 {
-    return 0;
+    long pret;
+    msghdr hdr;
+    long hdr_addr;
+    String value;
+    size_t total_len;
+    char *buf;
+
+    // Step 1: Get original msghdr and data
+    value = sysarg->getValue();
+    hdr_addr = SystemCall::getArgFromReg(regs, i);
+    pret = readFromProcess(&hdr, hdr_addr, sizeof(struct msghdr), pid);
+    if (pret < 0)
+    {
+        LOG("read msghdr fails from addr %ld", hdr_addr);
+        return pret;
+    }
+
+    // Step 2: Create buf for specified msghdr
+    total_len = hdr.msg_namelen + hdr.msg_iovlen + hdr.msg_controllen;
+    buf = new char[total_len];
+
+    // Step 3: derecord the record to fill in the buf
+    msghdr_derecord(value, &hdr, buf);
+
+    // Step 4: write buf back according to msghdr
+    writeMsgBack(hdr, buf, hdr_addr, pid);
+
+    // Step 5: clean things up
+    delete[] buf;
+    return pret;
 }
 
 SYSARGOVERWRITE_(execve)

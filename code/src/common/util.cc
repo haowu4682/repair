@@ -423,3 +423,69 @@ void printStat(const struct stat *sb, Ostream &os /* = cerr */)
     os << ("Last file modification:   %s", ctime(&sb->st_mtime));
 }
 
+// An aux function to parse a syscall arg.
+size_t findPosForNextArg(String &str, int pos)
+{
+    size_t res;
+    bool strMod = false;
+    bool singleStrMod = false;
+    bool doubleStrMod = false;
+    bool escapeMod = false;
+    int arrayCount = 0;
+    int groupCount = 0;
+    for (res = pos; res < str.length(); ++res)
+    {
+        // The two str mode cannot occur simultaneously
+        assert(!(singleStrMod && doubleStrMod));
+
+        if (!escapeMod && !singleStrMod && str[res] == '\"')
+        {
+            doubleStrMod = !doubleStrMod;
+            strMod = !strMod;
+            continue;
+        }
+        else if (!escapeMod && !doubleStrMod && str[res] == '\'')
+        {
+            singleStrMod = !singleStrMod;
+            strMod = !strMod;
+            continue;
+        }
+        else if (!escapeMod && !strMod && str[res] == '[')
+        {
+            arrayCount++;
+            continue;
+        }
+        else if (!escapeMod && !strMod && str[res] == ']')
+        {
+            arrayCount--;
+            continue;
+        }
+        else if (!escapeMod && !strMod && str[res] == '{')
+        {
+            groupCount++;
+            continue;
+        }
+        else if (!escapeMod && !strMod && str[res] == '}')
+        {
+            groupCount--;
+            continue;
+        }
+        if (!strMod && !arrayCount && !groupCount)
+        {
+            if (str[res] == ')')
+                break;
+            if (res != str.length() - 1 && str[res] == ',' && str[res+1] == ' ')
+                break;
+        }
+        if (!escapeMod && str[res] == '\\')
+        {
+            escapeMod = true;
+        }
+        else
+        {
+            escapeMod = false;
+        }
+    }
+    return res;
+}
+

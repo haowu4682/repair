@@ -4,6 +4,7 @@
 #define __SYSCALL_SYSCALLARG_H__
 
 #include <sys/select.h>
+#include <sys/socket.h>
 
 #include <common/common.h>
 
@@ -68,6 +69,7 @@ extern sysarg_type_t sysarg_type_list[];
 
 Pair<int, int> fd2_derecord(String value);
 fd_set fd_set_derecord(String value);
+void msghdr_derecord(String value, msghdr *hdr, char *buf);
 //String msghdrToStr(String value);
 
 SYSARGOVERWRITE_(void);

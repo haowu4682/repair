@@ -67,5 +67,10 @@ char retrieveChar(const char *alphabet = NULL, const char *noticeMsg = NULL,
 /// Display the stat of a file
 void printStat(const struct stat *, Ostream &os = std::cerr);
 
+
+/// Find the position for the next argument
+/// An aux function to parse a syscall arg.
+size_t findPosForNextArg(String &str, int pos);
+
 #endif //__COMMON_UTIL_H__
 

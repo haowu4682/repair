@@ -327,7 +327,7 @@ String msghdr_record(long argValue, SystemCallArgumentAuxilation *argAux)
     ss << "{";
     // name
     fakeAux.aux = msg.msg_namelen;
-    ss << buf_record(long(msg.msg_name), &fakeAux) << ", ";
+    ss << "'" << buf_record(long(msg.msg_name), &fakeAux) << "', ";
     // iov
     fakeAux.aux = msg.msg_iovlen;
     ss << iovec_record(long(msg.msg_iov), &fakeAux) << ", ";
@@ -340,13 +340,6 @@ String msghdr_record(long argValue, SystemCallArgumentAuxilation *argAux)
     return ss.str();
 }
 
-#if 0
-String msghdrToStr(String value)
-{
-    // TODO
-}
-#endif
-
 Pair<int, int> fd2_derecord(String value)
 {
     String aux;
@@ -358,6 +351,80 @@ Pair<int, int> fd2_derecord(String value)
     is >> aux;
     is >> fd2.second;
     return fd2;
+}
+
+typedef enum
+{
+    name,
+    iov,
+    control,
+    flags,
+    SIZE
+} msghdr_arg;
+
+void msghdr_derecord(String value, msghdr *hdr, char *buf)
+{
+    // Assert buf size is enough
+    String argStr;
+    size_t begin_pos = value.find_first_of("{");
+    size_t end_pos = value.find_last_of("}");
+    size_t pos = begin_pos + 1;
+    size_t current_pos;
+    int argCount;
+    int auxInt;
+    size_t len;
+    size_t aux_pos;
+
+    if (begin_pos >= end_pos)
+    {
+        LOG("SYSCALL arg corrupted: %s", value.c_str());
+    }
+
+    for (argCount = 0; argCount < SIZE; ++argCount)
+    {
+        if (pos > end_pos)
+        {
+            LOG("Too few args in msghdr record: %s", value.c_str());
+            break;
+        }
+
+        current_pos = findPosForNextArg(value, pos);
+        if (current_pos > end_pos)
+        {
+            current_pos = end_pos;
+        }
+
+        argStr = value.substr(pos, current_pos - pos);
+        len = argStr.size();
+        LOG("argStr #%d = %s", argCount, argStr.c_str());
+
+        if (argCount < flags)
+        {
+            for (aux_pos = 0; aux_pos < len; ++ aux_pos)
+            {
+                *(buf++) = argStr[aux_pos];
+            }
+        }
+        switch (msghdr_arg(argCount))
+        {
+            case name:
+                hdr->msg_namelen = len;
+                break;
+            case iov:
+                hdr->msg_iovlen = len;
+                break;
+            case control:
+                hdr->msg_controllen = len;
+                break;
+            case flags:
+                auxInt = atoi(argStr.c_str());
+                hdr->msg_flags = auxInt;
+                break;
+            default:
+                LOG("BUG! control flow should not get here.");
+                assert(0);
+        }
+    }
 }
 
 fd_set fd_set_derecord(String value)
