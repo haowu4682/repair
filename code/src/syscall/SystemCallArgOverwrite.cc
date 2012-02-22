@@ -173,15 +173,24 @@ long writeMsgBack(msghdr hdr, const char *buf, long hdr_addr, pid_t pid)
     control_buf = buf + hdr.msg_namelen + hdr.msg_iovlen;
 
     // Step 1 write back data
-    pret = writeToProcess(name_buf, long(hdr.msg_name), hdr.msg_namelen, pid);
-    TESTERROR(pret, "msghdr overwrite failed, unable to overwrite msg_name at"
-            " %p with length %d.", hdr.msg_name, hdr.msg_namelen);
-    pret = writeToProcess(iov_buf, long(hdr.msg_iov), hdr.msg_iovlen, pid);
-    TESTERROR(pret, "msghdr overwrite failed, unable to overwrite msg_iov at"
-            " %p with length %ld.", hdr.msg_iov, hdr.msg_iovlen);
-    pret = writeToProcess(control_buf, long(hdr.msg_control), hdr.msg_controllen, pid);
-    TESTERROR(pret, "msghdr overwrite failed, unable to overwrite msg_control at"
-            " %p with length %ld.", hdr.msg_control, hdr.msg_controllen);
+    if (hdr.msg_name != NULL)
+    {
+        pret = writeToProcess(name_buf, long(hdr.msg_name), hdr.msg_namelen, pid);
+        TESTERROR(pret, "msghdr overwrite failed, unable to overwrite msg_name at"
+                " %p with length %d.", hdr.msg_name, hdr.msg_namelen);
+    }
+    if (hdr.msg_iov != NULL)
+    {
+        pret = writeToProcess(iov_buf, long(hdr.msg_iov), hdr.msg_iovlen, pid);
+        TESTERROR(pret, "msghdr overwrite failed, unable to overwrite msg_iov at"
+                " %p with length %ld.", hdr.msg_iov, hdr.msg_iovlen);
+    }
+    if (hdr.msg_control != NULL)
+    {
+        pret = writeToProcess(control_buf, long(hdr.msg_control), hdr.msg_controllen, pid);
+        TESTERROR(pret, "msghdr overwrite failed, unable to overwrite msg_control at"
+                " %p with length %ld.", hdr.msg_control, hdr.msg_controllen);
+    }
 
     // Step 2 write back msghdr
     pret = writeToProcess(&hdr, hdr_addr, sizeof(msghdr), pid);

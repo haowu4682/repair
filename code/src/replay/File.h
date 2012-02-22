@@ -13,6 +13,7 @@ enum FileType
     real,
     device,
     network,
+    fifo,
     unknown,
     MAX_SIZE
 };
