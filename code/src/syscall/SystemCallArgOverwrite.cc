@@ -206,7 +206,7 @@ SYSARGOVERWRITE_(msghdr)
     long hdr_addr;
     String value;
     size_t total_len;
-    char *buf;
+    char *hdr_buf;
 
     // Step 1: Get original msghdr and data
     value = sysarg->getValue();
@@ -220,16 +220,19 @@ SYSARGOVERWRITE_(msghdr)
 
     // Step 2: Create buf for specified msghdr
     total_len = hdr.msg_namelen + hdr.msg_iovlen + hdr.msg_controllen;
-    buf = new char[total_len];
+    LOG("total len = %ld", total_len);
+    hdr_buf = new char[total_len];
 
     // Step 3: derecord the record to fill in the buf
-    msghdr_derecord(value, &hdr, buf);
+    msghdr_derecord(value, &hdr, hdr_buf);
 
     // Step 4: write buf back according to msghdr
-    writeMsgBack(hdr, buf, hdr_addr, pid);
+    writeMsgBack(hdr, hdr_buf, hdr_addr, pid);
 
     // Step 5: clean things up
-    delete[] buf;
+    LOG("before deleting buf");
+    delete[] hdr_buf;
+    LOG("after deleting buf");
     return pret;
 }
 

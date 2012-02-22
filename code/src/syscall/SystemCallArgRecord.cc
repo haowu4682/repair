@@ -397,10 +397,10 @@ void msghdr_derecord(String value, msghdr *hdr, char *buf)
         argStr = value.substr(pos, current_pos - pos);
         len = argStr.size();
         LOG("argStr #%d = %s", argCount, argStr.c_str());
-
+        LOG("argStrLen #%d = %ld(%ld, %ld)", argCount, len, pos, current_pos);
         if (argCount < flags)
         {
-            for (aux_pos = 0; aux_pos < len; ++ aux_pos)
+            for (aux_pos = 1; aux_pos < len - 1; ++ aux_pos)
             {
                 *(buf++) = argStr[aux_pos];
             }
@@ -424,6 +424,8 @@ void msghdr_derecord(String value, msghdr *hdr, char *buf)
                 LOG("BUG! control flow should not get here.");
                 assert(0);
         }
+
+        pos = current_pos + 2;
     }
 }
 
